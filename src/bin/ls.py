@@ -342,7 +342,10 @@ def long_list_prn(
         # Owner ID
         owner_id = item_stat.st_uid
         if owner_id not in uid_cache:
-            uid_cache[owner_id] = pwd.getpwuid(owner_id).pw_name
+            try:
+                uid_cache[owner_id] = pwd.getpwuid(owner_id).pw_name
+            except KeyError:
+                uid_cache[owner_id] = "?"
         owner_nm = uid_cache[owner_id]
         max_owner_nm_len = max(max_owner_nm_len, len(owner_nm))
 
@@ -432,6 +435,7 @@ def short_list_prn(
     :param term_sz: Terminal window size.
     :type term_sz: os.terminal_size
     """
+    # ALL HAIL THE WORST ls ALGORITHM KNOWN TO MAN!
     fmted_items = []
     fmted_items_app = fmted_items.append
     max_len = 0
@@ -480,8 +484,8 @@ def short_list_prn(
         to_prn = []
         # col_lens makes the output look more structured, but inefficiencies in
         # the algorithm make it not the best use of space, which looks enhanced
-        # when the columns are tight-packed by the use of col_lens. Remove it
-        # if needed.
+        # when the columns are tight-packed by the use of col_lens. I've
+        # removed it for now.
         col_lens = [0] * max_cols
         num_lns = math.ceil(len(fmted_items) / max_cols)
         for i in range(num_lns):
@@ -493,7 +497,9 @@ def short_list_prn(
         for items in to_prn:
             padded_items = []
             for j, item in enumerate(items):
-                padded_items.append(ugen.ljust(item, col_lens[j]))
+                # Uncomment to tighten padding according to column max lengths
+                # padded_items.append(ugen.ljust(item, col_lens[j]))
+                padded_items.append(ugen.ljust(item, max_len))
             ugen.write((" " * padding).join(padded_items) + "\n")
 
     else:
