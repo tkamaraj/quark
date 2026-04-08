@@ -38,7 +38,7 @@ def run(data: ugen.CmdData) -> int:
             ugen.err(f"Access denied: \"{arg}\"")
             return uerr.ERR_PERM_DENIED
         except OSError:
-            ugen.err(f"Invalid argument: \"{arg}\"")
+            ugen.err(f"Is a directory or invalid argument: \"{arg}\"")
             return uerr.ERR_INV_ARG
 
     err = uerr.ERR_ALL_GOOD

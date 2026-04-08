@@ -22,13 +22,13 @@ CMD_SPEC = ugen.CmdSpec(
     min_args=0,
     max_args=1,
     opts=(),
-    flags=("-T")
+    flags=("-T",)
 )
 
 
 def run(data: ugen.CmdData) -> ty.NoReturn | int:
     exit_code = uerr.ERR_ALL_GOOD
-    exit_txt = "-T" not in data.flags and "--no-exit-text" not in data.flags
+    exit_txt = not ("-T" in data.flags or "--no-exit-text" in data.flags)
 
     if data.args:
         exit_code = data.args[0]

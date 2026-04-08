@@ -27,6 +27,7 @@ HELP = ugen.HelpObj(
         ("-h, --human-readable", "Display human-readable sizes"),
         ("-i, --inode", "Display inode number in long listing"),
         ("-l, --long-list", "Use long listing format"),
+        ("-m, --number-inode-links", "Display the number of links to inodes in long listing"),
         ("-N, --no-symlink-symbols", "Suppress symlink indicators"),
         ("-o, --iso", "Use ISO-8601 for dates and times"),
         ("-S, --no-slashes", "Suppress slashes at the end of directory names"),
@@ -46,6 +47,7 @@ CMD_SPEC = ugen.CmdSpec(
         "-h", "--human-readable",
         "-i", "--inode",
         "-l", "--long-list",
+        "-m", "--number-inode-links",
         "-N", "--no-symlink-symbols",
         "-o", "--iso",
         "-S", "--no-slashes",
@@ -269,6 +271,7 @@ def long_list_prn(
     is_tty: bool,
     slashes: bool,
     inodes: bool,
+    num_inode_lnks: bool,
     symlnk_syms: bool,
     xble_syms: bool,
     human_rdble: bool,
@@ -282,6 +285,7 @@ def long_list_prn(
     to_prn = []
     max_sz_len = 0
     max_inode_len = 0
+    max_num_inode_lnk_len = 0
     max_owner_nm_len = 0
 
     for (item, item_stat) in items:
@@ -351,7 +355,12 @@ def long_list_prn(
 
         # Inode number
         inode = item_stat.st_ino
+        num_inode_lnk = item_stat.st_nlink
         max_inode_len = max(max_inode_len, len(str(inode)))
+        max_num_inode_lnk_len = max(
+            max_num_inode_lnk_len,
+            len(str(num_inode_lnk))
+        )
 
         nm = item.name
         if is_tty:
@@ -384,6 +393,7 @@ def long_list_prn(
         entry["owner_id"] = owner_id
         entry["owner_nm"] = owner_nm
         entry["inode"] = inode
+        entry["num_inode_lnk"] = num_inode_lnk
         entry["name"] = nm
 
         to_prn.append(entry)
@@ -393,11 +403,16 @@ def long_list_prn(
         sz_w_chr = str(i["sz"]) + i["sz_char"]
         item_perms = i["owner_perms"] + i["grp_perms"] + i["others_perms"]
         c_or_mtime = str(i["ctime"]) if disp_ctime else str(i["mtime"])
+        padded_inode = str(i["inode"]).rjust(max_inode_len)
+        padded_num_inode_lnk = (
+            str(i["num_inode_lnk"]).rjust(max_num_inode_lnk_len)
+        )
 
         ugen.write(
             i["typ"]
             + " " + item_perms
-            + (("  " + str(i["inode"]).rjust(max_inode_len)) if inodes else "")
+            + (("  " + padded_inode) if inodes else "")
+            + (("  " + padded_num_inode_lnk) if num_inode_lnks else "")
             + "  " + i["owner_nm"].ljust(max_owner_nm_len)
             + "  " + c_or_mtime
             + "  " + sz_w_chr.rjust(max_sz_len)
@@ -509,42 +524,23 @@ def short_list_prn(
 
 def run(data: ugen.CmdData) -> int:
     err_code = uerr.ERR_ALL_GOOD
-    long_list = False
-    slashes = True
-    inodes = False
-    human_rdble = False
-    disp_ctime = False
+
+    long_list = "-l" in data.flags or "--long-list" in data.flags
+    slashes = "-S" in data.flags or "--no-slashes" in data.flags
+    inodes = "-i" in data.flags or "--inode" in data.flags
+    num_inode_lnks = "-m" in data.flags or "--number-inode-links" in data.flags
+    human_rdble = "-h" in data.flags or "--human-readble" in data.flags
+    disp_ctime = "-c" in data.flags or "--ctime" in data.flags
+    hidden = "-a" in data.flags or "--all" in data.flags
+    case_sensi = "-e" in data.flags or "--case-sensitive" in data.flags
+    unsorted = "-u" in data.flags or "--unsorted" in data.flags
+    iso = "-o" in data.flags or "--iso" in data.flags
     symlnk_syms = True
     xble_syms = True
-    hidden = False
-    case_sensi = False
-    unsorted = False
-    iso = False
-
-    # Detect flags
-    for flag in data.flags:
-        if flag in ("-l", "--long-list"):
-            long_list = True
-        elif flag in ("-S", "--no-slashes"):
-            slashes = False
-        elif flag in ("-i", "--inode"):
-            inodes = True
-        elif flag in ("-h", "--human-readable"):
-            human_rdble = True
-        elif flag in ("-c", "--ctime"):
-            disp_ctime = True
-        elif flag in ("-N", "--no-symlink-symbols"):
-            symlnk_syms = False
-        elif flag in ("-X", "--no-executable-symbols"):
-            xble_syms = False
-        elif flag in ("-a", "--all"):
-            hidden = True
-        elif flag in ("-e", "--case-sensitive"):
-            case_sensi = True
-        elif flag in ("-u", "--unsorted"):
-            unsorted = True
-        elif flag in ("-o", "--iso"):
-            iso = True
+    if "-N" in data.flags or "--no-symlink-symbols" in data.flags:
+        symlnk_syms = False
+    if "-X" in data.flags or "--no-executable-symbols" in data.flags:
+        xble_syms = False
 
     # No arguments
     if not data.args:
@@ -564,6 +560,7 @@ def run(data: ugen.CmdData) -> int:
                     is_tty=data.is_tty,
                     slashes=slashes,
                     inodes=inodes,
+                    num_inode_lnks=num_inode_lnks,
                     symlnk_syms=symlnk_syms,
                     xble_syms=xble_syms,
                     human_rdble=human_rdble,
@@ -604,6 +601,7 @@ def run(data: ugen.CmdData) -> int:
                     symlnk_syms=symlnk_syms,
                     xble_syms=xble_syms,
                     inodes=inodes,
+                    num_inode_lnks=num_inode_lnks,
                     human_rdble=human_rdble,
                     disp_ctime=disp_ctime,
                     iso=iso

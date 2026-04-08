@@ -1,9 +1,11 @@
+import socket
+
 import utils.err_codes as uerr
 import utils.gen as ugen
 
 HELP = ugen.HelpObj(
-    usage="test",
-    summary="Just a test command",
+    usage="host",
+    summary="Get hostname of the machine",
     details=(
         "ARGUMENTS",
         ("none", ""),
@@ -23,5 +25,5 @@ CMD_SPEC = ugen.CmdSpec(
 
 
 def run(data: ugen.CmdData) -> int:
-    ugen.write(data.stdin)
+    ugen.write(socket.getfqdn() + "\n")
     return uerr.ERR_ALL_GOOD

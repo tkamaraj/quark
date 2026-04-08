@@ -247,16 +247,16 @@ def main() -> None:
         # ^c on a built-in command
         except KeyboardInterrupt:
             intrpr.env_vars.set("_LAST_RET_", uerr.ERR_KEYBOARD_INTERR)
-            print()
+            ugen.write("\n")
 
         # ^c on an external command
         except ugen.KeyboardInterruptWPrevileges as e:
             intrpr.env_vars.set("_LAST_RET_", uerr.ERR_KEYBOARD_INTERR)
             os.kill(e.child_pid, sig.SIGKILL)
-            print()
+            ugen.write("\n")
 
         except EOFError:
-            print()
+            ugen.write("\nbye\n")
             sys.exit(uerr.ERR_ALL_GOOD)
 
         except Exception as e:

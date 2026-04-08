@@ -135,7 +135,7 @@ def main() -> None:
         "--follow-imports",
         "--python-flag=no_docstrings" if cfg.no_docstrs else "",
         "--lto=yes" if cfg.lto else "--lto=no",
-        "--run" if cfg.run else "",
+        # "--run" if cfg.run else "",
         "--remove-output" if not cfg.keep_tmp else "",
         "--no-pyi-file" if cfg.rm_pyi else "",
         "--quiet" if cfg.quiet else "",
@@ -173,6 +173,14 @@ def main() -> None:
         lgr.info(f"Copied bin to build directory")
         sh.copy2(cfg_fl_pth, build_dir_pth)
         lgr.info(f"Copied config to build directory")
+
+        if cfg.run:
+            op_xble = os.path.join(build_dir_pth, out_fl_nm)
+            lgr.info(f"Running {op_xble}")
+            sp.run([op_xble])
+
+    else:
+        lgr.error("Errors encountered")
 
 
 if __name__ == "__main__":

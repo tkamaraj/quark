@@ -1,4 +1,3 @@
-import math
 import os
 import pathlib as pl
 import re
@@ -27,7 +26,7 @@ HELP = ugen.HelpObj(
 
 CMD_SPEC = ugen.CmdSpec(
     min_args=0,
-    max_args=math.inf,
+    max_args=float("inf"),
     opts=(),
     flags=("-N", "-p", "-b", "-c", "-w", "-l")
 )

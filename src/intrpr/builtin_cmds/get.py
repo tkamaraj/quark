@@ -36,13 +36,14 @@ def run(data: ugen.CmdData) -> int:
             max_nm_len = max(max_nm_len, len(var.nm))
 
         for var in data.env_vars:
-            ugen.write(
-                ugen.ljust(ugen.S.fmt(var.nm, data.is_tty, ugen.S.green_4),
-                           max_nm_len)
-                + " = "
-                + repr(var.val)
-                + "\n"
-            )
+            if data.is_tty:
+                to_prn = ugen.ljust(
+                    ugen.S.fmt(var.nm, data.is_tty, ugen.S.green_4),
+                    max_nm_len
+                )
+            else:
+                to_prn = var.nm
+            ugen.write(to_prn + " = " + repr(var.val) + "\n")
 
     # This is needed here, with the get statement, to prevent unknown variable
     # names influencing padding
@@ -56,13 +57,14 @@ def run(data: ugen.CmdData) -> int:
     for arg in data.args:
         try:
             var_val = data.env_vars.get(arg)
-            ugen.write(
-                ugen.ljust(ugen.S.fmt(arg, data.is_tty, ugen.S.green_4),
-                           max_nm_len)
-                + " = "
-                + repr(var_val)
-                + "\n"
-            )
+            if data.is_tty:
+                to_prn = ugen.ljust(
+                    ugen.S.fmt(arg, data.is_tty, ugen.S.green_4),
+                    max_nm_len
+                )
+            else:
+                to_prn = arg
+            ugen.write(to_prn + " = " + repr(var_val) + "\n")
         except ugen.UnkVarErr:
             err_code = err_code or uerr.ERR_ENV_UNK_VAR
             ugen.err(f"Unknown variable: '{arg}'")
