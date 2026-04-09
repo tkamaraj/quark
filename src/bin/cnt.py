@@ -6,8 +6,10 @@ import sys
 import utils.err_codes as uerr
 import utils.gen as ugen
 
+CMD_NM = __name__.split(".")[-1]
+
 HELP = ugen.HelpObj(
-    usage="cnt [flag ...] [fl ...] [STDIN]",
+    usage=f"{CMD_NM} [flag ...] [fl ...] [STDIN]",
     summary="Count text objects",
     details=(
         "ARGUMENTS",

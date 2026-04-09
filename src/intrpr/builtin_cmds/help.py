@@ -10,8 +10,10 @@ if ty.TYPE_CHECKING:
     import intrpr.cmd_reslvr as icres
     import intrpr.internals as iint
 
+CMD_NM = __name__.split(".")[-1]
+
 HELP = ugen.HelpObj(
-    usage="help [cmd ...]",
+    usage=f"{CMD_NM} [cmd ...]",
     summary="Display help for commands",
     details=(
         "ARGUMENTS",

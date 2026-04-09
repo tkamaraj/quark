@@ -3,9 +3,11 @@ import subprocess as sp
 import utils.gen as ugen
 import utils.err_codes as uerr
 
+CMD_NM = __name__.split(".")[-1]
+
 HELP = ugen.HelpObj(
-    usage="cmd arg [...]",
-    summary="Execute strings in the system shell",
+    usage=f"{CMD_NM} arg [...]",
+    summary="(DO NOT USE) Execute strings in the system shell",
     details=(
         "ARGUMENTS",
         ("arg", "Part of line to be executed in the system shell"),

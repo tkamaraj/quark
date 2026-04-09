@@ -4,8 +4,10 @@ import pwd
 import utils.err_codes as uerr
 import utils.gen as ugen
 
+CMD_NM = __name__.split(".")[-1]
+
 HELP = ugen.HelpObj(
-    usage="whoami",
+    usage=CMD_NM,
     summary="Display current username",
     details=(
         "ARGUMENTS",

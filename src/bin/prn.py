@@ -5,8 +5,10 @@ import re
 import utils.err_codes as uerr
 import utils.gen as ugen
 
+CMD_NM = __name__.split(".")[-1]
+
 HELP = ugen.HelpObj(
-    usage="prn fl ...",
+    usage=f"{CMD_NM} fl ...",
     summary="Dump file content",
     details=(
         "ARGUMENTS",

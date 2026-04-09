@@ -5,8 +5,10 @@ import typing as ty
 import utils.err_codes as uerr
 import utils.gen as ugen
 
+CMD_NM = __name__.split(".")[-1]
+
 HELP = ugen.HelpObj(
-    usage="pl [flag]",
+    usage=f"{CMD_NM} [flag]",
     summary="Get a list of running processes",
     details=(
         "ARGUMENTS",

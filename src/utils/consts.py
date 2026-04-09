@@ -8,6 +8,7 @@ RUN_PTH = os.path.dirname(os.path.dirname(__file__))
 BIN_PTH = os.path.join(RUN_PTH, "bin")
 CFG_FL = os.path.join(RUN_PTH, "cfg.py")
 BUILTIN_PTH = os.path.join(RUN_PTH, "intrpr", "builtin_cmds")
+HIST_FL = os.path.join(RUN_PTH, "quark_hist.txt")
 
 SP_CHRS = ("|", ">", "?", ";")
 
@@ -24,6 +25,8 @@ ANSI_UNDERLINE_4 = "\x1b[4m"
 ANSI_YELLOW_4 = "\x1b[93m"
 ANSI_BOLD_RED_4 = ANSI_BOLD_4 + ANSI_RED_4
 ANSI_BOLD_YELLOW_4 = ANSI_BOLD_4 + ANSI_YELLOW_4
+ANSI_ERASE_CUR_TO_EOL = "\x1b[0K"
+ANSI_ERASE_FULL_LN = "\x1b[2K"
 
 
 class Defaults:

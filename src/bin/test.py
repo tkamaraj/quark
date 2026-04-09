@@ -1,8 +1,10 @@
 import utils.err_codes as uerr
 import utils.gen as ugen
 
+CMD_NM = __name__.split(".")[-1]
+
 HELP = ugen.HelpObj(
-    usage="test",
+    usage=CMD_NM,
     summary="Just a test command",
     details=(
         "ARGUMENTS",

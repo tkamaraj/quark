@@ -1,8 +1,10 @@
 import utils.err_codes as uerr
 import utils.gen as ugen
 
+CMD_NM = __name__.split(".")[-1]
+
 HELP = ugen.HelpObj(
-    usage="clear",
+    usage=f"{CMD_NM} [flag]",
     summary="Clear the terminal screen",
     details=(
         "ARGUMENTS",

@@ -9,8 +9,10 @@ import utils.err_codes as uerr
 if ty.TYPE_CHECKING:
     import intrpr.internals as iint
 
+CMD_NM = __name__.split(".")[-1]
+
 HELP = ugen.HelpObj(
-    usage="cd [flag ...] [pth]",
+    usage=f"{CMD_NM} [flag ...] [pth]",
     summary="Change working directory",
     details=(
         "ARGUMENTS",

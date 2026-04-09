@@ -3,8 +3,10 @@ import os
 import utils.err_codes as uerr
 import utils.gen as ugen
 
+CMD_NM = __name__.split(".")[-1]
+
 HELP = ugen.HelpObj(
-    usage="pwd",
+    usage=CMD_NM,
     summary="Print the current working directory",
     details=(
         "ARGUMENTS",

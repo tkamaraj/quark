@@ -11,8 +11,10 @@ import utils.consts as uconst
 import utils.err_codes as uerr
 import utils.gen as ugen
 
+CMD_NM = __name__.split(".")[-1]
+
 HELP = ugen.HelpObj(
-    usage="ls [flag ...] [dir ...]",
+    usage=f"{CMD_NM} [flag ...] [dir ...]",
     summary="List files and directories",
     details=(
         "ARGUMENTS",

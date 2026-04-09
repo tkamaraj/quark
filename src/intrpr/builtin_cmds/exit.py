@@ -5,8 +5,10 @@ import typing as ty
 import utils.gen as ugen
 import utils.err_codes as uerr
 
+CMD_NM = __name__.split(".")[-1]
+
 HELP = ugen.HelpObj(
-    usage="exit [flag] [code]",
+    usage=f"{CMD_NM} [flag] [code]",
     summary="Exit the interpreter",
     details=(
         "ARGUMENTS",

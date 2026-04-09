@@ -6,8 +6,10 @@ import utils.gen as ugen
 import utils.consts as uconst
 import utils.err_codes as uerr
 
+CMD_NM = __name__.split(".")[-1]
+
 HELP = ugen.HelpObj(
-    usage="get [nm ...]",
+    usage=f"{CMD_NM} [nm ...]",
     summary="Get an interpreter variable",
     details=(
         "ARGUMENTS",

@@ -1,0 +1,102 @@
+clear
+
+hlep
+
+ls
+
+ls -l
+
+help
+
+as
+
+d
+
+s -l
+
+c
+
+lear
+
+l
+
+ls -
+
+hel
+
+ls -~/
+
+ls -l~/
+
+ls -l /
+
+ls -l ~/
+
+ls ~/
+
+hist -s
+
+hist -d
+
+hist -d 
+
+hist -s
+clear
+clear
+help
+ls
+ls -l
+clear
+help -a
+whotfami
+host
+claer
+who
+clear
+who | test
+who | test | wc
+who | test | cnt
+clear
+clear
+help
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+clear
+help
+clear
+help
+ls
+ls -l
+evl
+clear
+help
+clear
+help
+help -a
+help -a
+help -e
+clear
+help
+help -e
+help -a
+clear
+rf
+clear
+ls
+clear
+rf ./boo.txt
+rs ./boo.txt
+clear
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+clear

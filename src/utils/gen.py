@@ -2,6 +2,8 @@ import os
 import pathlib as pl
 import re
 import sys
+import termios
+import tty
 import types
 import typing as ty
 
@@ -235,7 +237,7 @@ def err_Q(msg: str) -> None:
     else:
         sys.stderr.write(
             uconst.ANSI_BOLD_RED_4
-            + "EQ:" 
+            + "EQ:"
             + uconst.ANSI_RESET
             + " "
             + msg
@@ -249,8 +251,18 @@ def warn(msg: str) -> None:
 
 
 def warn_Q(msg: str) -> None:
-    _lgrs.lgr_q.warning(msg)
-    _lgrs.fl_lgr.warning(msg)
+    if _lgrs is not None:
+        _lgrs.lgr_q.warning(msg)
+        _lgrs.fl_lgr.warning(msg)
+    else:
+        sys.stderr.write(
+            uconst.ANSI_BOLD_YELLOW_4
+            + "WQ:"
+            + uconst.ANSI_RESET
+            + " "
+            + msg
+        )
+        sys.stderr.flush()
 
 
 def info(msg: str) -> None:
@@ -309,12 +321,266 @@ def transpose(arr: ty.Iterable) -> ty.Iterable:
     pass
 
 
-rm_ansi = re.compile(r"""
-    \x1b      # Literal ESC
-    \[        # Literal [
-    [;\d]*    # Zero or more digits or semicolons
-    [A-Za-z]  # An alphabet
-""", re.VERBOSE).sub
+def getch() -> str:
+    fd = sys.stdin.fileno()
+    old_setts = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        ch = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_setts)
+    return ch
+
+
+# Source - https://stackoverflow.com/a/46675451
+# Posted by netzego, modified by community. See post 'Timeline' for change history
+# Retrieved 2026-04-01, License - CC BY-SA 3.0
+def get_pos() -> tuple[int, int] | None:
+    buf = ""
+    stdin = sys.stdin.fileno()
+    tattr = termios.tcgetattr(stdin)
+
+    try:
+        tty.setcbreak(stdin, termios.TCSANOW)
+        sys.stdout.write("\x1b[6n")
+        sys.stdout.flush()
+        while True:
+            buf += sys.stdin.read(1)
+            if buf[-1] == "R":
+                break
+    finally:
+        termios.tcsetattr(stdin, termios.TCSANOW, tattr)
+
+    # Reading the actual values, but what if a keystroke appears while reading
+    # from stdin? As dirty work around, getpos() returns if this fails: None
+    try:
+        matches = re.match(get_pos_regex, buf)
+        groups = matches.groups()
+    except AttributeError:
+        return None
+
+    return (int(groups[0]), int(groups[1]))
+
+
+# TODO: Really need kbhit()... research more on how to implement it
+def inp(hist: str) -> str:
+    init_pos = get_pos()
+    if init_pos is None:
+        err_Q("get_pos() failed; try again")
+        return ""
+    init_ln, init_col = init_pos
+    cur_ln, cur_col = init_ln, init_col
+    prev_ch = None
+    ch = None
+    buf = []
+    # TODO: Make it include the current line being typed in the history,
+    # meaning, you get the last entry in the history to be the current line
+    # being typed. I tried to implement it, but it wouldn't work
+    # hist.append("")
+    hist_len = len(hist)
+    hist_pos = hist_len
+    f = open("quark.txt", "w")
+
+    while True:
+        ins_ch = True
+        ch = getch()
+
+        # ^a - move to start of line
+        if ch == "\x01":
+            ins_ch = False
+            cur_col = init_col
+
+        # ^b - move one character back
+        elif ch == "\x02":
+            ins_ch = False
+            cur_col -= 1 if cur_col > init_col else 0
+
+        # ^c - interrupt
+        elif ch == "\x03":
+            raise KeyboardInterrupt
+
+        # ^d - EOF or kill character under cursor
+        elif ch == "\x04":
+            ins_ch = False
+            # EOF
+            if not buf:
+                raise EOFError
+            # Kill character under cursor
+            if cur_col < init_col + len(buf):
+                buf.pop(cur_col - init_col)
+
+        # ^e - move to end of line
+        elif ch == "\x05":
+            ins_ch = False
+            cur_col = init_col + len(buf)
+
+        # ^f - move one character forward
+        elif ch == "\x06":
+            ins_ch = False
+            cur_col += 1 if cur_col < init_col + len(buf) else 0
+
+        # ^p - previous match from history
+        elif ch == "\x10":
+            ins_ch = False
+            if hist and hist_pos > 0:
+                hist_pos -= 1
+                buf = list(hist[hist_pos])
+                cur_col = init_col + len(buf)
+
+        # ^n - next match from history
+        elif ch == "\x0e":
+            ins_ch = False
+            if hist and hist_pos < hist_len - 1:
+                hist_pos += 1
+                buf = list(hist[hist_pos])
+                cur_col = init_col + len(buf)
+
+        # ^u - clear line
+        elif ch == "\x15":
+            ins_ch = False
+            buf.clear()
+            cur_col = init_col
+
+        # ^w - kill word before cursor
+        elif ch == "\x17":
+            ins_ch = False
+            # Delete whitespace just before cursor before deleting word
+            while buf and buf[cur_col - init_col - 1].isspace():
+                cur_col -= 1
+                buf.pop(cur_col - init_col)
+            # Delete the word (i.e. till we hit whitespace again)
+            while buf and not buf[cur_col - init_col - 1].isspace():
+                cur_col -= 1
+                buf.pop(cur_col - init_col)
+
+        elif ch == "\x0c":
+            ins_ch = False
+            write("Work in progress")
+
+        elif ch == "\x1b":
+            # This is one of the ugliest pieces of code I've written in this
+            # project
+            ins_ch = False
+            i = 0
+
+            while True:
+                tmp_ch = getch()
+                i += 1
+
+                # 1st getch() after "\x1b"
+                if i == 1:
+                    # alt+b - move one word backward
+                    if tmp_ch == "b":
+                        # Whitespace before cursor and after previous word
+                        while (
+                                cur_col > init_col
+                                and buf[cur_col - init_col - 1].isspace()
+                        ):
+                            cur_col -= 1
+                        # The actual word
+                        while (
+                                cur_col > init_col
+                                and not buf[cur_col - init_col - 1].isspace()
+                        ):
+                            cur_col -= 1
+
+                    # alt+f - move one word forward
+                    elif tmp_ch == "f":
+                        # Whitespace after cursor and before next word
+                        while (
+                            cur_col < init_col + len(buf)
+                            and buf[cur_col - init_col].isspace()
+                        ):
+                            cur_col += 1
+                        # The actual word
+                        while (
+                            cur_col < init_col + len(buf)
+                            and not buf[cur_col - init_col].isspace()
+                        ):
+                            cur_col += 1
+
+                    # ^[ - do nothing (for now)
+                    elif tmp_ch in ("[", "]"):
+                        pass
+
+                    # Continue if no operation matches, because the next
+                    # getch() may yield known operations
+                    else:
+                        continue
+
+                    # Breaks if some operation listed in the if-statements
+                    # above is done, i.e. alt+f or alt+b, etc.
+                    break
+
+                # 2nd getch() after "\x1b"
+                elif i == 2:
+                    # del - delete under cursor
+                    if tmp_ch == "3":
+                        getch()
+                        if buf:
+                            cur_col -= 1
+                            buf.pop(cur_col - init_col + 1)
+                    # up - up arrow
+                    elif tmp_ch == "A":
+                        pass
+                    # down - down arrow
+                    elif tmp_ch == "B":
+                        pass
+                    # right - right arrow
+                    elif tmp_ch == "C":
+                        cur_col += 1 if cur_col < len(buf) + init_col else 0
+                    # left - left arrow
+                    elif tmp_ch == "D":
+                        cur_col -= 1 if cur_col > init_col else 0
+                    else:
+                        f.write(
+                            f"Unknown 2nd getch() char for \"\\x1b\": {repr(tmp_ch)}"
+                        )
+                    break
+                else:
+                    f.write(
+                        f"Unknown 1st getch() char for \"\\x1b\": {repr(tmp_ch)}"
+                    )
+                    break
+
+        # Backspace (kill char before cursor)
+        elif ch == "\x7f":
+            ins_ch = False
+            if buf and cur_col > init_col:
+                cur_col -= 1
+                buf.pop(cur_col - init_col)
+
+        # Return
+        elif ch == "\r":
+            write("\n")
+            break
+
+        # Ununsed
+        elif ch in (
+            "\x00", "\x1c", "\x1d", "\x1e", "\x1f", "\x7f",        # Number row
+            "\x11", "\x12", "\x14", "\x19", "\x0f", "\x1c",        # Top row
+            "\x13", "\x07", "\x08", "\n", "\x0b",                  # Middle row
+            "\x1a", "\x18", "\x16", "\x02", "\x0e", "\r", "\x1f",  # Bottom row
+        ):
+            ins_ch = False
+
+        if ins_ch:
+            buf.insert(cur_col - init_col, ch)
+            cur_col += 1
+        write(mv_cur(cur_ln, init_col) + str_join(buf))
+        write(uconst.ANSI_ERASE_CUR_TO_EOL)
+        write(mv_cur_col(cur_col))
+
+    f.close()
+    return str_join(buf)
+
+
+rm_ansi = re.compile(r"""\x1b\[[;\d]*[A-Za-z]""", re.VERBOSE).sub
 _lgrs = None
 S = StyleObj()
 
+# For inp()
+get_pos_regex = re.compile(r"^\x1b\[(\d*);(\d*)R")
+str_join = "".join
+mv_cur = lambda ln, col: f"\x1b[{ln};{col}H"
+mv_cur_col = lambda col: f"\x1b[{col}G"

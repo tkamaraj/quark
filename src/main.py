@@ -1,6 +1,8 @@
+import collections as collns
 import logging as lg
 import os
 import re
+import select as sel
 import signal as sig
 import sys
 import termios
@@ -15,8 +17,6 @@ import utils.err_codes as uerr
 import utils.gen as ugen
 import utils.loggers as ulog
 
-get_pos_regex = re.compile(r"^\x1b\[(\d*);(\d*)R")
-str_join = "".join
 HELP_TXT = f"""USAGE
   {sys.argv[0]} [flag ...]
 ARGUMENTS
@@ -47,86 +47,6 @@ class MainProgParsed(ty.NamedTuple):
     stderr_ansi: bool
     log_lvl: int
     debug_time_expo: int
-
-
-def getch() -> str:
-    fd = sys.stdin.fileno()
-    old_setts = termios.tcgetattr(fd)
-    try:
-        tty.setraw(fd)
-        ch = sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_setts)
-    return ch
-
-
-# Source - https://stackoverflow.com/a/46675451
-# Posted by netzego, modified by community. See post 'Timeline' for change history
-# Retrieved 2026-04-01, License - CC BY-SA 3.0
-def get_pos() -> tuple[int, int] | None:
-    buf = ""
-    stdin = sys.stdin.fileno()
-    tattr = termios.tcgetattr(stdin)
-
-    try:
-        tty.setcbreak(stdin, termios.TCSANOW)
-        sys.stdout.write("\x1b[6n")
-        sys.stdout.flush()
-        while True:
-            buf += sys.stdin.read(1)
-            if buf[-1] == "R":
-                break
-    finally:
-        termios.tcsetattr(stdin, termios.TCSANOW, tattr)
-
-    # Reading the actual values, but what if a keystroke appears while reading
-    # from stdin? As dirty work around, getpos() returns if this fails: None
-    try:
-        matches = re.match(get_pos_regex, buf)
-        groups = matches.groups()
-    except AttributeError:
-        return None
-
-    return (int(groups[0]), int(groups[1]))
-
-
-def inp() -> str:
-    init_ln, init_col = get_pos()
-    cur_ln, cur_col = 0, 0
-    prev_ch = None
-    ch = None
-    ln_buf = []
-    f = open("quark.txt", "w")
-
-    while True:
-        ch = getch()
-
-        # Move to start of line
-        if ch == "\x01":
-            # cur_col = 0
-            # ugen.write(f"\x1b[{cur_ln};{init_col}H")
-            pass
-        elif ch == "\x03":
-            raise KeyboardInterrupt
-        elif ch == "\x04":
-            raise EOFError
-        # Move to end of line
-        elif ch == "\x05":
-            cur_col = len(ln_buf)
-
-        f.write(repr(ch) + "\n")
-        cur_col += 1
-        ln_buf.insert(cur_col, ch)
-        ugen.write(f"\x1b[{init_ln};{init_col}H" + str_join(ln_buf))
-
-        if ch == "\r":
-            ugen.write("\n")
-            break
-        else:
-            ugen.write("\x1b[0K")
-
-    f.close()
-    return str_join(ln_buf)
 
 
 def parse_argv(passed_params: list[str]) -> MainProgParsed:
@@ -213,6 +133,18 @@ def main() -> None:
     """
     """
     try:
+        hist_fl = None
+        try:
+            hist_fl = open(uconst.HIST_FL, "a+")
+        except PermissionError:
+            ugen.warn_Q(f"Access denied: \"{uconst.HIST_FL}\"\n")
+        except OSError as e:
+            ugen.warn_Q(f"OS error; {e.strerror}: \"{uconst.HIST_FL}\"\n")
+        except Exception as e:
+            ugen.warn_Q(
+                f"Unknown error; ({e.__class__.__name__}) {e}; cannot write history\n"
+            )
+
         parsed_params = parse_argv(sys.argv[1 :])
         lgrs = ulog.init_lgrs(
             parsed_params.log_lvl,
@@ -240,7 +172,12 @@ def main() -> None:
         try:
             prompt = intrpr.env_vars.get("_PROMPT_")
             ugen.write(intrpr.reslv_prompt(prompt))
-            raw_ln = input()
+            hist_fl.seek(0)
+            hist = hist_fl.read().splitlines()
+            raw_ln = ugen.inp(hist=list(dict.fromkeys(hist)))
+            if raw_ln and hist_fl is not None:
+                hist_fl.write(raw_ln + "\n")
+                hist_fl.flush()
             cmd_ret = intrpr.execute(raw_ln)
             intrpr.env_vars.set("_LAST_RET_", cmd_ret)
 
@@ -270,3 +207,8 @@ def main() -> None:
 if __name__ == "__main__":
     main()
     # x = inp()
+    # while True:
+    #     y = getch()
+    #     print(repr(y))
+    #     if y == "\x03":
+    #         break

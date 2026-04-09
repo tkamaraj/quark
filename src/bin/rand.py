@@ -4,8 +4,10 @@ import random
 import utils.err_codes as uerr
 import utils.gen as ugen
 
+CMD_NM = __name__.split(".")[-1]
+
 HELP = ugen.HelpObj(
-    usage="rand [opt ...] [flag]",
+    usage=f"CMD_NM [opt ...] [flag]",
     summary="Get a random number",
     details=(
         "ARGUMENTS",
@@ -72,7 +74,7 @@ def run(data: ugen.CmdData) -> int:
             try:
                 round_to = int(val)
             except ValueError:
-                ugen.err(f"Expected value castable to int for option '{opt}'")
+                ugen.err(f"Cannot cast to int for option '{opt}': '{val}'")
                 return uerr.ERR_EXPD_INT_VAL_FOR_OPT
 
         # Range specifier option
@@ -105,6 +107,8 @@ def run(data: ugen.CmdData) -> int:
     if rand_int:
         if use_defa_rng:
             max_num = 100
+        if min_num > max_num:
+            min_num, max_num = max_num, min_num
         rand_num = random.randint(min_num, max_num)
         ugen.write(str(rand_num) + "\n")
     else:

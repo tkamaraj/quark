@@ -3,9 +3,11 @@ import math
 import utils.err_codes as uerr
 import utils.gen as ugen
 
+CMD_NM = __name__.split(".")[-1]
+
 HELP = ugen.HelpObj(
-    usage="rn fl [...]",
-    summary="Run a script in a child process",
+    usage=f"{CMD_NM} fl [...]",
+    summary="Run a script in the current process",
     details=(
         "ARGUMENTS",
         ("fl", "Script to run"),
@@ -38,7 +40,7 @@ def run(data: ugen.CmdData) -> int:
             ugen.err(f"Access denied: \"{arg}\"")
             return uerr.ERR_PERM_DENIED
         except OSError:
-            ugen.err(f"Invalid argument: \"{arg}\"")
+            ugen.err(f"Is a directory or invalid argument: \"{arg}\"")
             return uerr.ERR_INV_ARG
 
     err = uerr.ERR_ALL_GOOD

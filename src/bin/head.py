@@ -7,8 +7,10 @@ import sys
 import utils.err_codes as uerr
 import utils.gen as ugen
 
+CMD_NM = __name__.split(".")[-1]
+
 HELP = ugen.HelpObj(
-    usage="head [opt ...] fl [...]",
+    usage=f"{CMD_NM} [opt ...] fl [...]",
     summary="Preview files without opening them fully",
     details=(
         "ARGUMENTS",

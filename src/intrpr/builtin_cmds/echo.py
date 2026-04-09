@@ -2,8 +2,10 @@ import utils.err_codes as uerr
 import utils.gen as ugen
 import intrpr.eng as ieng
 
+CMD_NM = __name__.split(".")[-1]
+
 HELP = ugen.HelpObj(
-    usage="echo [flag ...] [opt ...] [str ...]",
+    usage=f"{CMD_NM} [flag ...] [opt ...] [str ...]",
     summary="Output text to standard output",
     details=(
         "ARGUMENTS",

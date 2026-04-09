@@ -2,7 +2,19 @@
 
 ## Latest commit
 
-[COMMIT NAME]
+Completed inp(); command history implemented; command module hist implemented;
+renamed a few commands
+
+- `src/utils/gen.py`: Completed inp() (mostly) and fixed major bugs. Moved it
+and related functions to `src/utils.gen.py` from `src/main.py`.
+- Renamed a few commands.
+- Command history implemented.
+- `src/intrpr/builtin_cmds/hist.py`: Implemented `hist` for accessing history.
+- Documentation updates.
+
+## Commit ce2b2171fa2146f8a96ffbe6643b25494749ce62
+
+Planned features were added; made UX improvements; implemented command cmd
 
 - `dev/pc.py`: Made minor changes
 - `src/bin/ls.py`: Added in planned feature (inclusion of a flag for the

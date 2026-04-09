@@ -8,8 +8,10 @@ import typing as ty
 import utils.err_codes as uerr
 import utils.gen as ugen
 
+CMD_NM = __name__.split(".")[-1]
+
 HELP = ugen.HelpObj(
-    usage="stat [opt] [flag ...] item [...]",
+    usage=f"{CMD_NM} [opt] [flag ...] item [...]",
     summary="Query item information",
     details=(
         "ARGUMENTS",
