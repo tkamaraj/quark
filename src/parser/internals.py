@@ -31,6 +31,9 @@ class SpChr:
 
 
 QUOTES = ("'", "\"")
+LOGI_OPS = ("&", "^")
+DATA_OPS = ("|", ">", "?")
+CMD_SEPRS = (";",)
 ESC_CHR_MAP = {
     "\\\\": "\\",
     "\\'": "'",

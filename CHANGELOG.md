@@ -2,6 +2,16 @@
 
 ## Latest commit
 
+Parser re-design; fixed bugs
+
+- `src/parser/`: Completely re-designed the parser. The parser now returns an
+AST.
+- `src/intrpr/builtin_cmds/hist.py`: Fixed bugs, added a flag.
+- `src/utils/gen.py`: Fixed a bug in inp(...) that I (rather stupidly)
+accidentally included.
+
+## Commit dd3203de2c875b9d00f3acc4b9bd617da32f8739
+
 Completed inp(); command history implemented; command module hist implemented;
 renamed a few commands
 

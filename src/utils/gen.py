@@ -379,7 +379,7 @@ def inp(hist: str) -> str:
     # hist.append("")
     hist_len = len(hist)
     hist_pos = hist_len
-    f = open("quark.txt", "w")
+    f = open(os.path.join(uconst.RUN_PTH, "quark.txt"), "w")
 
     while True:
         ins_ch = True
@@ -461,10 +461,12 @@ def inp(hist: str) -> str:
             # This is one of the ugliest pieces of code I've written in this
             # project
             ins_ch = False
+            getch_chrs = []
             i = 0
 
             while True:
                 tmp_ch = getch()
+                getch_chrs.append(tmp_ch)
                 i += 1
 
                 # 1st getch() after "\x1b"
@@ -499,9 +501,10 @@ def inp(hist: str) -> str:
                         ):
                             cur_col += 1
 
-                    # ^[ - do nothing (for now)
+                    # For arrow and del keys, as well as ^[ and ^], I think.
+                    # Must check. TODO: CHECK!
                     elif tmp_ch in ("[", "]"):
-                        pass
+                        continue
 
                     # Continue if no operation matches, because the next
                     # getch() may yield known operations
@@ -533,12 +536,11 @@ def inp(hist: str) -> str:
                     elif tmp_ch == "D":
                         cur_col -= 1 if cur_col > init_col else 0
                     else:
-                        f.write(
-                            f"Unknown 2nd getch() char for \"\\x1b\": {repr(tmp_ch)}"
-                        )
+                        continue
                     break
+
                 else:
-                    f.write(
+                    crit_Q(
                         f"Unknown 1st getch() char for \"\\x1b\": {repr(tmp_ch)}"
                     )
                     break
@@ -571,7 +573,6 @@ def inp(hist: str) -> str:
         write(uconst.ANSI_ERASE_CUR_TO_EOL)
         write(mv_cur_col(cur_col))
 
-    f.close()
     return str_join(buf)
 
 

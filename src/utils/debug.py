@@ -35,5 +35,5 @@ def pprn(obj: ty.Any, depth: int = 0, indent_sz: int = 4, comma: bool = False) -
             pprn(f"{key}: {obj[key]}", depth=depth + 1, comma=True)
         print(pad + "}" + ("," if comma else ""))
     else:
-        print(pad + str(obj) + "," if comma else "")
+        print(pad + str(obj) + ("," if comma else ""))
 
