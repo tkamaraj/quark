@@ -379,7 +379,7 @@ def inp(hist: str) -> str:
     # hist.append("")
     hist_len = len(hist)
     hist_pos = hist_len
-    f = open(os.path.join(uconst.RUN_PTH, "quark.txt"), "w")
+    # f = open(os.path.join(uconst.RUN_PTH, "quark.txt"), "w")
 
     while True:
         ins_ch = True
@@ -520,9 +520,9 @@ def inp(hist: str) -> str:
                     # del - delete under cursor
                     if tmp_ch == "3":
                         getch()
-                        if buf:
-                            cur_col -= 1
-                            buf.pop(cur_col - init_col + 1)
+                        if buf and cur_col - init_col < len(buf):
+                            # cur_col -= 1
+                            buf.pop(cur_col - init_col)
                     # up - up arrow
                     elif tmp_ch == "A":
                         pass
@@ -560,7 +560,7 @@ def inp(hist: str) -> str:
         # Ununsed
         elif ch in (
             "\x00", "\x1c", "\x1d", "\x1e", "\x1f", "\x7f",        # Number row
-            "\x11", "\x12", "\x14", "\x19", "\x0f", "\x1c",        # Top row
+            "\t", "\x11", "\x12", "\x14", "\x19", "\x0f", "\x1c",  # Top row
             "\x13", "\x07", "\x08", "\n", "\x0b",                  # Middle row
             "\x1a", "\x18", "\x16", "\x02", "\x0e", "\r", "\x1f",  # Bottom row
         ):
@@ -569,7 +569,7 @@ def inp(hist: str) -> str:
         if ins_ch:
             buf.insert(cur_col - init_col, ch)
             cur_col += 1
-        write(mv_cur(cur_ln, init_col) + str_join(buf))
+        write(mv_cur(cur_ln, init_col) + str_join(buf).expandtabs(4))
         write(uconst.ANSI_ERASE_CUR_TO_EOL)
         write(mv_cur_col(cur_col))
 

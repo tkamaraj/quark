@@ -1,8 +1,478 @@
 clear
 ls
 ls -l
-clear
-ls
 hlep
 help
 get
+l
+ls l-
+false
+pwd
+source 
+evl print()
+evl print(end="")
+evl help
+evl help(
+evl help()
+evl help(list)
+ls l
+cmd
+ls -l ./
+ls -l ./donut.c
+whr
+whr ./	
+true
+cmd ls
+cmd ls --color=auto
+cmd ls "--color=auto"
+cmd ls \--color=auto
+cd. /ls
+cd ./
+cd -
+rs
+rs ./scr.qrk
+rf ./scr.qrk
+rf ./src.qrk
+hist
+hist -s
+hist -d
+hist -s
+clear
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+help
+whr ./	
+clear
+where ./
+ls
+ls -l
+clear
+clear
+ls
+ls -l
+clear
+evl help()
+clear
+print
+clear
+help
+ls
+ls -l
+echo
+clear
+help
+ls
+clear
+false
+clear
+true
+clear
+false
+help
+help -a
+clear
+head
+ls
+ls -l
+clear
+head ./txt/
+ls
+ls ./txt/
+head ./txt/03-03-2026.txt
+clear
+ls
+ls -l
+clear
+clear
+clear
+clear
+ls
+sl
+clear
+clear
+ls
+ls -l
+l
+ls
+clear
+ls
+ls ./rofi
+clear
+ls ./rofi/
+ls
+clear
+cd ../
+cd -
+clear
+clear
+rf ./scr.qrk
+clear
+help
+ls
+ls -l
+clear
+ls
+ls
+ls -l
+clear
+ls
+ls -l
+ls
+ls -l
+clear
+help
+rf ./scr.qrk
+clear
+help
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+clear
+ls
+ls -l
+clear
+cd
+ls
+ls
+clear
+cd ./AUR_pulls/
+clear
+ls
+clear
+cd ../
+ls
+clear
+help
+clear
+ls
+clear
+ls
+l
+ll
+clear
+help
+ls
+ls -l
+cmd
+clear
+help
+clear
+help
+clear
+ls
+ls -l
+clear
+help
+clear
+ls
+ls -l
+hlp
+help
+ls
+ls -l
+clear
+help
+clear
+clear
+ls
+ls -l
+clear
+ls
+ls -l
+ls
+ls -l
+clear
+clear
+ls
+ls -l
+clear
+rf ./scr.qrk
+clear
+help
+ls
+l-l
+clear
+clear
+whr ./
+ls
+ls -l
+whr ls
+whr ls ./
+whr ls cd
+ls
+ls -l
+clear
+help
+cmd
+cmd help
+clear
+cmd ~
+cmd !
+clear
+cmd `
+clear
+ls
+ls -l
+clear
+help
+clear
+hell
+clear
+help
+clear
+get
+L
+clear
+ls
+ls -l
+clear
+help
+clear
+set
+true
+get
+get | test
+clear
+ls
+ls -l
+clear
+clear
+ls
+ls -l
+clear
+cd ./	
+ls
+ls -l
+ls
+ls -l
+cd ./finan_mkts/
+ls
+ls
+ls -l
+clear
+ls
+ls -l
+clear
+ls
+ls
+cd ./ltr_drafts/
+ls
+clear
+cd ../
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+clear
+ls
+ls -l
+clear
+ls -l
+clear
+help
+pwd
+clear
+help
+'help
+'help'
+clear
+ls
+ls -ll
+true
+clear
+help
+false
+clear
+help
+ls
+ls -l
+clearh
+clear
+help
+thiruvalluvan
+snoo
+clear
+ls
+ls -l
+clear
+clear
+ls
+ls -l
+ls
+ls -l
+clear
+ls
+ls -l
+clear
+help
+cmd
+cmd ~
+cmd !
+clear
+ls
+ls -l
+clear
+help
+pwd
+ts
+rs
+clear
+rs ./scr.qrk
+clear
+rs ./src/qrk
+rf ./src/qrk
+rf ./src.qrk
+rf ./scr.qrk
+clear
+l
+ls 
+ls -l
+clear
+help
+cd ./txt/
+ls
+ls
+prn ./03-03-2026.txx
+prn ./03-03-2026.txt
+clear
+ls 
+clear
+clear
+ls
+clear
+clear
+ls -l
+clear
+help
+ls
+ls -
+clear
+help
+ls
+ l-l
+ls -l
+clear
+help
+ls
+ls -l
+clear
+rm ./	
+ls
+ls -l
+rm ./	
+ls
+ls -l
+rm ./				ahelp
+ls
+ls -l
+cllear
+clear
+help
+ls
+ls -l
+clear
+ls
+ls -l
+p		athi
+clear
+ls
+ls -l
+clear
+clear
+ls
+ls -l
+help -a
+clear
+who
+clear
+host
+machine
+clear
+help
+ls
+ls -lm
+ls -help
+ls -help
+clear
+ls -l
+clear
+help -l
+clear
+help
+ls
+ls -l
+evl
+clear
+help
+get
+get | test
+get --help
+clea
+help get
+clear
+vim 
+!vim
+?
+clear
+hlelp
+help
+l
+sls -l
+clear
+l
+sls -l
+clear
+lhep
+clear
+ls -l
+clear
+help
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+help \t
+hlep help
+help ls
+ls -l
+clear
+unsorted
+clear
+help
+ls
+ls -l
+clear
+false
+ls
+ls -l
+true
+clear
+clear
+ls
+ls -l
+ls
+clear
+-l
+clear
+ls
+ls -l
+clear
+cler
+clear
+s
+ls

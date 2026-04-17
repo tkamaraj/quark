@@ -1,9 +1,12 @@
-import io
 import pathlib as pl
+import typing as ty
 
 import utils.consts as uconst
 import utils.gen as ugen
 import utils.err_codes as uerr
+
+if ty.TYPE_CHECKING:
+    import io
 
 CMD_NM = __name__.split(".")[-1]
 
@@ -34,7 +37,7 @@ CMD_SPEC = ugen.CmdSpec(
 )
 
 
-def ld_hist_fl(mode: str = "r") -> io.TextIO | int:
+def ld_hist_fl(mode: str = "r") -> "io.TextIOBase | int":
     try:
         return open(uconst.HIST_FL, mode)
     except FileNotFoundError:

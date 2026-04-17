@@ -128,7 +128,7 @@ def run(data: ugen.CmdData) -> int:
             show_lns = True
 
     if not data.args and not data.stdin:
-        ugen.err("Expected at least one of STDIN or arguments")
+        ugen.err("Expected arguments or STDIN")
         return uerr.ERR_EXPD_STDIN_OR_ARGS
 
     # No filtering option given, thus show all

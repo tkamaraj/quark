@@ -77,13 +77,21 @@ OTHER = "@*"
 QUOTE_STR = QUOTES + SP_CHRS + WS + BSLASH + OTHER
 
 
-class SplDirEntry:
+class ItemEntry:
     def __init__(self, pth: str):
         self.path = os.path.realpath(pth)
         self.name = os.path.basename(pth)
         self.actual_name = os.path.basename(self.path)
         self.is_dir = os.path.isdir(self.path)
-        self.stat = lambda: os.stat(self.path)
+        self.lstat = lambda: os.lstat(self.path)
+
+
+class FlEntry(ItemEntry):
+    pass
+
+
+class SplDirEntry(ItemEntry):
+    pass
 
 
 class EscWhichObj(ty.NamedTuple):
@@ -219,7 +227,9 @@ def get_items(
     # Is a file
     if os.path.isfile(pth):
         try:
-            pth_obj = pl.Path(pth).resolve()
+            fl_obj = FlEntry(pth)
+            fl_stat = fl_obj.lstat()
+            items.append((fl_obj, fl_stat))
         except FileNotFoundError:
             err_code = uerr.ERR_FL_DIR_404
             ugen.err(f"No such file/directory: \"{pth}\"")
@@ -239,8 +249,8 @@ def get_items(
             if hidden:
                 parent = SplDirEntry("..")
                 curr = SplDirEntry(".")
-                items.append((parent, parent.stat()))
-                items.append((curr, curr.stat()))
+                items.append((parent, parent.lstat()))
+                items.append((curr, curr.lstat()))
 
             for i in iterator:
                 # Hidden option filtering

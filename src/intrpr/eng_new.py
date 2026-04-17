@@ -18,6 +18,7 @@ import intrpr.cfg_mgr as cmgr
 import intrpr.cmd_reslvr as icrsr
 import intrpr.internals as iint
 import parser.eng_new as peng
+import parser.ast_nodes as past
 import utils.gen as ugen
 import utils.consts as uconst
 import utils.debug as udeb
@@ -29,12 +30,6 @@ if ty.TYPE_CHECKING:
 TH_TokGrp = tuple[list[str], "pint.SpChr"]
 TH_CmdFn = ty.Callable[[ugen.CmdData], int]
 TH_GetCmdRes = tuple[TH_CmdFn, ugen.CmdSpec]
-
-
-class CmdReslnRes(ty.NamedTuple):
-    cmd_fn: ty.Callable[[ugen.CmdData], int]
-    cmd_spec: ugen.CmdSpec
-    cmd_src: str
 
 
 def fmt_t_ns(time_expo: int, ns: int) -> str | ty.NoReturn:
@@ -430,7 +425,7 @@ class Intrpr:
 
     def classi_par_out(
         self,
-        tok_grp: "list[pint.Tok]",
+        params: "list[past.Param]",
         cmd_spec: ugen.CmdSpec
     ) -> tuple[tuple[str, ...], dict[str, str], tuple[str, ...]] | int:
         """
@@ -457,57 +452,55 @@ class Intrpr:
         skip = 0
 
         # Iterate through the parser output
-        for idx, tok in enumerate(tok_grp[1 :]):
-            tok_val = tok.val
+        for idx, param in enumerate(params[1 :]):
+            param_val = param.val
             if skip:
                 skip -= 1
                 continue
 
             # LONG-FORM OPTIONS AND FLAGS
-            # An option or a flag
-            if tok_val.startswith("--") and not tok.escd_hyphen:
-                if tok_val not in (*cmd_spec.opts, *cmd_spec.flags):
-                    ugen.err(f"Invalid option/flag: '{tok.val}'")
-                    return uerr.ERR_INV_OPTS_FLAGS
+            if param_val.startswith("--") and not param.escd_hyphen:
                 # Flags are given more preference
-                if tok_val in cmd_spec.flags:
-                    flags.append(tok_val)
+                if param_val in cmd_spec.flags:
+                    flags.append(param_val)
                 # Then options
-                else:
+                elif param_val in cmd_spec.opts:
                     if idx >= len(tok_grp) - 2:
-                        ugen.err(f"Expected value for option '{tok.val}'")
+                        ugen.err(f"Expected value for option '{param_val}'")
                         return uerr.ERR_EXPECTED_VAL_FOR_OPT
-                    opts[tok_val] = tok_grp[idx + 2].val
+                    opts[param_val] = tok_grp[idx + 2].val
                     skip += 1
+                # Invalid long-form option/flag
+                else:
+                    ugen.err(f"Invalid option/flag: '{param_val}'")
+                    return uerr.ERR_INV_OPTS_FLAGS
                 continue
 
-            # SHORT-FORM OPTIONS OR FLAGS, OR COMBINED SHORT-FORM FLAGS
+            # SHORT-FORM OPTIONS AND FLAGS, OR COMBINED SHORT-FORM FLAGS
             if (
-                tok_val.startswith("-")
-                and not tok_val.startswith("--")
-                and not tok.escd_hyphen
+                param_val.startswith("-")
+                and not param_val.startswith("--")
+                and not param.escd_hyphen
             ):
-                if tok_val in cmd_spec.flags:
-                    flags.append(tok_val)
-                elif tok_val in cmd_spec.opts:
+                if param_val in cmd_spec.flags:
+                    flags.append(param_val)
+                elif param_val in cmd_spec.opts:
                     if idx >= len(tok_grp) - 2:
-                        ugen.err(f"Expected value for option '{tok.val}'")
+                        ugen.err(f"Expected value for option '{param_val}'")
                         return uerr.ERR_EXPECTED_VAL_FOR_OPT
-                    opts[tok_val] = tok_grp[idx + 2].val
+                    opts[param_val] = tok_grp[idx + 2].val
                     skip += 1
                 else:
-                    # Lone '-'; if control is here, it means that an empty
-                    # option wasn't in the spec, which means it's an invalid
-                    # option; so return instead of trying to split it into
-                    # multiple flags
-                    if not tok_val[1 :]:
-                        ugen.err(f"Invalid option/flag: '{tok.val}'")
+                    # Lone '-'
+                    if not param_val[1 :]:
+                        ugen.err(f"Invalid option/flag: '{param_val}'")
                         return uerr.ERR_INV_OPTS_FLAGS
-                    for i in tok_val[1 :]:
+                    # Combined short flags
+                    for i in param_val[1 :]:
                         if "-" + i in cmd_spec.flags:
                             flags.append("-" + i)
                             continue
-                        ugen.err(f"Invalid option/flag: '{tok.val}'")
+                        ugen.err(f"Invalid option/flag: '{param_val}'")
                         return uerr.ERR_INV_OPTS_FLAGS
                 continue
 
@@ -518,7 +511,7 @@ class Intrpr:
                     f"Unexpected arguments; expected at most {cmd_spec.max_args}, got {arg_cnt}"
                 )
                 return uerr.ERR_UNEXPD_ARGS
-            args.append(tok_val)
+            args.append(param_val)
 
         if arg_cnt < cmd_spec.min_args:
             ugen.err(
@@ -623,12 +616,7 @@ class Intrpr:
                 if hdlr.stream is chk_if:
                     hdlr.stream = set_to
 
-    def cmd_resln(
-        self,
-        cmd_nm: str,
-        buf_stderr: io.StringIO,
-        stderr_fl: str | None
-    ) -> CmdReslnRes | int:
+    def cmd_resln(self, cmd_nm: str) -> iint.CmdReslnRes | int:
         # DEBUG: Command resolution time start
         _t_cmd_resln = time.perf_counter_ns()
 
@@ -648,7 +636,6 @@ class Intrpr:
             )
             err_code = get_cmd_res
             ugen.err_Q(f"{err_msg}: '{cmd_nm}'")
-            self.write_to_stream(buf_stderr.getvalue(), stderr_fl, "STDERR")
             return get_cmd_res
 
         # DEBUG: Command resolution time end
@@ -661,7 +648,7 @@ class Intrpr:
             )
         )
 
-        return CmdReslnRes(*get_cmd_res)
+        return iint.CmdReslnRes(*get_cmd_res)
 
     def hdl_op_redir(
         self,
@@ -733,9 +720,7 @@ class Intrpr:
         self,
         cmd_fn: TH_CmdFn,
         data: ugen.CmdData,
-        w: int,
-        old_stdout: io.TextIOBase,
-        buf_stdout: io.StringIO
+        w: int
     ) -> ty.NoReturn:
         """
         Helper function to handle the child process execution for external
@@ -759,8 +744,13 @@ class Intrpr:
         :returns: - (os._exit).
         :rtype: typing.NoReturn
         """
-        stdin = ""
-        cmd_ret = self.rn_cmd_fn(cmd_fn, data)
+        tmp_buf = io.StringIO()
+        stdout_bkup = sys.stdout
+        sys.stdout = tmp_buf
+        try:
+            cmd_ret = self.rn_cmd_fn(cmd_fn, data)
+        finally:
+            sys.stdout = stdout_bkup
 
         if type(cmd_ret) != int:
             ugen.crit("Last command returned non-integer")
@@ -769,16 +759,221 @@ class Intrpr:
             ugen.crit("Command return value exceeds 32-bit integer limit")
             cmd_ret = uerr.ERR_RET_INT_TOO_LARGE
 
-        stdin_sz = 0
-        if sys.stdout != old_stdout:
-            stdin_sz = buf_stdout.tell()
-            stdin = buf_stdout.getvalue()
-
-        # Pass command exit code, size of stdin buffer and stdin buffer to
-        # parent process
-        os.write(w, st.pack("!iQ", cmd_ret, stdin_sz))
-        os.write(w, stdin.encode())
+        out_sz = tmp_buf.tell()
+        out = tmp_buf.getvalue()
+        # Pass output size and output through the pipe to parent process
+        os.write(w, st.pack("!iQ", cmd_ret, out_sz))
+        os.write(w, out.encode())
         os._exit(cmd_ret)
+
+    def exec_cmd(self, cmd_nm: str, params: list[past.Param], is_tty: bool, stdin: str):
+        # Classify parameters into arguments, options and flags
+        tmp = classi_params(params)
+        if isinstance(tmp, int):
+            return tmp
+        args, opts, flags = tmp
+        # Resolve command
+        cmd_resln_res = cmd_resln(cmd_nm)
+        if isinstance(cmd_resln_res, int):
+            return cmd_resln_res
+        cmd_fn = cmd_resln_res.cmd_fn
+        cmd_spec = cmd_resln_res.cmd_spec
+        cmd_src = cmd_resln_res.cmd_src
+
+        data = ugen.CmdDat(
+            cmd_nm=l_cmd_nm,
+            args=tuple(args),
+            opts=opts,
+            flags=tuple(flags),
+            cmd_reslvr=self.cmd_reslvr,
+            env_vars=self.env_vars,
+            ext_cached_cmds=self.ext_cached_cmds,
+            term_sz=os.get_terminal_size(),
+            is_tty=is_tty,
+            stdin=stdin,
+            exec_fn=iint.exec_fn_dummy,
+            operation=""                        # Dummy as of now
+        )
+        return exec_cmd_fn(cmd_fn=cmd_fn, cmd_src=cmd_src, data=data)
+
+    def exec_cmd_fn(
+        self,
+        cmd_fn: TH_CmdFn,
+        cmd_src: str,
+        data: ugen.CmdData
+    ) -> iint.CmdCompdObj:
+        """
+        """
+        err_code = uerr.ERR_ALL_GOOD
+
+        if cmd_src == "external":
+            r, w = os.pipe()
+            pid = os.fork()
+            # Child process, run in a forked process
+            if pid == 0:
+                os.close(r)
+                self.child_proc(cmd_fn, data, w)
+            # Some issue, can't fork
+            elif pid < 0:
+                ugen.crit_Q(
+                    "Failed to fork current process; try re-running the command"
+                )
+                err_code = err_code or uerr.ERR_CANT_FORK_PROC
+            # Parent process
+            else:
+                # Do NOT rely on the child process's exit code! It could be
+                # incorrect because the OS only recognises 8-bit integers for
+                # exit codes
+                os.close(w)
+                # 4 bytes for command return code
+                # 8 bytes for output length
+                # "Output length" bytes for output
+                ret_packed = self.rd_from_fd(r, 4)
+                ret_code = st.unpack("!i", ret_packed)[0]
+                out_sz_packed = self.rd_from_fd(r, 8)
+                out_sz = st.unpack("!Q", out_sz_packed)[0]
+                out = self.rd_from_fd(r, out_sz).decode()
+                os.close(r)
+                # This should prevent zombie (defunct) processes
+                _, status = os.wait()
+                exit_status = os.WEXITSTATUS(status)
+                err_code = err_code or ret_code
+
+        # Built-in command, run in same process as the interpreter
+        elif cmd_src == "built-in":
+            tmp_buf = io.StringIO()
+            stdout_bkup = sys.stdout
+            sys.stdout = tmp_buf
+            try:
+                cmd_ret = self.rn_cmd_fn(cmd_fn, data)
+            finally:
+                sys.stdout = stdout_bkup
+            out = tmp_buf.getvalue()
+            err_code = err_code or cmd_ret
+
+        else:
+            raise LogicalErr(f"Invalid command source string: '{cmd_src}'")
+
+        return iint.CmdCompdObj(stdout=out, err_code=err_code)
+
+    def is_syn_ok(self, cmd_expr: past.BinCmd) -> int:
+        # Note that cmd_expr.r_opr will always be past.SimpCmd
+        if isinstance(cmd_expr.l_opr, past.SimpCmd):
+            op = cmd_expr.op
+            num_r_params = len(cmd_expr.r_opr.params)
+            # Too little number of parameters on the right of operator
+            if num_r_params == 0:
+                ugen.err_Q(
+                    f"Expected at least one parameter on the right of operator at pos {op.end}"
+                )
+                return uerr.ERR_EXPD_PARAM_RT_OP
+            # Too many parameters on the right of STDOUT redirect operator
+            if isinstance(op, past.RedirSTDOUT) and num_r_params > 1:
+                ugen.err_Q(
+                    f"Unexpected parameter for STDOUT redirection at pos {cmd_expr.r_opr.params[1].start}"
+                )
+                return uerr.ERR_UNEXPD_PARAM_STDOUT_REDIRN
+            # Too many parameters on the right of STDERR redirect operator
+            elif isinstance(op, past.RedirSTDERR) and num_r_params > 1:
+                ugen.err_Q(
+                    f"Unexpected parameter for STDERR redirection at pos {cmd_expr.r_opr.params[1].start}"
+                )
+                return uerr.ERR_UNEXPD_PARAM_STDERR_REDIRN
+
+        elif isinstance(cmd_expr.l_opr, past.BinCmd):
+            return self.is_syn_ok(cmd_expr.l_opr)
+
+        else:
+            raise ugen.LogicalErr()
+
+    def evl_cmd_expr(
+        self,
+        op: past.Op,
+        l_simp_cmd: past.SimpCmd,
+        r_simp_cmd: past.SimpCmd
+    ):
+        pass
+
+    def anl_cmd_expr(
+        self,
+        bin_cmd: past.BinCmd,
+        stdin: str
+    ):
+        if isinstance(cmd_expr.l_opr, past.SimpCmd) and isinstance(cmd_expr.r_opr, past.SimpCmd):
+            op = cmd_expr.op
+            l_params = l_opr.params
+            r_params = r_opr.params
+            l_is_tty = True
+            is_pipe = isinstance(op, past.Pipe)
+            is_stdout_redir = isinstance(op, past.RedirSTDOUT)
+            is_stderr_redir = isinstance(op, past.RedirSTDERR)
+            is_and = isinstance(op, past.And)
+            is_or = isinstance(op, past.Or)
+            if is_pipe or is_stdout_redir or is_stderr_redir:
+                l_is_tty = False
+
+            cmd_nm = l_opr.params[0].val
+            res = self.exec_cmd(
+                cmd_nm,
+                l_opr.params,
+                is_tty=l_is_tty,
+                stdin=stdin
+            )
+            stdin = res.stdout
+            err_code = err_code or res.err_code
+
+            if isinstance(op, past.Pipe):
+                cmd_nm = r_opr.params[0].val
+                res = self.exec_cmd(
+                    cmd_nm,
+                    r_opr.params,
+                    is_tty=False,
+                    stdin=stdin
+                )
+                err_code = err_code or res.err_code
+            elif isinstance(op, past.RedirSTDOUT):
+                redir_flnm = r_params[0].val
+                try:
+                    with open(redir_flnm, "w") as f:
+                        f.write(stdin)
+                except PermissionError:
+                    ugen.err("Access denied: \"{redir_flnm}\"")
+                    return 
+                except OSError:
+                    ugen.err(
+                        f"Invalid filename to redirect STDOUT: \"{redir_flnm}"
+                    )
+            elif isinstance(op, past.RedirSTDERR):
+                redir_flnm = r_params[0].val
+                try:
+                    with open(redir_flnm, "w") as f:
+                        f.write(stdin)
+                except PermissionError:
+                    ugen.err("Access denied: \"{redir_flnm}\"")
+                    return 
+                except OSError:
+                    ugen.err(
+                        f"Invalid filename to redirect STDERR: \"{redir_flnm}"
+                    )
+            elif isinstance(op, past.And):
+                if res.err_code:
+                    return res.err_code
+                cmd_nm = r_opr.params[0].val
+                res = self.exec_cmd(
+                    cmd_nm,
+                    r_opr.params,
+                    is_tty=True,
+                    stdin=stdin
+                )
+                err_code = err_code or res.err_code
+            elif isinstance(op, past.Or):
+                pass
+
+        elif (
+            isinstance(cmd_expr.l_opr, past.BinCmd)
+            and isinstance(cmd_expr.r_opr, past.SimpCmd)
+        ):
+            return anl_cmd_expr(cmd_expr.l_opr)
 
     def execute(self, ln: str) -> int | ty.NoReturn:
         """
@@ -806,9 +1001,6 @@ class Intrpr:
         is_empty = True
         skip_grp = 0
         err_code = uerr.ERR_ALL_GOOD
-
-        for cmd_expr in par_out:
-            print(cmd_expr)
 
         for idx, (tok_grp, sp_chr) in enumerate(par_out):
             ###

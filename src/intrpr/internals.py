@@ -11,6 +11,11 @@ if ty.TYPE_CHECKING:
 type VALID_TYP = int | float | bool | str | list | tuple | dict | set
 
 
+class CmdCompdObj(ty.NamedTuple):
+    stdout: str
+    err_code: int
+
+
 class CmdCacheEntry(ty.NamedTuple):
     cmd: str
     # fn: ty.Callable[[CmdData], int]
@@ -18,6 +23,12 @@ class CmdCacheEntry(ty.NamedTuple):
     mod: types.ModuleType
     sz: int
     mtime: float
+
+
+class CmdReslnRes(ty.NamedTuple):
+    cmd_fn: ty.Callable[[ugen.CmdData], int]
+    cmd_spec: ugen.CmdSpec
+    cmd_src: str
 
 
 class EnvVar:
@@ -84,3 +95,7 @@ class Env:
 
     def __repr__(self) -> str:
         return str(self.env_vars)
+
+
+def exec_fn_dummy() -> None:
+    pass

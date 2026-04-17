@@ -8,7 +8,9 @@
 
 ### Interpreter engine (src/intrpr/eng.py)
 
-1. Large text somehow makes io.StringIO buffers empty.
+1. Large text somehow makes io.StringIO buffers empty; I think this may be
+because of the output length being larger than what is reported by the 8 bytes
+after the first 4 bytes in the pipe between the forked and original process.
 
 ### General utils and command API (src/utils/gen.py)
 

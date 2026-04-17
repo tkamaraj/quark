@@ -960,18 +960,22 @@ class Intrpr:
                         # because the OS only recognises 8-bit integers for
                         # exit codes
                         os.close(w)
-                        # 4 bytes for command return code
+                        # 4 bytes (32-bit int) for command return code
                         # 8 bytes for output length
                         # "Output length" bytes for output
-                        ret_packed = self.rd_from_fd(r, 4)
-                        ret_code = st.unpack("!i", ret_packed)[0]
-                        stdin_sz_packed = self.rd_from_fd(r, 8)
-                        stdin_sz = st.unpack("!Q", stdin_sz_packed)[0]
-                        stdin = self.rd_from_fd(r, stdin_sz).decode()
+                        try:
+                            ret_packed = self.rd_from_fd(r, 4)
+                            ret_code = st.unpack("!i", ret_packed)[0]
+                            stdin_sz_packed = self.rd_from_fd(r, 8)
+                            stdin_sz = st.unpack("!Q", stdin_sz_packed)[0]
+                            stdin = self.rd_from_fd(r, stdin_sz).decode()
+                            # This should prevent zombie (defunct) processes
+                            _, status = os.wait()
+                            exit_status = os.WEXITSTATUS(status)
+                        except st.error:
+                            err_code = err_code or uerr.ERR_CMD_STATUS_UNPACK
+                            ugen.crit_Q("Cannot unpack data from command pipe")
                         os.close(r)
-                        # This should prevent zombie (defunct) processes
-                        _, status = os.wait()
-                        exit_status = os.WEXITSTATUS(status)
                         err_code = err_code or ret_code
 
                 # Built-in command, run in same process as the interpreter
