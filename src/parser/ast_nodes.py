@@ -71,12 +71,7 @@ class Quoted(Param):
 
 
 @dc.dataclass(repr=False)
-class Cmd:
-    pass
-
-
-@dc.dataclass(repr=False)
-class SimpCmd(Cmd):
+class SimpCmd:
     params: list[Param]
 
     def __repr__(self) -> str:
@@ -84,15 +79,38 @@ class SimpCmd(Cmd):
 
 
 @dc.dataclass(repr=False)
-class BinCmd(Cmd):
-    op: Op
-    l_opr: Cmd
-    r_opr: Cmd
+class CmdExpr:
+    simp_cmds: list[SimpCmd]
+    ops: list[Op]
+
+    def get_op(self, idx: int) -> Op | None:
+        if idx >= len(self.ops):
+            return None
+        return self.ops[idx]
+
+    def get_simp_cmd(self, idx: int) -> SimpCmd | None:
+        if idx >= len(self.simp_cmds):
+            return None
+        return self.simp_cmds[idx]
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__} -> {self.l_opr} {self.op} {self.r_opr}"
+        return f"{self.simp_cmds}"
+
+    def __iter__(self) -> ty.Generator[SimpCmd, None, None]:
+        for i in self.simp_cmds:
+            yield i
+
+    def __len__(self) -> int:
+        return len(self.simp_cmds)
 
 
 @dc.dataclass(repr=False)
-class Sequence:
-    cmds: list[Cmd]
+class CmdSeq:
+    cmds: list[CmdExpr]
+
+    def __repr__(self) -> str:
+        return f"{self.cmds}"
+
+    def __iter__(self) -> ty.Generator[CmdExpr, None, None]:
+        for i in self.cmds:
+            yield i

@@ -55,6 +55,7 @@ class EnvVar:
     @val.setter
     def val(self, value: ty.Any) -> int:
         if not isinstance(value, self.typ):
+            print(self.nm, self.typ, value)
             raise ugen.InvVarTypErr(
                 var_nm=self.nm,
                 var_typ=self.typ,

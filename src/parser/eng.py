@@ -206,3 +206,22 @@ class Parser:
             tok_list_reslvd.append(reslvd_tok)
 
         return tok_list_reslvd
+
+    def parse(self, ln: str) -> \
+            ty.Generator[tuple[list[pint.Tok], pint.SpChr], None, int | None]:
+        to_yield: list[pint.Tok]
+
+        to_yield = []
+        toks = self.lex(ln)
+        if isinstance(toks, int):
+            return toks
+
+        for tok in toks:
+            if isinstance(tok, pint.SpChr):
+                yield (to_yield, tok)
+                to_yield = []
+                continue
+            to_yield.append(tok)
+
+        # -2 and -1 are also good here instead of len(ln) - 2 and len(ln) - 1
+        yield (to_yield, pint.SpChr("", len(ln) - 2, len(ln) - 1))

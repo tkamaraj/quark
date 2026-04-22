@@ -245,7 +245,7 @@ class Parser:
                     end=idx + 1
                 )
             else:
-                return (simp_cmds, ops, idx)
+                return (past.CmdExpr(simp_cmds, ops), idx)
 
             ops.append(op)
             # For the operator character
@@ -259,21 +259,7 @@ class Parser:
             simp_cmds.append(simp_cmd)
             idx = simp_cmd.params[-1].end if simp_cmd.params else idx
 
-        return (simp_cmds, ops, idx)
-
-    def _grp_cmd_expr(
-        self,
-        simp_cmds: list[past.SimpCmd],
-        ops: list[past.Op]
-    ) -> tuple[list[BinCmd], int]:
-        ops_len = len(ops)
-        grped = simp_cmds[0]
-
-        for idx, curr_op in enumerate(ops):
-            opr = simp_cmds[idx + 1]
-            grped = past.BinCmd(op=curr_op, l_opr=grped, r_opr=opr)
-
-        return grped
+        return (past.CmdExpr(simp_cmds, ops), idx)
 
     def get_cmd_seq(self, ln: str, start: int = 0):
         ln_len = len(ln)
@@ -284,15 +270,14 @@ class Parser:
         res = self._get_cmd_expr(ln, start)
         if isinstance(res, int):
             return cmd_exprs
-        simp_cmds, ops, idx = res
-        cmd_exprs.append(self._grp_cmd_expr(simp_cmds, ops))
+        cmd_expr, idx = res
+        cmd_exprs.append(cmd_expr)
 
         while idx < ln_len:
             idx = self._skip_ws(ln, idx)
             curr_ch = ln[idx]
             if curr_ch not in pint.CMD_SEPRS:
                 return uerr.ERR_UNRECOGD_CMD_SEPR
-
             # For the command separator character
             idx += 1
 
@@ -300,10 +285,10 @@ class Parser:
             res = self._get_cmd_expr(ln, idx)
             if isinstance(res, int):
                 return cmd_exprs
-            simp_cmds, ops, idx = res
-            cmd_exprs.append(self._grp_cmd_expr(simp_cmds, ops))
+            cmd_expr, idx = res
+            cmd_exprs.append(cmd_expr)
 
-        return cmd_exprs
+        return past.CmdSeq(cmd_exprs)
 
     def _skip_ws(self, ln: str, idx: int) -> int:
         ln_len = len(ln)
@@ -312,4 +297,4 @@ class Parser:
         return idx
 
     def test(self, ln: str, start: idx) -> None:
-        udeb.pprn(self._get_cmd_seq(ln, start))
+        udeb.pprn(self.get_cmd_seq(ln, start))

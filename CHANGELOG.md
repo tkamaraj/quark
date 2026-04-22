@@ -1,6 +1,16 @@
 # CHANGELOG
 
-## Latest commit
+## Latest commit 
+
+Interpreter engine rewrite (INCOMPLETE)
+
+- `src/eng_new.py`: Copied the engine and edited it to accommodate the new
+parser output. The original parser has not been changed. Only a copy of the
+original parser has been changed and is named `src/parser/eng_new.py`. This
+interpreter engine is unfinished and will not run.
+- Documentation updates.
+
+## Commit 39a9fb2feb61bec80af858bb1922eacd2b5dd121
 
 Parser re-design; fixed bugs
 

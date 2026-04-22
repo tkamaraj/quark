@@ -423,7 +423,7 @@ class Intrpr:
             return ext_cmd
         return (*ext_cmd, "external")
 
-    def classi_par_out(
+    def classi_params(
         self,
         params: "list[past.Param]",
         cmd_spec: ugen.CmdSpec
@@ -767,21 +767,21 @@ class Intrpr:
         os._exit(cmd_ret)
 
     def exec_cmd(self, cmd_nm: str, params: list[past.Param], is_tty: bool, stdin: str):
-        # Classify parameters into arguments, options and flags
-        tmp = classi_params(params)
-        if isinstance(tmp, int):
-            return tmp
-        args, opts, flags = tmp
         # Resolve command
-        cmd_resln_res = cmd_resln(cmd_nm)
+        cmd_resln_res = self.cmd_resln(cmd_nm)
         if isinstance(cmd_resln_res, int):
             return cmd_resln_res
         cmd_fn = cmd_resln_res.cmd_fn
         cmd_spec = cmd_resln_res.cmd_spec
         cmd_src = cmd_resln_res.cmd_src
+        # Classify parameters into arguments, options and flags
+        tmp = self.classi_params(params, cmd_spec)
+        if isinstance(tmp, int):
+            return tmp
+        args, opts, flags = tmp
 
-        data = ugen.CmdDat(
-            cmd_nm=l_cmd_nm,
+        data = ugen.CmdData(
+            cmd_nm=cmd_nm,
             args=tuple(args),
             opts=opts,
             flags=tuple(flags),
@@ -794,7 +794,7 @@ class Intrpr:
             exec_fn=iint.exec_fn_dummy,
             operation=""                        # Dummy as of now
         )
-        return exec_cmd_fn(cmd_fn=cmd_fn, cmd_src=cmd_src, data=data)
+        return self.exec_cmd_fn(cmd_fn=cmd_fn, cmd_src=cmd_src, data=data)
 
     def exec_cmd_fn(
         self,
@@ -802,8 +802,6 @@ class Intrpr:
         cmd_src: str,
         data: ugen.CmdData
     ) -> iint.CmdCompdObj:
-        """
-        """
         err_code = uerr.ERR_ALL_GOOD
 
         if cmd_src == "external":
@@ -856,379 +854,35 @@ class Intrpr:
 
         return iint.CmdCompdObj(stdout=out, err_code=err_code)
 
-    def is_syn_ok(self, cmd_expr: past.BinCmd) -> int:
-        # Note that cmd_expr.r_opr will always be past.SimpCmd
-        if isinstance(cmd_expr.l_opr, past.SimpCmd):
-            op = cmd_expr.op
-            num_r_params = len(cmd_expr.r_opr.params)
-            # Too little number of parameters on the right of operator
-            if num_r_params == 0:
+    def is_syn_ok(self, cmd_expr: past.CmdExpr) -> int:
+        num_ops = len(cmd_expr.ops)
+        i = 0
+
+        while i < num_ops:
+            l_simp_cmd = cmd_expr.get_simp_cmd(i)
+            r_simp_cmd = cmd_expr.get_simp_cmd(i + 1)
+            op = cmd_expr.get_op(i)
+
+            # No parameters on the right of operator
+            if r_simp_cmd is None:
                 ugen.err_Q(
                     f"Expected at least one parameter on the right of operator at pos {op.end}"
                 )
                 return uerr.ERR_EXPD_PARAM_RT_OP
             # Too many parameters on the right of STDOUT redirect operator
-            if isinstance(op, past.RedirSTDOUT) and num_r_params > 1:
+            if isinstance(op, past.RedirSTDOUT) and len(r_simp_cmd) > 1:
                 ugen.err_Q(
                     f"Unexpected parameter for STDOUT redirection at pos {cmd_expr.r_opr.params[1].start}"
                 )
                 return uerr.ERR_UNEXPD_PARAM_STDOUT_REDIRN
             # Too many parameters on the right of STDERR redirect operator
-            elif isinstance(op, past.RedirSTDERR) and num_r_params > 1:
+            elif isinstance(op, past.RedirSTDERR) and len(r_simp_cmd) > 1:
                 ugen.err_Q(
                     f"Unexpected parameter for STDERR redirection at pos {cmd_expr.r_opr.params[1].start}"
                 )
-                return uerr.ERR_UNEXPD_PARAM_STDERR_REDIRN
+                return uerr.ERR_UNEXPD_PARAM_STDOUT_REDIRN
 
-        elif isinstance(cmd_expr.l_opr, past.BinCmd):
-            return self.is_syn_ok(cmd_expr.l_opr)
-
-        else:
-            raise ugen.LogicalErr()
-
-    def evl_cmd_expr(
-        self,
-        op: past.Op,
-        l_simp_cmd: past.SimpCmd,
-        r_simp_cmd: past.SimpCmd
-    ):
-        pass
-
-    def anl_cmd_expr(
-        self,
-        bin_cmd: past.BinCmd,
-        stdin: str
-    ):
-        if isinstance(cmd_expr.l_opr, past.SimpCmd) and isinstance(cmd_expr.r_opr, past.SimpCmd):
-            op = cmd_expr.op
-            l_params = l_opr.params
-            r_params = r_opr.params
-            l_is_tty = True
-            is_pipe = isinstance(op, past.Pipe)
-            is_stdout_redir = isinstance(op, past.RedirSTDOUT)
-            is_stderr_redir = isinstance(op, past.RedirSTDERR)
-            is_and = isinstance(op, past.And)
-            is_or = isinstance(op, past.Or)
-            if is_pipe or is_stdout_redir or is_stderr_redir:
-                l_is_tty = False
-
-            cmd_nm = l_opr.params[0].val
-            res = self.exec_cmd(
-                cmd_nm,
-                l_opr.params,
-                is_tty=l_is_tty,
-                stdin=stdin
-            )
-            stdin = res.stdout
-            err_code = err_code or res.err_code
-
-            if isinstance(op, past.Pipe):
-                cmd_nm = r_opr.params[0].val
-                res = self.exec_cmd(
-                    cmd_nm,
-                    r_opr.params,
-                    is_tty=False,
-                    stdin=stdin
-                )
-                err_code = err_code or res.err_code
-            elif isinstance(op, past.RedirSTDOUT):
-                redir_flnm = r_params[0].val
-                try:
-                    with open(redir_flnm, "w") as f:
-                        f.write(stdin)
-                except PermissionError:
-                    ugen.err("Access denied: \"{redir_flnm}\"")
-                    return 
-                except OSError:
-                    ugen.err(
-                        f"Invalid filename to redirect STDOUT: \"{redir_flnm}"
-                    )
-            elif isinstance(op, past.RedirSTDERR):
-                redir_flnm = r_params[0].val
-                try:
-                    with open(redir_flnm, "w") as f:
-                        f.write(stdin)
-                except PermissionError:
-                    ugen.err("Access denied: \"{redir_flnm}\"")
-                    return 
-                except OSError:
-                    ugen.err(
-                        f"Invalid filename to redirect STDERR: \"{redir_flnm}"
-                    )
-            elif isinstance(op, past.And):
-                if res.err_code:
-                    return res.err_code
-                cmd_nm = r_opr.params[0].val
-                res = self.exec_cmd(
-                    cmd_nm,
-                    r_opr.params,
-                    is_tty=True,
-                    stdin=stdin
-                )
-                err_code = err_code or res.err_code
-            elif isinstance(op, past.Or):
-                pass
-
-        elif (
-            isinstance(cmd_expr.l_opr, past.BinCmd)
-            and isinstance(cmd_expr.r_opr, past.SimpCmd)
-        ):
-            return anl_cmd_expr(cmd_expr.l_opr)
-
-    def execute(self, ln: str) -> int | ty.NoReturn:
-        """
-        Execute an input line.
-
-        :param ln: Input line to execute.
-        :type ln: str
-
-        :returns: Integer error code or program exit.
-        :rtype: int | typing.NoReturn
-        """
-        # DEBUG: Full execution time start
-        _t_full_exec = time.perf_counter_ns()
-
-        par_out = tuple(self.parser.get_cmd_seq(ln))
-        len_par_out = len(par_out)
-        stdin = ""
-        stderr = ""
-        old_stdout = sys.stdout
-        old_stderr = sys.stderr
-        buf_stdout = io.StringIO()
-        buf_stderr = io.StringIO()
-
-        # To prevent empty commands making previous command exit code as 0
-        is_empty = True
-        skip_grp = 0
-        err_code = uerr.ERR_ALL_GOOD
-
-        for idx, (tok_grp, sp_chr) in enumerate(par_out):
-            ###
-            ### SKIP TOKEN GROUPS ALREADY CONSUMED
-            ###
-            if skip_grp:
-                skip_grp -= 1
-                continue
-
-            ugen.debug_Q(f"raw_toks: {tok_grp}")
-
-            ###
-            ### EMPTY INPUT LINE
-            ###
-            if not tok_grp:
-                continue
-            is_empty = False
-            cmd = tok_grp[0]
-            cmd_nm = cmd.val
-            if cmd_nm == "snoo":
-                ugen.fatal_Q("Beauty overload", uerr.ERR_BEAUTY_OVERLD)
-
-            ###
-            ### PIPING, REDIRECTION AND OTHER OPERATIONS
-            ###
-            buf_stdout = io.StringIO()
-            buf_stderr = io.StringIO()
-            stdout_fl = None
-            stderr_fl = None
-
-            if sp_chr.val == "|":
-                sys.stdout = buf_stdout
-
-            elif sp_chr.val == ">":
-                op_res = self.hdl_op_redir(
-                    par_out,
-                    tok_grp,
-                    idx,
-                    old_stdout,
-                    buf_stdout,
-                    typ="STDOUT"
-                )
-                if isinstance(op_res, int):
-                    err_code = err_code or op_res
-                    break
-                tok_grp = op_res[0]
-                skip_grp += op_res[1]
-                stdout_fl = op_res[2]
-
-            elif sp_chr.val == "?":
-                op_res = self.hdl_op_redir(
-                    par_out,
-                    tok_grp,
-                    idx,
-                    old_stderr,
-                    buf_stderr,
-                    typ="STDERR"
-                )
-                if isinstance(op_res, int):
-                    err_code = err_code or op_res
-                    break
-                tok_grp = op_res[0]
-                skip_grp += op_res[1]
-                stderr_fl = op_res[2]
-
-            ###
-            ### RESOLVE COMMAND
-            ###
-            cmd_resln_res = self.cmd_resln(cmd_nm, buf_stderr, stderr_fl)
-            if isinstance(cmd_resln_res, int):
-                err_code = err_code or cmd_resln_res
-                break
-            cmd_fn = cmd_resln_res.cmd_fn
-            cmd_spec = cmd_resln_res.cmd_spec
-            cmd_src = cmd_resln_res.cmd_src
-
-            ###
-            ### CLASSIFY PARSER OUTPUT INTO ARGUMENTS, OPTIONS AND FLAGS
-            ###
-            classi_res = self.classi_par_out(tok_grp, cmd_spec)
-            if isinstance(classi_res, int):
-                err_code = err_code or classi_res
-                # Write to file only if STDERR redirection is happening. Note
-                # that stderr_fl will be defined only if stderr_redir is True.
-                # This is done here, because the loop gets broken here, and the
-                # STDERR needs to written before control exits the loop
-                self.write_to_stream(
-                    buf_stderr.getvalue(),
-                    stderr_fl,
-                    "STDERR"
-                )
-                break
-            args, opts, flags = classi_res
-            ugen.debug_Q(f"cmd:  '{cmd_nm}'")
-            ugen.debug_Q(f"args:  {args}")
-            ugen.debug_Q(f"opts:  {opts}")
-            ugen.debug_Q(f"flags: {flags}")
-
-            ###
-            ### ACTUAL COMMAND EXECUTION
-            ###
-            # DEBUG: Actual command execution time start
-            _t_actual = time.perf_counter_ns()
-
-            try:
-                term_sz = os.get_terminal_size()
-            except OSError:
-                term_sz = os.terminal_size((-1, -1))
-
-            data = ugen.CmdData(
-                cmd_nm,
-                tuple(args),
-                opts,
-                tuple(flags),
-                self.cmd_reslvr,
-                self.env_vars,
-                self.ext_cached_cmds,
-                term_sz=term_sz,
-                stdin=stdin,
-                exec_fn=self.execute,
-                is_tty=(sp_chr.val != "|")
-            )
-            stdin = ""
-            stdout = ""
-            stderr = ""
-
-            try:
-                # External command, run in separate process
-                if cmd_src == "external":
-                    r, w = os.pipe()
-                    pid = os.fork()
-
-                    # Forked child process
-                    if pid == 0:
-                        os.close(r)
-                        self.child_proc(
-                            cmd_fn,
-                            data,
-                            w,
-                            old_stdout,
-                            buf_stdout
-                        )
-                    # Some issue, cannot fork
-                    elif pid < 0:
-                        ugen.crit(
-                            "Failed to fork current process; try re-running the command"
-                        )
-                        err_code = err_code or uerr.ERR_CANT_FORK_PROC
-                    # Parent process
-                    else:
-                        # Do NOT rely on the child's exit code! It can be wrong
-                        # because the OS only recognises 8-bit integers for
-                        # exit codes
-                        os.close(w)
-                        # 4 bytes for command return code
-                        # 8 bytes for output length
-                        # "Output length" bytes for output
-                        ret_packed = self.rd_from_fd(r, 4)
-                        ret_code = st.unpack("!i", ret_packed)[0]
-                        stdin_sz_packed = self.rd_from_fd(r, 8)
-                        stdin_sz = st.unpack("!Q", stdin_sz_packed)[0]
-                        stdin = self.rd_from_fd(r, stdin_sz).decode()
-                        os.close(r)
-                        # This should prevent zombie (defunct) processes
-                        _, status = os.wait()
-                        exit_status = os.WEXITSTATUS(status)
-                        err_code = err_code or ret_code
-
-                # Built-in command, run in same process as the interpreter
-                else:
-                    cmd_ret = self.rn_cmd_fn(cmd_fn, data)
-                    stdin = buf_stdout.getvalue()
-                    err_code = err_code or cmd_ret
-
-            except KeyboardInterrupt:
-                if pid != 0:
-                    raise ugen.KeyboardInterruptWPrevileges("", child_pid=pid)
-
-            # Restore output streams to original ones
-            finally:
-                # Update stdout only if STDOUT redirection is done
-                if sys.stdout is not old_stdout:
-                    stdout = buf_stdout.getvalue()
-                sys.stdout = old_stdout
-
-                # Update stderr only if STDERR redirection is done
-                if sys.stderr is not old_stderr:
-                    stderr = buf_stderr.getvalue()
-                sys.stderr = old_stderr
-                # Loop through the handlers and restore their streams to
-                # original STDERR
-                self.loop_set_lgr_streams(buf_stderr, old_stderr)
-
-            self.write_to_stream(stdout, stdout_fl, "STDOUT")
-            self.write_to_stream(stderr, stderr_fl, "STDERR")
-
-            # DEBUG: Actual command execution time end
-            _t_actual = time.perf_counter_ns() - _t_actual
-            ugen.debug_Q(
-                ugen.fmt_d_stmt(
-                    "time",
-                    "actual_exec",
-                    fmt_t_ns(self.debug_time_expo, _t_actual)
-                )
-            )
-
-            ugen.debug_Q(f"env_vars:")
-            # TODO: Remove!
-            for i in self.env_vars:
-                ugen.debug_Q(ugen.fmt_d_stmt("env_var", str(i)))
-
-        # DEBUG: Full execution time end
-        _t_full_exec = time.perf_counter_ns() - _t_full_exec
-        ugen.debug_Q(
-            ugen.fmt_d_stmt(
-                "time",
-                "full_exec", fmt_t_ns(self.debug_time_expo, _t_full_exec)
-            )
-        )
-
-        # Restore old STDOUT and STDERR, and restore log handlers' streams
-        sys.stdout = old_stdout
-        sys.stderr = old_stderr
-        self.loop_set_lgr_streams(buf_stderr, old_stderr)
-
-        if is_empty:
-            return self.env_vars.get("_LAST_RET_")
-        return err_code
+            i += 1
 
     def rn_cmd_fn(
         self,
@@ -1274,3 +928,114 @@ class Intrpr:
             ugen.crit_Q(tb.format_exc())
 
         return cmd_ret
+
+    def exec_cmd_expr(
+        self,
+        cmd_expr: past.CmdExpr,
+        stdin: str
+    ):
+        syn_ok = self.is_syn_ok(cmd_expr)
+        if syn_ok:
+            return syn_ok
+
+        err_code = uerr.ERR_ALL_GOOD
+        skip = 0
+        # Empty command
+        if not cmd_expr.simp_cmds:
+            # TODO: Change this later to some other code, if needed, and then
+            # handle it in the calling function
+            return uerr.ERR_ALL_GOOD
+
+        for i, simp_cmd in enumerate(cmd_expr):
+            if skip:
+                skip -= 1
+                continue
+
+            old_stdout = sys.stdout
+            old_stderr = sys.stderr
+
+            op = cmd_expr.get_op(i)
+            params = simp_cmd.params
+            is_tty = True
+            is_pipe = isinstance(op, past.Pipe)
+            is_redir_stdout = isinstance(op, past.RedirSTDOUT)
+            is_redir_stderr = isinstance(op, past.RedirSTDERR)
+            if is_pipe or is_redir_stdout or is_redir_stderr:
+                is_tty = False
+
+            # Pipe
+            if is_pipe:
+                buf_stdout = io.StringIO()
+                sys.stdout = buf_stdout
+
+            # Redirect STDOUT
+            elif is_redir_stdout:
+                redir_flnm = cmd_expr[i + 1][0]
+                try:
+                    stdout_fl = open(redir_flnm, "w")
+                except IsADirectoryError:
+                    ugen.err_Q(f"Is a directory: \"{redir_flnm}\"")
+                except PermissionError:
+                    ugen.err_Q(
+                        f"Access denied; cannot redirect STDOUT to \"{redir_flnm}\""
+                    )
+                    return uerr.ERR_PERM_DENIED
+                except OSError as e:
+                    # TODO: Change the error code later
+                    ugen.err_Q(
+                        f"OS error: cannot redirect STDOUT to \"{redir_flnm}\"; {e.strerror}"
+                    )
+                    return uerr.ERR_OS_ERR
+                sys.stdout = stdout_fl
+                skip += 1
+
+            # Redirect STDERR
+            elif is_redir_stderr:
+                redir_flnm = cmd_expr[i + 1][0]
+                try:
+                    stderr_fl = open(redir_flnm, "w")
+                except IsADirectoryError:
+                    ugen.err_Q(f"Is a directory: \"{redir_flnm}\"")
+                except PermissionError:
+                    ugen.err_Q(
+                        f"Access denied; cannot redirect STDERR to \"{redir_flnm}\""
+                    )
+                    return uerr.ERR_PERM_DENIED
+                except OSError as e:
+                    # TODO: Change the error code later
+                    ugen.err_Q(
+                        f"OS error: cannot redirect STDERR to \"{redir_flnm}\"; {e.strerror}"
+                    )
+                    return uerr.ERR_OS_ERR
+                sys.stderr = stderr_fl
+                skip += 1
+
+            try:
+                cmd_nm = params.pop(0).val
+                res = self.exec_cmd(
+                    cmd_nm,
+                    params,
+                    is_tty=is_tty,
+                    stdin=stdin
+                )
+                err_code = err_code or res.err_code
+            finally:
+                sys.stdout = old_stdout
+                sys.stderr = old_stderr
+
+            if is_pipe:
+                stdin = buf_stdout.read()
+
+        return err_code
+
+    def exec_cmd_seq(self, cmd_seq: past.CmdSeq):
+        err_code = uerr.ERR_ALL_GOOD
+        for cmd_expr in cmd_seq:
+            err_code = self.exec_cmd_expr(cmd_expr, stdin="")
+        return err_code
+
+    def exec(self, ln: str):
+        tmp = self.parser.get_cmd_seq(ln, start=0)
+        if isinstance(tmp, int):
+            return tmp
+        return self.exec_cmd_seq(tmp)

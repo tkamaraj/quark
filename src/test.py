@@ -178,7 +178,7 @@ def main() -> None:
             if raw_ln and hist_fl is not None:
                 hist_fl.write(raw_ln + "\n")
                 hist_fl.flush()
-            cmd_ret = intrpr.execute(raw_ln)
+            cmd_ret = intrpr.exec(raw_ln)
             intrpr.env_vars.set("_LAST_RET_", cmd_ret)
 
         # ^c on a built-in command

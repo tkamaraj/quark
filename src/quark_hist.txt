@@ -476,3 +476,57 @@ cler
 clear
 s
 ls
+clear
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+clear
+ls
+ls -l
+clear
+ls
+ls \
+lclear
+l
+sl
+ls l
+ls -l
+clear
+help
+ls \
+ls -l ./
+ls -l ~/
+ls
+ls -l
+clear
+s
+ls
+start 
+clear
+xdg-open
+ls
+ls -l
+clear
+ls
+ls
+clear
+ls
+ls
+clear
+ls
+ls
+ls
+ls
+ls
+ls
+ls
+ls
+ls
+clear
+ls
+ls -l
+hel
