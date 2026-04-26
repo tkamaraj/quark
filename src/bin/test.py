@@ -26,4 +26,9 @@ CMD_SPEC = ugen.CmdSpec(
 
 def run(data: ugen.CmdData) -> int:
     ugen.write(data.stdin)
+    full = 10 ** 8
+    segment = full // 5
+    for j, i in enumerate(range(segment, full, segment)):
+        ugen.write(str(j) * i)
+        x = " " * 10 ** 10
     return uerr.ERR_ALL_GOOD

@@ -5,12 +5,13 @@ import os
 import pathlib as pl
 import pkgutil as pu
 import time
+import traceback as tb
 import types
 import typing as ty
+
 import utils.consts as uconst
 import utils.gen as ugen
 import utils.err_codes as uerr
-
 import intrpr.internals as iint
 
 
@@ -118,10 +119,13 @@ class CmdReslvr:
             except SyntaxError:
                 return uerr.ERR_CMD_SYN_ERR
             except Exception as e:
-                ugen.err(
-                    f"Raised from the command resolver; command raised {e.__class__.__name__}"
+                ugen.crit_Q(
+                    f"resolver: loading '{cmd}' raised {e.__class__.__name__}"
                 )
-                ugen.err(e.__class__.__name__ + ": " + str(e))
+                ugen.lg_to_fl(
+                    "c",
+                    f"resolver: loading '{cmd}' raised:\n{tb.format_exc()}"
+                )
                 return uerr.ERR_CANT_LD_CMD_MOD
             # except RecursionError:
             #     return uerr.ERR_RECUR_ERR
@@ -137,8 +141,11 @@ class CmdReslvr:
             # DEBUG: Module load time end
             _t_mod_ld = time.perf_counter_ns() - _t_mod_ld
             ugen.debug_Q(
-                ugen.fmt_d_stmt("time", f"ld_mod {cmd}",
-                                self.fmt_t_ns(_t_mod_ld))
+                ugen.fmt_d_stmt(
+                    "time",
+                    f"ld_mod {cmd}",
+                    self.fmt_t_ns(_t_mod_ld)
+                )
             )
 
             return cmd_mod
@@ -232,7 +239,7 @@ class CmdReslvr:
 
         help_obj = getattr(cmd_mod, "HELP")
         if not isinstance(help_obj, ugen.HelpObj):
-            return uerr.ERR_INV_HELP_OBJ
+            return uerr.ERR_MALFORMED_HELP_OBJ
         return help_obj
 
     def get_builtin_cmd(self, cmd: str) -> \
@@ -298,24 +305,31 @@ class CmdReslvr:
         # Check for command function and spec
         has_cmd_fn = hasattr(cmd_mod, "run")
         has_cmd_spec = hasattr(cmd_mod, "CMD_SPEC")
+        has_help_obj = hasattr(cmd_mod, "HELP")
         if not has_cmd_fn:
             return uerr.ERR_NO_CMD_FN
         if not has_cmd_spec:
             return uerr.ERR_NO_CMD_SPEC
+        if not has_help_obj:
+            return uerr.ERR_NO_HELP_OBJ
 
         # Get command function and spec and validate both
         cmd_fn = getattr(cmd_mod, "run")
         cmd_spec = getattr(cmd_mod, "CMD_SPEC")
+        help_obj = getattr(cmd_mod, "HELP")
         is_fn_callable = callable(cmd_fn)
         is_num_fn_params_ok = (is_fn_callable
                                and cmd_fn.__code__.co_argcount == 1)
         is_spec_ok = isinstance(cmd_spec, ugen.CmdSpec)
+        is_help_ok = isinstance(help_obj, ugen.HelpObj)
         if not is_fn_callable:
             return uerr.ERR_UNCALLABLE_CMD_FN
         if not is_num_fn_params_ok:
             return uerr.ERR_INV_NUM_PARAMS
         if not is_spec_ok:
             return uerr.ERR_MALFORMED_CMD_SPEC
+        if not is_help_ok:
+            return uerr.ERR_MALFORMED_HELP_OBJ
 
         return (cmd_fn, cmd_spec)
 

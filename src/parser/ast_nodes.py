@@ -1,4 +1,5 @@
 import dataclasses as dc
+import typing as ty
 
 
 @dc.dataclass(repr=False)
@@ -74,8 +75,19 @@ class Quoted(Param):
 class SimpCmd:
     params: list[Param]
 
+    def get_param(self, idx: int) -> Param:
+        if idx >= len(self.params):
+            return None
+        return self.params[idx]
+
+    def __bool__(self) -> bool:
+        return bool(self.params)
+
+    def __len__(self) -> int:
+        return len(self.params)
+
     def __repr__(self) -> str:
-        return f"{self.params}"
+        return f"S{self.params}"
 
 
 @dc.dataclass(repr=False)
@@ -94,7 +106,7 @@ class CmdExpr:
         return self.simp_cmds[idx]
 
     def __repr__(self) -> str:
-        return f"{self.simp_cmds}"
+        return f"E{self.simp_cmds}"
 
     def __iter__(self) -> ty.Generator[SimpCmd, None, None]:
         for i in self.simp_cmds:
@@ -109,7 +121,7 @@ class CmdSeq:
     cmds: list[CmdExpr]
 
     def __repr__(self) -> str:
-        return f"{self.cmds}"
+        return f"SEQ{self.cmds}"
 
     def __iter__(self) -> ty.Generator[CmdExpr, None, None]:
         for i in self.cmds:

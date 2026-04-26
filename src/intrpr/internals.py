@@ -1,3 +1,4 @@
+import inspect  # TODO: Remove
 import importlib.machinery as ilm
 import typing as ty
 import types
@@ -8,11 +9,8 @@ import utils.gen as ugen
 if ty.TYPE_CHECKING:
     import intrpr.cmd_reslvr as icrsr
 
-type VALID_TYP = int | float | bool | str | list | tuple | dict | set
-
 
 class CmdCompdObj(ty.NamedTuple):
-    stdout: str
     err_code: int
 
 
@@ -55,7 +53,6 @@ class EnvVar:
     @val.setter
     def val(self, value: ty.Any) -> int:
         if not isinstance(value, self.typ):
-            print(self.nm, self.typ, value)
             raise ugen.InvVarTypErr(
                 var_nm=self.nm,
                 var_typ=self.typ,
@@ -98,5 +95,5 @@ class Env:
         return str(self.env_vars)
 
 
-def exec_fn_dummy() -> None:
+def exec_fn_dummy(*args, **kwargs) -> None:
     pass

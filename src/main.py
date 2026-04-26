@@ -1,3 +1,5 @@
+#!/usr/bin/env -S python3 -BOO
+
 import collections as collns
 import logging as lg
 import os
@@ -17,12 +19,22 @@ import utils.err_codes as uerr
 import utils.gen as ugen
 import utils.loggers as ulog
 
+if not sys.argv:
+    called_nm = "[main]"
+else:
+    called_nm = sys.argv[0]
+
+MIN_ARGS = 0
+MAX_ARGS = 1
+VALID_OPTS = {}
+VALID_FLAGS = {}
+
 HELP_TXT = f"""USAGE
-  {sys.argv[0]} [flag ...]
+  {called_nm} [flag ...] [fl]
 ARGUMENTS
-  none
+  fl          Script to run
 OPTIONS
-  --debug-time-unit
+  -t, --debug-time-unit
               Set unit for debugging time output.
               Valid: 'ns', 'us', 'ms', 's'
 FLAGS
@@ -36,7 +48,7 @@ FLAGS
               Preserve ANSI codes in STDERR redirects
   -po, --preserve-ANSI-stdout
               Preserve ANSI codes in STDOUT redirects
-  -W, --no-warning
+  -W, --no-warnings
               Suppress warnings
 """.expandtabs(2)
 
@@ -70,10 +82,17 @@ def parse_argv(passed_params: list[str]) -> MainProgParsed:
     stderr_ansi = False
     log_lvl = ulog.WARN
     debug_time_expo = 6
+    args = []
 
     for i, param in enumerate(passed_params):
         if skip:
             skip -= 1
+            continue
+
+        # Argument; has either an escaped hyphen at the front, or does not
+        # start with an hyphen
+        if param.startswith("\\-") or not param.startswith("-"):
+            args.append(param)
             continue
 
         # Flag: preload external commands
@@ -98,7 +117,7 @@ def parse_argv(passed_params: list[str]) -> MainProgParsed:
             ugen.write(HELP_TXT)
             sys.exit(uerr.ERR_ALL_GOOD)
         # Option: Debug time unit conversion exponent
-        elif param == "--debug-time-unit":
+        elif param in ("-t", "--debug-time-unit"):
             # No value for the option found...
             if i == len_passed_params - 1:
                 ugen.err_Q(f"Expected value for '{param}'\n")
@@ -178,7 +197,7 @@ def main() -> None:
             if raw_ln and hist_fl is not None:
                 hist_fl.write(raw_ln + "\n")
                 hist_fl.flush()
-            cmd_ret = intrpr.execute(raw_ln)
+            cmd_ret = intrpr.exec(raw_ln)
             intrpr.env_vars.set("_LAST_RET_", cmd_ret)
 
         # ^c on a built-in command
@@ -198,7 +217,7 @@ def main() -> None:
 
         except Exception as e:
             ugen.fatal_Q(
-                f"In main interpreter loop: {e.__class__.__name__}: {e}",
+                f"{e.__class__.__name__} in main interpreter loop\n{e}",
                 uerr.ERR_UNK_FATAL,
                 exc_txt=tb.format_exc()
             )
@@ -206,9 +225,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-    # x = inp()
-    # while True:
-    #     y = getch()
-    #     print(repr(y))
-    #     if y == "\x03":
-    #         break

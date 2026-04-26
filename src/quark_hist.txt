@@ -530,3 +530,1293 @@ clear
 ls
 ls -l
 hel
+help
+clear
+ls
+ls -l
+ls
+s
+l
+clea
+ls
+clear
+ls
+ls
+ls
+clear
+ls
+ls -l
+ls -l | help
+ls -l | help
+ls -l | wc -l
+ls
+ls
+ls -l | wc -l
+ls -l | cnt -l
+clear
+help
+help | les
+ls -l | cnt -l 
+clear
+ls -l | cnt -l 
+ls -l | cnt -l 
+clear
+ls
+ls -l
+clear
+ls -l | cnt -l
+clear
+ls -l | cnt -l
+ls -l | cnt -l 
+clear
+ls -l | cnt -l
+clear
+ls -l | cnt -l
+ls -l | cnt -l
+ls -l | cnt -l
+clear
+ls -l | cnt -l
+ls -l | cnt -l
+ls -l | cnt -l 
+clear
+ls -l | cnt -l 
+ls -l | cnt -l 
+clear
+ls -l | cnt -l
+clear
+ls -l | cnt -l 
+claer
+clear
+help
+ls -l | cnt -l
+clear
+ls -l | cnt -l
+clear
+ls -l | cnt -l
+ls -l | cnt -l
+ls -l | cnt -l
+ls -l | cnt -l
+ls -l
+ls -l | cnt -l
+ls -l | cnt -l
+clear
+ls -l | cnt -l
+clear
+ls -l | cnt -l
+clear
+ls -l | cnt -l
+clear
+ls -l | cnt -l
+ls -l | cnt -l
+ls -l | cnt -l 
+ls -l | cnt -l
+ls -l | cnt -l
+ls -l | cnt -l
+clear
+ls -l | cnt -l
+ls -l | cnt -l 
+ls -l | cnt -l
+ls -l | cnt -l
+ls -l
+clear
+ls -l
+clear
+ls -l | cnt -l
+clear
+l
+sl
+ls
+sl
+clear
+ls
+ls -l
+cls
+clear
+sle
+sl
+clear
+help
+pwd
+hist
+clear
+ls -allah
+clear
+ls -allah
+clear
+ls
+ls -l
+sl
+get $PATH
+get PTH
+get PATH
+get _PTH_
+clear
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+help
+ltr_drafts
+ltr_drafts/
+./ltr_drafts/
+ls
+ls -
+clear
+cd -
+clear
+ls
+ls -a
+ls -la
+clear
+ls -la
+ls -l
+clear
+cd ./de/
+cd ./dev/
+ls
+clear
+cd ./
+sl
+if nmcli -t -f WIFI g | grep -q enabled; then
+clear
+ls
+ls -l
+clear
+ls | wc -l
+ls | cnt -l
+clear
+ls | cnt -l
+ls -l | cnt -l
+clear
+ls
+ls -l
+clear
+help
+l
+l
+clear
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+l
+l
+ls
+ls -l
+clear
+help
+ls
+ls -l
+help
+whr
+whr ./
+clear
+whr ./
+whr ./help
+whr ls
+clear
+whr ls
+whr ls
+whr ls
+clear
+ls
+whr ls
+whr ls
+whr ls ls
+clear
+whr ls
+whr ls ls
+ls
+whr ls
+ls ~/
+clear
+ls -a ~/
+ls -a ~/
+ls -a \-
+ls -l | cnt -l
+clear
+ls -l | cnt -l
+clear
+ls
+ls -l
+ls -l | cnt -l
+ls
+ls -l
+ls -l | cnt -l
+clear
+clear
+ls
+ls -l
+clear
+ls
+ls -l
+clear
+help
+sl
+ls
+ls -l
+clear
+help
+ls
+ls -l
+help
+ls
+ls -l
+clear
+ls
+clear
+help
+ls
+ls -l
+clear
+help
+cat ./txt/
+prn ./txt/
+prn ./txt/ help
+prn help
+ls
+ls -l
+cnt
+clear
+cache
+help
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+claer
+clear
+clear
+l
+clear
+help
+l
+sls -l
+clear
+hlep
+ls
+ls -l
+clear
+ls
+ls -l
+clear
+ls
+ls -l
+clear
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+ls
+ls -l
+txt
+clear
+getpos)_
+getpos()
+clear
+help
+ls
+ls -l
+why
+whr
+clear
+ls
+whr 1
+clear
+whr ls
+clear
+clear
+ls
+ls -l
+clear
+ls -l | cnt -l
+clear
+ls
+ls 
+ls -l
+help
+pwd
+clear
+help
+ls
+ls -l
+false
+get
+clear
+ls
+ls
+clear
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+ls
+clear
+ls
+ls
+ls -l
+clear
+asd
+aspin
+clear
+ls
+ls -l
+clear
+help
+ls
+ls -l
+lear
+]c
+clear
+ls
+ls -l
+help
+          anisdm
+clear
+help
+snoo
+clear
+clear
+sl
+ls
+ls -l
+clear
+ls
+sl
+sl
+sl
+clear
+sl
+ls
+ls -l
+clear
+ls
+ls
+sl
+sl
+sl
+clear
+sl
+sl
+sl
+clear
+sl
+sl
+clear
+123
+sl
+sl
+clear
+sl
+sl
+clear
+ls
+ls
+sl
+sl
+sl
+clear
+ls
+s
+clear
+sl
+sl
+clear
+clear
+sl
+ls
+sl
+clear
+clear
+ls
+sl
+clear
+e
+clear
+clear
+ls
+ls -l
+sl
+clear
+sl
+sl
+clear
+sl
+sl
+clear
+ls
+ls -l
+clear
+help
+sl
+sl
+sl
+sl
+sl
+sl
+ls
+l
+clear
+sl
+clear
+ls
+ls -l
+clear
+help
+as
+asd
+sl -l
+help -a
+clear
+ls ankd
+ls ojnasd
+ls ansk
+ls inakd
+ls
+sl
+sl 
+ls
+ls -l
+clear
+ls -l | cnt -l
+clear
+ls
+ls
+l
+sl
+sl
+as
+clear
+ls
+sl
+clear
+ls
+sl
+ls
+ls -l | cnt -l
+ls -l | cnt -l
+ls -l | cnt -l
+ls -l | cnt -l
+clear
+clear
+clear
+ls -l | cnt -l
+sl
+ls
+ l -l
+ls -l
+clear
+ls -l | cnt -l
+clear
+ls -l | cnt -l
+ls -l | cnt -l
+ls -l | cnt -l
+ls
+ls -l | cnt -l
+ls -l
+clear
+help
+ls -l | cnt -l
+ls -l | cnt -l
+sl 
+sl
+clea
+clear
+sl
+clear
+ls
+ls -l
+clear
+ls | | ls
+ls | | ls
+ls -l
+ls | | ls
+ls | | ls
+ls
+clear
+help
+ls
+ls -l
+ls | | ls
+ls | | cnt
+ls | | cnt
+ls | | cnt
+ls | | cnt
+ls | | cnt
+;s
+ls
+ls -l
+ls | cnt
+clear
+ls
+ls | cnt
+clear
+ls | cnt
+ls | cnt
+ls > hee.txt
+ls > hee.txt
+ls > cnt
+ls > cnt
+ls > cnt
+ls > cnt
+ls > cnt
+clear
+ls > cnt
+ls > cnt
+clear
+ls > hee.txt
+ls > hee.txt
+ls | ls
+ls | ls
+clear
+ls | ls
+ls | ls
+ls | cnt
+clear
+ls
+ls -l
+clear
+help
+ls
+ls -l
+whr ls
+ls
+ls -l
+clear
+ls | cnt
+ls
+ls -l
+clear
+ls
+ls -
+ls -
+cd -
+cd -
+clear
+help
+ls
+ls -l
+clear
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+help
+ls
+ls
+ls -l
+clear
+ls
+ls -l
+clear
+help
+help 
+clear
+help
+l
+ls -l
+cearl
+bluetoothctl
+clear
+!bluetoothctl
+clear
+ls
+ls -l
+clear
+ls -l | cnt -l
+ls
+ls -l
+ls
+ls
+ls
+ls -l | cnt 
+clear
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+clear
+l
+ls
+clear
+ls
+ls
+ls
+ls
+ls
+clear
+ls
+clear
+ls
+clear
+ls
+ls
+ls
+clear
+ls
+clear
+ls
+clear
+ls
+clear
+ls
+ls
+ls
+ls
+ls
+clear
+clear
+ls
+lear
+clear
+ls
+ls
+clear
+ls
+clear
+ls
+clear
+ls
+clear
+ls
+clear
+help
+ls
+clar
+help
+ls
+clear
+help
+ls
+clear
+help
+ls
+clear
+help
+ls
+clear
+clear
+ls
+clear
+ls
+lcear
+ls
+clear
+ls
+ls
+ls
+ls
+ls -l
+ls -l | cnt
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+ls
+ls ./txt/
+clear
+ls
+ls -l
+clear
+clear
+ls
+ls -l
+ls ./txt/
+cnt ./txt/03-03-2026.txt
+cnt ./txt/03-03-2026.txt
+clear
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+ls
+clear
+ls -l | cnt -l
+ls
+ls -l
+clear
+help
+ls
+ls -l
+true
+ls
+ls -l | cnt
+clear
+ls -l | test
+ls -l | test
+clear
+ls -l | test
+l
+ls
+lear
+help
+test
+ls -l | test
+test
+test
+test
+clear
+test
+clear
+test
+test
+clear
+test
+clear
+test
+clear
+celr
+ls
+ls -l
+ls -l | cnt
+ls -l > haha
+ls
+ls -onakd
+ls -onakd ? haha
+ls -anksd ? haha
+ls -anksd > haha
+ls -l > haha
+ls -lasodn > haha
+ls > haha
+clear
+ls
+ls -l
+clear
+ls
+ls
+ls -l
+clear
+ls -ipasd ? haha
+clear
+help
+help -asd
+help -asd ? haha
+help -asd > haha
+clear
+l
+s
+ls -l
+clear
+ls
+ls | test
+clear
+test
+test
+cela
+s
+ls
+ls -l
+clear
+help
+ls
+ls -l
+help b
+ls
+ls -l
+clear
+helpp
+ls
+ls -l
+help
+help
+ls
+ls -l
+whr ls
+ls | cnt
+ls -l | cnt -l
+
+ls | cnt
+ls -l | cnt -l
+help | cnt
+clear
+help | cn
+help | cnt
+clear
+ls
+ls -l | cnt -l
+clear
+help | cn
+ls | cnt
+help | cnt
+clear
+ls | help
+clear
+ls | help
+ls | cnt
+clear
+ls
+ls -l
+clear
+clear
+ls
+ls -l
+clear
+rm
+clear
+ls } cnt
+ls | cnt
+ls | cnt
+cleaer
+ls
+help | cnt
+clear
+ls
+ls
+ls -l
+clear
+help | cnt
+ls  ccnt
+ls | cnt
+ls
+ls -l
+clear
+ls -l | cnt
+ls
+ls -l
+clear
+ls
+ls -l | cnt
+clear
+ls -l
+clear
+ls -l | cnt
+clear
+clear
+test | 
+prn 
+clear
+ls
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+ls -l | cnt
+ls -l | cnt
+ls
+rs ./script.qrk
+rs ./script.qr
+rs ./script.qrk
+clear
+ls
+ls -l
+rs ./script.qrk
+rf ./script.qrk
+rs ./script.qrk
+rs ./script.qrk
+ls
+ls -l | gelp
+ls -l | help
+ls -l | wc
+ls -l | cnt
+help | cnt
+clear
+ls -l | cnt
+clear
+ls -l | cnt
+clear
+ls
+ls
+ls -l
+clear
+help 
+clear
+help
+ls
+ls -l
+clear
+help | cnt
+help | cnt
+clear
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+ls
+ls -l | cnt
+help | cnt
+clear
+claer
+as
+clear
+ls
+ls -l
+clear
+help
+get
+get -a
+get -adp
+clear
+ls
+ls -l
+ls -l ~/ad
+pad
+clear
+ls
+ls -l
+ls
+ls -l
+clear
+ls
+ls -l
+sl
+ls
+ls -l
+clear
+hlep
+ls
+clear
+l
+ls > haha
+'
+clear
+ls
+ls -l
+ls ? ad
+ls -apsm ? ad
+ls
+ls -l
+clear
+help
+ls
+ls l
+pwd
+clear
+ls
+ls -l
+clear
+ls -l > ad
+ls > ad
+s
+ls
+ls -l
+clear
+ls -l | help
+ls -l | cnt
+help | cnt
+ls
+clear
+help
+help | cnt
+help | cnt
+ls
+ls -l
+ls | cnt
+cnt ./ad
+clear
+help
+ls | cnt
+clear
+ls | cnt ./ad
+clear
+ls
+ls -l
+help
+help | help
+help | cnt
+ls
+ls
+clear
+ls
+ls -l | cmd
+ls
+sl
+l
+l
+l
+ls
+ls
+sl
+ls
+ls -l
+sl
+clear
+ls
+ls -l
+ls
+ls
+ls
+
+ls
+ls -l
+]clear
+help
+help
+help | cnt
+clear
+clear
+ls
+help | cnt
+help;cnt
+clear
+ls
+ls -l
+clear
+ls
+ls
+ls;cnt
+ls;cnt
+clear
+clear
+ls
+ls  | cnt
+clear
+ls | cnt
+ls
+ls
+ls
+ls
+ls
+ls
+clear
+help
+ls
+help > ltr_drafts
+help > ltr_drafts
+ls
+ls
+ls -l
+clear
+test
+test
+clear
+ls
+ls -l
+test
+clear
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+help
+ls
+ls -l
+sl
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+help
+clear
+ls
+ls
+
+ls
+
+ls
+help
+
+clear
+
+clear
+
+thiru
+
+snoo
+
+clear
+
+ls
+
+ls
+
+ls
+
+ls
+
+ls
+
+clear
+
+ls
+
+ls
+
+ls
+ls
+ls -l
+ls
+ls -l
+clear
+thiru
+ls
+ls
+ls -l
+clear
+help
+l
+ls
+ls -l
+help
+ls
+help ls -l help
+help ls -l help
+ls
+ls -l
+clear
+clear
+ls
+clear
+clear
+help
+ls
+ls -l
+ls
+ls
+ls
+clear
+help
+ls
+ls
+ls -l
+clear
+help
+help
+help
+ls
+help
+help | cnt
+clear
+help
+ls
+help | cnt
+ls
+ls
+ls -l
+clear
+help
+c
+cd
+clearr
+help
+ls
+sl
+help
+ls
+ls -l
+clear
+help
+ls -l
+ls -l ./tmp/
+ls
+ls -l
+cd ../
+ls
+rm
+ls
+~
+!
+prn ~/tmp/foo.txt
+clear
+prn ~/tmp/foo.txt
+cnt ~/tmp/foo.txt
+cnt ~/tmp/foo.txt
+ls
+prn ~/tmp/foo.txt
+cnt ~/tmp/foo.txt
+cnt ~/tmp/foo.txt
+cnt ~/tmp/foo.txt
+prn ~/tmp/foo.txt
+clear
+ls
+ls -l
+clear
+help
+ls
+ls -l
+echo
+evl
+clear
+cnt ~/tmp/foo.txt
+ls
+prn ./Downloads/
+prn ./Downloads/
+prn ./Downloads/
+prn ./Downloads/
+prn ./Downloads/ -l
+prn -l ~/tmp/foo.txt
+prn -l ~/personal/arch_cmds.md
+prn -l ~/personal/arch_cmds.md
+prn -l ~/personal/arch_cmds.md
+ls
+prn ~/personal/arch_cmds.md
+prn ~/personal/arch_cmds.md
+prn ~/personal/arch_cmds.mda

@@ -52,11 +52,11 @@ class QuarkFormatter(lg.Formatter):
         super().__init__(fmt, datefmt, style, validate, defaults=defaults)
 
     def format(self, record: lg.LogRecord) -> str:
-        src = ""
+        src = "C"
         if record.name.endswith("LGR_Q"):
             src = "Q"
 
-        prefix_chrs = self.log_lvl_chrs[record.levelno] + src +  ":"
+        prefix_chrs = self.log_lvl_chrs[record.levelno] + src
 
         if record.levelno >= ERR:
             record.clred_prefix_chrs = uconst.ANSI_BOLD_RED_4 \

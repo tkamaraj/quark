@@ -1,6 +1,8 @@
+import atexit
 import os
 import pathlib as pl
 import re
+import select
 import sys
 import termios
 import tty
@@ -139,6 +141,13 @@ def set_lgrs(lgrs) -> None:
 def write(s: str, flush: bool = True) -> None:
     sys.stdout.write(s)
     sys.stdout.flush() if flush else None
+
+
+def lg_to_fl(lvl: str, txt: str) -> None:
+    if lvl == "c":
+        _lgrs.fl_lgr.critical(txt)
+    elif lvl == "f":
+        _lgrs.fl_lgr.fatal(txt)
 
 
 def fatal(msg: str, ret: int, exc_txt: str | None = None) -> ty.NoReturn:
@@ -313,23 +322,8 @@ def fmt_d_stmt(src: str, lhs: str, rhs: str | None = None, pad: int = 24) \
         -> str:
     full_str = f"[{src}] {lhs}".ljust(pad)
     if rhs:
-        full_str += f"-> {rhs}"
+        full_str += f" -> {rhs}"
     return full_str
-
-
-def transpose(arr: ty.Iterable) -> ty.Iterable:
-    pass
-
-
-def getch() -> str:
-    fd = sys.stdin.fileno()
-    old_setts = termios.tcgetattr(fd)
-    try:
-        tty.setraw(fd)
-        ch = sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_setts)
-    return ch
 
 
 # Source - https://stackoverflow.com/a/46675451
@@ -362,88 +356,100 @@ def get_pos() -> tuple[int, int] | None:
     return (int(groups[0]), int(groups[1]))
 
 
-# TODO: Really need kbhit()... research more on how to implement it
+class InpHdlr:
+    def __init__(self) -> None:
+        self.fd = sys.stdin.fileno()
+        self.old_sett = termios.tcgetattr(self.fd)
+        atexit.register(self.reset_sett)
+
+    def set_new_sett(self):
+        tty.setcbreak(self.fd)
+
+    def reset_sett(self) -> None:
+        termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old_sett)
+
+    def kbhit(self, timeout=0):
+        r, _, _ = select.select([self.fd], [], [], timeout)
+        return bool(r)
+
+    def getch(self) -> str:
+        return os.read(self.fd, 1).decode()
+
+
 def inp(hist: str) -> str:
     init_pos = get_pos()
-    if init_pos is None:
-        err_Q("get_pos() failed; try again")
-        return ""
+    while init_pos is None:
+        init_pos = get_pos()
     init_ln, init_col = init_pos
     cur_ln, cur_col = init_ln, init_col
     prev_ch = None
     ch = None
     buf = []
-    # TODO: Make it include the current line being typed in the history,
-    # meaning, you get the last entry in the history to be the current line
-    # being typed. I tried to implement it, but it wouldn't work
+    # TODO: Make it include current line being typed in history, i.e. you get
+    # last entry in history to be the current line being typed. Tried to
+    # implement, but it wouldn't work
     # hist.append("")
     hist_len = len(hist)
     hist_pos = hist_len
-    # f = open(os.path.join(uconst.RUN_PTH, "quark.txt"), "w")
+    inp_hdlr = InpHdlr()
+    inp_hdlr.set_new_sett()
 
     while True:
-        ins_ch = True
-        ch = getch()
+        ins_ch = False
+        full_key = inp_hdlr.getch()
+        while inp_hdlr.kbhit():
+            full_key += inp_hdlr.getch()
 
         # ^a - move to start of line
-        if ch == "\x01":
-            ins_ch = False
+        if full_key == "\x01":
             cur_col = init_col
 
-        # ^b - move one character back
-        elif ch == "\x02":
-            ins_ch = False
+        # ^b or left - move one character back
+        elif full_key in ("\x02", "\x1b[D"):
             cur_col -= 1 if cur_col > init_col else 0
 
         # ^c - interrupt
-        elif ch == "\x03":
+        elif full_key == "\x03":
             raise KeyboardInterrupt
 
         # ^d - EOF or kill character under cursor
-        elif ch == "\x04":
-            ins_ch = False
-            # EOF
-            if not buf:
+        elif full_key in ("\x04", "\x1b[3~"):
+            # EOF only if ^d
+            if not buf and full_key != "\x1b[3~":
                 raise EOFError
             # Kill character under cursor
             if cur_col < init_col + len(buf):
                 buf.pop(cur_col - init_col)
 
         # ^e - move to end of line
-        elif ch == "\x05":
-            ins_ch = False
+        elif full_key == "\x05":
             cur_col = init_col + len(buf)
 
-        # ^f - move one character forward
-        elif ch == "\x06":
-            ins_ch = False
+        # ^f or right - move one character forward
+        elif full_key in ("\x06", "\x1b[C"):
             cur_col += 1 if cur_col < init_col + len(buf) else 0
 
-        # ^p - previous match from history
-        elif ch == "\x10":
-            ins_ch = False
+        # ^p or up - previous match from history
+        elif full_key in ("\x10", "\x1b[A"):
             if hist and hist_pos > 0:
                 hist_pos -= 1
                 buf = list(hist[hist_pos])
                 cur_col = init_col + len(buf)
 
-        # ^n - next match from history
-        elif ch == "\x0e":
-            ins_ch = False
+        # ^n or down - next match from history
+        elif full_key in ("\x0e", "\x1b[B"):
             if hist and hist_pos < hist_len - 1:
                 hist_pos += 1
                 buf = list(hist[hist_pos])
                 cur_col = init_col + len(buf)
 
         # ^u - clear line
-        elif ch == "\x15":
-            ins_ch = False
+        elif full_key == "\x15":
             buf.clear()
             cur_col = init_col
 
         # ^w - kill word before cursor
-        elif ch == "\x17":
-            ins_ch = False
+        elif full_key == "\x17":
             # Delete whitespace just before cursor before deleting word
             while buf and buf[cur_col - init_col - 1].isspace():
                 cur_col -= 1
@@ -453,121 +459,61 @@ def inp(hist: str) -> str:
                 cur_col -= 1
                 buf.pop(cur_col - init_col)
 
-        elif ch == "\x0c":
-            ins_ch = False
+        elif full_key == "\x0c":
             write("Work in progress")
 
-        elif ch == "\x1b":
-            # This is one of the ugliest pieces of code I've written in this
-            # project
-            ins_ch = False
-            getch_chrs = []
-            i = 0
+        # alt+b or ^left - move one word backward
+        elif full_key in ("\x1bb", "\x1b[1;5D"):
+            # Whitespace before cursor and after previous word
+            while cur_col > init_col and buf[cur_col - init_col - 1].isspace():
+                cur_col -= 1
+            # The actual word
+            while (
+                cur_col > init_col
+                and not buf[cur_col - init_col - 1].isspace()
+            ):
+                cur_col -= 1
 
-            while True:
-                tmp_ch = getch()
-                getch_chrs.append(tmp_ch)
-                i += 1
-
-                # 1st getch() after "\x1b"
-                if i == 1:
-                    # alt+b - move one word backward
-                    if tmp_ch == "b":
-                        # Whitespace before cursor and after previous word
-                        while (
-                                cur_col > init_col
-                                and buf[cur_col - init_col - 1].isspace()
-                        ):
-                            cur_col -= 1
-                        # The actual word
-                        while (
-                                cur_col > init_col
-                                and not buf[cur_col - init_col - 1].isspace()
-                        ):
-                            cur_col -= 1
-
-                    # alt+f - move one word forward
-                    elif tmp_ch == "f":
-                        # Whitespace after cursor and before next word
-                        while (
-                            cur_col < init_col + len(buf)
-                            and buf[cur_col - init_col].isspace()
-                        ):
-                            cur_col += 1
-                        # The actual word
-                        while (
-                            cur_col < init_col + len(buf)
-                            and not buf[cur_col - init_col].isspace()
-                        ):
-                            cur_col += 1
-
-                    # For arrow and del keys, as well as ^[ and ^], I think.
-                    # Must check. TODO: CHECK!
-                    elif tmp_ch in ("[", "]"):
-                        continue
-
-                    # Continue if no operation matches, because the next
-                    # getch() may yield known operations
-                    else:
-                        continue
-
-                    # Breaks if some operation listed in the if-statements
-                    # above is done, i.e. alt+f or alt+b, etc.
-                    break
-
-                # 2nd getch() after "\x1b"
-                elif i == 2:
-                    # del - delete under cursor
-                    if tmp_ch == "3":
-                        getch()
-                        if buf and cur_col - init_col < len(buf):
-                            # cur_col -= 1
-                            buf.pop(cur_col - init_col)
-                    # up - up arrow
-                    elif tmp_ch == "A":
-                        pass
-                    # down - down arrow
-                    elif tmp_ch == "B":
-                        pass
-                    # right - right arrow
-                    elif tmp_ch == "C":
-                        cur_col += 1 if cur_col < len(buf) + init_col else 0
-                    # left - left arrow
-                    elif tmp_ch == "D":
-                        cur_col -= 1 if cur_col > init_col else 0
-                    else:
-                        continue
-                    break
-
-                else:
-                    crit_Q(
-                        f"Unknown 1st getch() char for \"\\x1b\": {repr(tmp_ch)}"
-                    )
-                    break
+        # alt+f or ^right - move one word forward
+        elif full_key in ("\x1bf", "\x1b[1;5C"):
+            # Whitespace after cursor and before next word
+            while (
+                cur_col < init_col + len(buf)
+                and buf[cur_col - init_col].isspace()
+            ):
+                cur_col += 1
+            # The actual word
+            while (
+                cur_col < init_col + len(buf)
+                and not buf[cur_col - init_col].isspace()
+            ):
+                cur_col += 1
 
         # Backspace (kill char before cursor)
-        elif ch == "\x7f":
-            ins_ch = False
+        elif full_key == "\x7f":
             if buf and cur_col > init_col:
                 cur_col -= 1
                 buf.pop(cur_col - init_col)
 
         # Return
-        elif ch == "\r":
-            write("\n")
+        elif full_key == "\n":
+            write(mv_cur_col(0) + "\n", flush=True)
             break
 
         # Ununsed
-        elif ch in (
+        elif full_key in (
             "\x00", "\x1c", "\x1d", "\x1e", "\x1f", "\x7f",        # Number row
             "\t", "\x11", "\x12", "\x14", "\x19", "\x0f", "\x1c",  # Top row
             "\x13", "\x07", "\x08", "\n", "\x0b",                  # Middle row
             "\x1a", "\x18", "\x16", "\x02", "\x0e", "\r", "\x1f",  # Bottom row
         ):
-            ins_ch = False
+            pass
+
+        else:
+            ins_ch = True
 
         if ins_ch:
-            buf.insert(cur_col - init_col, ch)
+            buf.insert(cur_col - init_col, full_key)
             cur_col += 1
         write(mv_cur(cur_ln, init_col) + str_join(buf).expandtabs(4))
         write(uconst.ANSI_ERASE_CUR_TO_EOL)
@@ -585,3 +531,12 @@ get_pos_regex = re.compile(r"^\x1b\[(\d*);(\d*)R")
 str_join = "".join
 mv_cur = lambda ln, col: f"\x1b[{ln};{col}H"
 mv_cur_col = lambda col: f"\x1b[{col}G"
+
+
+def test():
+    x = InpHdlr()
+    x.set_new_sett()
+    k = x.getch()
+    while x.kbhit():
+        k += x.getch()
+    print(repr(k))

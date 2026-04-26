@@ -1,3 +1,5 @@
+#!/usr/bin/env -S python3 -BOO
+
 import logging as lg
 import os
 import shutil as sh

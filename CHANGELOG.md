@@ -1,6 +1,30 @@
 # CHANGELOG
 
-## Latest commit 
+## Latest commit
+
+fix: minor bug fixes, refactor: interpreter engine; ops: change interpreter
+architecture; docs: general update; style: several changes, mainly in external
+commands
+
+- `src/intrpr/eng_new.py`: Removed old and dead methods from refactored engine; completed engine
+refactor; switched refactored engine to default, main engine (renamed from
+`src/intrpr/eng_new.py` to `src/intrpr/eng.py`); NOTE: the engine is still
+incomplete.
+- `src/utils/gen.py`: Implemented `kbhit()`, and wrote a class to handle input
+specifically. Improved `inp(...)`.
+- `src/intrpr/eng.py`: Moved to `src/old_vers/` under the name
+`intrpr_eng_old_archi.py`.
+- `src/parser/eng.py`: Moved to `src/old_vers/` under the name
+`parser_eng_old_archi.py`.
+- `src/bin/prn.py`: Minor changes and bug fixes.
+- `src/bin/cnt.py`: Minor changes and improvements.
+- Other miscellaneous improvements.
+
+## Commit fd1b36880dac104cec93075d5d954f92b985a48c
+
+Fixed the program not running due to refactors
+
+## Commit c42eeafa8946f00b17cd9c43e2c9f5424352b818
 
 Interpreter engine rewrite (INCOMPLETE)
 

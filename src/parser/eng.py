@@ -1,9 +1,6 @@
-#
-# Provides the parser for the interpreter.
-#
-
 import typing as ty
 
+import parser.ast_nodes as past
 import parser.internals as pint
 import utils.err_codes as uerr
 import utils.consts as uconst
@@ -13,14 +10,17 @@ import utils.debug as udeb
 
 class Parser:
     def __init__(self) -> None:
-        pass
+        self.LOGI_OP_CHR_NODE_MAP = {
+            "&": past.And,
+            "^": past.Or
+        }
+        self.DATA_OP_CHR_NODE_MAP = {
+            "|": past.Pipe,
+            ">": past.RedirSTDOUT,
+            "?": past.RedirSTDERR
+        }
 
-    def _get_sp_chr(self, ln: str, start: int) -> pint.SpChr | None:
-        if ln[start] in uconst.SP_CHRS:
-            return pint.SpChr(val=ln[start], start=start, end=start + 1)
-        return None
-
-    def _get_unquoted_tok(self, ln: str, start: int) -> pint.Tok:
+    def _get_unquoted_tok(self, ln: str, start: int) -> past.Param:
         """
         Get an unquoted token from the source line.
 
@@ -38,26 +38,30 @@ class Parser:
         for ch in ln[start :]:
             if ch.isspace():
                 break
-            if ch in uconst.SP_CHRS and ln[idx - 1] != "\\":
+            if ch in pint.QUOTES and ln[idx - 1] != "\\":
+                break
+            if ch in (*pint.LOGI_OPS, *pint.DATA_OPS, *pint.CMD_SEPRS) and ln[idx - 1] != "\\":
                 break
             idx += 1
 
-        return pint.Tok(
+        return past.Unquoted(
             val=ln[start : idx],
-            quoted=False,
-            quote_typ=None,
+            escd_hyp=False,       # False for now, this will be updated
             start=start,
             end=idx
         )
 
-    def _get_quoted_tok(self, ln: str, start: int, quote: str) \
-            -> pint.Tok | int:
+    def _get_quoted_tok(
+        self,
+        ln: str,
+        start: int,
+        quote: str
+    ) -> past.Quoted | int:
         """
         Get a quoted token from the source line.
 
         :param ln: The source line to lex.
         :type ln: str
-
         :param start: The index to start lexing from in the source.
         :type start: int
 
@@ -78,23 +82,23 @@ class Parser:
                 break
             prev_chr = char
         else:
-            ugen.err_Q(f"No closing quote at position {idx}")
+            ugen.err_Q(f"No closing quote at position {idx}\n")
             return uerr.ERR_NO_CLOSING_QUOTE
 
-        return pint.Tok(
+        return past.Quoted(
             # Do not include the closin quote in the value
             ln[elem_start : idx - 1],
-            quoted=True,
-            quote_typ=quote,
+            escd_hyp=False,
+            quote=quote,
             start=start,
             end=idx
         )
 
-    def _get_nxt_tok(
+    def _get_nxt_param(
         self,
         ln: str,
         start: int
-    ) -> pint.Tok | pint.SpChr | int | None:
+    ) -> past.Tok | past.Op | None | int:
         """
         Get the next token from the source line.
 
@@ -108,28 +112,30 @@ class Parser:
                   NoneType object.
         :rtype: parser.internals.Tok | parser.internals.SpChr | int | None
         """
-        tok: pint.Tok | pint.SpChr | int | None
+        param: past.Param | past.Op | int | None
 
         # Encountered whitespace
-        if ln[start].isspace():
+        idx = start
+        idx = self._skip_ws(ln, len(ln), idx)
+
+        if ln[idx] in pint.QUOTES:
+            param = self._get_quoted_tok(ln, idx, ln[idx])
+        elif ln[idx] in (*pint.LOGI_OPS, *pint.DATA_OPS):
             return None
-
-        if ln[start] in pint.QUOTES:
-            tok = self._get_quoted_tok(ln, start, ln[start])
-        elif ln[start] in uconst.SP_CHRS:
-            tok = self._get_sp_chr(ln, start)
+        elif ln[idx] in pint.CMD_SEPRS:
+            return None
         else:
-            tok = self._get_unquoted_tok(ln, start)
+            param = self._get_unquoted_tok(ln, idx)
 
-        if isinstance(tok, int):
-            return tok
+        if isinstance(param, int):
+            return param
 
-        return tok
+        return self._reslv_esc_chrs(param)
 
     def _reslv_esc_chrs(
         self,
-        tok: pint.Tok | pint.SpChr
-    ) -> pint.Tok | pint.SpChr | int:
+        param: past.Param | past.Op
+    ) -> past.Param | int:
         """
         "Resolve" escape characters in tokens lexed. Resolution in this context
         means escaped characters in the source string to escape characters
@@ -141,87 +147,156 @@ class Parser:
         :returns: The "resolved" token or error code.
         :rtype: parser.internals.Tok | parser.internals.SpChr | int
         """
-        reslvd_tok_val = []
-        tok_val_len = len(tok.val)
+        reslvd_val = []
+        param_len = len(param.val)
         skip = 0
-        escd_hyphen = False
+        escd_hyp = False
 
-        if isinstance(tok, pint.SpChr):
-            return tok
+        if isinstance(param, past.Op):
+            return param
 
-        for i, char in enumerate(tok.val):
+        for i, char in enumerate(param.val):
             if skip:
                 skip -= 1
                 continue
 
             if char != "\\":
-                reslvd_tok_val.append(char)
+                reslvd_val.append(char)
                 continue
-            if i == tok_val_len - 1:
-                ugen.err_Q(f"Lone backslash at position {tok.start + i}")
+            if i == param_len - 1:
+                ugen.err_Q(f"Lone backslash at position {param.start + i}\n")
                 return uerr.ERR_LONE_B_SLASH
 
-            tmp = pint.ESC_CHR_MAP.get("\\" + tok.val[i + 1])
+            tmp = pint.ESC_CHR_MAP.get("\\" + param.val[i + 1])
             if tmp is None:
-                reslvd_tok_val.append(tok.val[i + 1])
+                reslvd_val.append(param.val[i + 1])
             else:
-                reslvd_tok_val.append(tmp)
+                reslvd_val.append(tmp)
             skip += 1
 
-            if not i and tok.val[i + 1] == "-":
-                escd_hyphen = True
+            if not i and param.val[i + 1] == "-":
+                escd_hyp = True
 
-        return pint.Tok(
-            val="".join(reslvd_tok_val),
-            quoted=tok.quoted,
-            quote_typ=tok.quote_typ,
-            start=tok.start,
-            end=tok.end,
-            escd_hyphen=escd_hyphen
-        )
+        # Unquoted
+        if param.__class__ == past.Unquoted:
+            return past.Unquoted(
+                val="".join(reslvd_val),
+                escd_hyp=escd_hyp,
+                start=param.start,
+                end=param.end,
+            )
+        # Quoted, unless I'm very mistaken
+        else:
+            return past.Quoted(
+                val="".join(reslvd_val),
+                quote=param.quote,
+                escd_hyp=escd_hyp,
+                start=param.start,
+                end=param.end,
+            )
 
-    def lex(self, ln: str) -> list[pint.Tok | pint.SpChr] | int:
-        idx = 0
+    def _get_simp_cmd(self, ln: str, start: int) -> past.SimpCmd | int:
         ln_len = len(ln)
-        tok_list = []
-        tok_list_reslvd = []
+        idx = start
+        idx = self._skip_ws(ln, ln_len, idx)
+        params = []
+        while idx < ln_len:
+            nxt_param = self._get_nxt_param(ln, idx)
+            if isinstance(nxt_param, int):
+                return nxt_param
+            # When the next parameter is not related to SimpCmd, e.g. an
+            # operator or a command separator
+            if nxt_param is None:
+                break
+            idx = nxt_param.end
+            idx = self._skip_ws(ln, ln_len, idx)
+            params.append(nxt_param)
+        return past.SimpCmd(params)
 
-        while idx < len(ln):
-            tok = self._get_nxt_tok(ln, idx)
-            # Encountered whitespace
-            if tok is None:
-                idx += 1
-                continue
-            # Encountered errors
-            elif isinstance(tok, int):
-                return tok
+    def _get_cmd_expr(
+        self,
+        ln: str,
+        start: int
+    ) -> tuple[list[past.SimpCmd], list[past.Op], int] | int:
+        ln_len = len(ln)
+        simp_cmds = []
+        ops = []
 
-            tok_list.append(tok)
-            idx += tok.end - tok.start
+        # Get the first operand
+        simp_cmd = self._get_simp_cmd(ln, start)
+        if isinstance(simp_cmd, int):
+            return simp_cmd
+        simp_cmds.append(simp_cmd)
+        idx = simp_cmd.params[-1].end if simp_cmd.params else start
+        idx = self._skip_ws(ln, ln_len, idx)
 
-        for tok in tok_list:
-            reslvd_tok = self._reslv_esc_chrs(tok)
-            if isinstance(reslvd_tok, int):
-                return reslvd_tok
-            tok_list_reslvd.append(reslvd_tok)
+        while idx < ln_len:
+            # Get the operator
+            curr_ch = ln[idx]
+            if curr_ch in pint.LOGI_OPS:
+                op = self.LOGI_OP_CHR_NODE_MAP[curr_ch](
+                    val=curr_ch,
+                    start=idx,
+                    end=idx + 1
+                )
+            elif curr_ch in pint.DATA_OPS:
+                op = self.DATA_OP_CHR_NODE_MAP[curr_ch](
+                    val=curr_ch,
+                    start=idx,
+                    end=idx + 1
+                )
+            else:
+                return (past.CmdExpr(simp_cmds, ops), idx)
 
-        return tok_list_reslvd
+            ops.append(op)
+            # For the operator character
+            idx += 1
 
-    def parse(self, ln: str) -> \
-            ty.Generator[tuple[list[pint.Tok], pint.SpChr], None, int | None]:
-        to_yield: list[pint.Tok]
+            # Get each subsequent operand
+            idx = self._skip_ws(ln, ln_len, idx)
+            simp_cmd = self._get_simp_cmd(ln, idx)
+            if isinstance(simp_cmd, int):
+                return simp_cmd
+            simp_cmds.append(simp_cmd)
+            idx = simp_cmd.params[-1].end if simp_cmd.params else idx
+            idx = self._skip_ws(ln, ln_len, idx)
 
-        to_yield = []
-        toks = self.lex(ln)
-        if isinstance(toks, int):
-            return toks
+        return (past.CmdExpr(simp_cmds, ops), idx)
 
-        for tok in toks:
-            if isinstance(tok, pint.SpChr):
-                yield (to_yield, tok)
-                to_yield = []
-                continue
-            to_yield.append(tok)
+    def get_cmd_seq(self, ln: str, start: int = 0):
+        ln_len = len(ln)
+        idx = start
+        cmd_exprs = []
 
-        # -2 and -1 are also good here instead of len(ln) - 2 and len(ln) - 1
-        yield (to_yield, pint.SpChr("", len(ln) - 2, len(ln) - 1))
+        idx = self._skip_ws(ln, ln_len, idx)
+        res = self._get_cmd_expr(ln, start)
+        if isinstance(res, int):
+            return cmd_exprs
+        cmd_expr, idx = res
+        cmd_exprs.append(cmd_expr)
+
+        while idx < ln_len:
+            idx = self._skip_ws(ln, ln_len, idx)
+            curr_ch = ln[idx]
+            if curr_ch not in pint.CMD_SEPRS:
+                return uerr.ERR_UNRECOGD_CMD_SEPR
+            # For the command separator character
+            idx += 1
+
+            idx = self._skip_ws(ln, ln_len, idx)
+            res = self._get_cmd_expr(ln, idx)
+            if isinstance(res, int):
+                return cmd_exprs
+            cmd_expr, idx = res
+            cmd_exprs.append(cmd_expr)
+
+        return past.CmdSeq(cmd_exprs)
+
+    def _skip_ws(self, ln: str, ln_len: int, idx: int) -> int:
+        ln_len = len(ln)
+        while idx < ln_len and ln[idx].isspace():
+            idx += 1
+        return idx
+
+    def test(self, ln: str, start: int) -> None:
+        udeb.pprn(self.get_cmd_seq(ln, start))

@@ -1,0 +1,19 @@
+1. feat: commits which add a new feature
+2. fix: commits that fix a bug
+3. refactor: refactored code that neither fix a bug nor add a feature but
+rewrites/restructures your code.
+4. chore: changes that do not relate to a fix or feature and do not modify src
+or test files, and thus, basically miscellaneous commits (for example, updating
+dependencies or modifying .gitignore file)
+5. perf: commits are special refactor commits, geared towards improving
+performance
+6. ci: continuous integration related
+7. ops: commits that affect operational components like infrastructure,
+deployment, backup , recovery, etc.
+8. build: changes that affect the build system, build tool, ci pipeline,
+dependencies, project version, etc.
+9. docs: commits that affect documentation, such as the README
+10. style: changes that do not affect the meaning of the code, likely related
+to code formatting such as whitespace, missing semicolons, etc.
+11. revert: reverts a previous commit
+12. test: commits that add missing tests or correct existing tests

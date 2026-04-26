@@ -17,7 +17,7 @@ HELP = ugen.HelpObj(
         "OPTIONS",
         ("none", ""),
         "FLAGS",
-        ("-N", "Include newlines in character count"),
+        ("-N", "Do not include newlines in character count"),
         ("-p", "Include punctuation in word boundaries"),
         ("-b", "Count bytes (only files)"),
         ("-c", "Count characters"),
@@ -139,11 +139,13 @@ def run(data: ugen.CmdData) -> int:
         show_lns = True
 
     # If input is available in STDIN
-    if data.stdin is not None:
-        in_lns, in_words, in_chrs = get_txt_obj_cnt(data.stdin,
-                                                    words_sepd_by_ws,
-                                                    incl_nls_in_chrs,
-                                                    alpha_patt)
+    if data.stdin:
+        in_lns, in_words, in_chrs = get_txt_obj_cnt(
+            data.stdin,
+            words_sepd_by_ws,
+            incl_nls_in_chrs,
+            alpha_patt
+        )
 
         # len("-") is 1
         max_arg_len = max(max_arg_len, 1)
@@ -151,7 +153,7 @@ def run(data: ugen.CmdData) -> int:
         max_fl_words_len = max(max_fl_words_len, len(in_words))
         max_fl_lns_len = max(max_fl_lns_len, len(in_lns))
 
-        op_buf.append(Out("-", "-", in_chrs, in_words, in_lns))
+        op_buf.append(Out("STDIN", "-", in_chrs, in_words, in_lns))
 
     # Go through arguments, which will considered filenames
     for arg in data.args:
@@ -161,10 +163,12 @@ def run(data: ugen.CmdData) -> int:
             continue
 
         fl_sz, fl_cntnt = res
-        fl_lns, fl_words, fl_chrs = get_txt_obj_cnt(fl_cntnt,
-                                                    words_sepd_by_ws,
-                                                    incl_nls_in_chrs,
-                                                    alpha_patt)
+        fl_lns, fl_words, fl_chrs = get_txt_obj_cnt(
+            fl_cntnt,
+            words_sepd_by_ws,
+            incl_nls_in_chrs,
+            alpha_patt
+        )
 
         max_arg_len = max(max_arg_len, len(arg))
         max_fl_sz_len = max(max_fl_sz_len, len(fl_sz))
@@ -172,11 +176,9 @@ def run(data: ugen.CmdData) -> int:
         max_fl_words_len = max(max_fl_words_len, len(fl_words))
         max_fl_lns_len = max(max_fl_lns_len, len(fl_lns))
 
-        op_buf.append(
-            Out(arg, fl_sz, fl_chrs, fl_words, fl_lns)
-        )
+        op_buf.append(Out(arg, fl_sz, fl_chrs, fl_words, fl_lns))
 
-    # 1 to account for the colon at the end of the filename
+    # 1 to account for colon at the end of filename
     max_arg_len += 1
     for i in op_buf:
         if isinstance(i, Err):
@@ -189,8 +191,10 @@ def run(data: ugen.CmdData) -> int:
         fl_words_fmted = ugen.ljust(i.fl_words, max_fl_words_len)
         fl_lns_fmted = ugen.ljust(i.fl_lns, max_fl_lns_len)
         ugen.write(
-            ugen.ljust(ugen.S.fmt(i.fl_nm, data.is_tty, ugen.S.green_4) + ":",
-                       max_arg_len)
+            ugen.ljust(
+                ugen.S.fmt(i.fl_nm, data.is_tty, ugen.S.green_4) + ":",
+                max_arg_len
+            )
             + ((f" b:" + fl_sz_fmted) if show_bytes else "")
             + ((f" c:" + fl_chrs_fmted) if show_chrs else "")
             + ((f" w:" + fl_words_fmted) if show_words else "")
