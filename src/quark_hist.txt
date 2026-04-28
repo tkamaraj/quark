@@ -1,655 +1,103 @@
-clear
 ls
-ls -l
-hlep
-help
-get
-l
-ls l-
-false
-pwd
-source 
-evl print()
-evl print(end="")
-evl help
-evl help(
-evl help()
-evl help(list)
-ls l
-cmd
-ls -l ./
-ls -l ./donut.c
-whr
-whr ./	
-true
-cmd ls
-cmd ls --color=auto
-cmd ls "--color=auto"
-cmd ls \--color=auto
-cd. /ls
-cd ./
-cd -
-rs
-rs ./scr.qrk
-rf ./scr.qrk
-rf ./src.qrk
-hist
-hist -s
-hist -d
-hist -s
-clear
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-help
-whr ./	
-clear
-where ./
-ls
-ls -l
-clear
-clear
-ls
-ls -l
-clear
-evl help()
-clear
-print
-clear
-help
-ls
-ls -l
-echo
-clear
-help
-ls
-clear
-false
-clear
-true
-clear
-false
-help
-help -a
-clear
-head
-ls
-ls -l
-clear
-head ./txt/
-ls
-ls ./txt/
-head ./txt/03-03-2026.txt
-clear
-ls
-ls -l
-clear
-clear
-clear
-clear
-ls
-sl
-clear
-clear
-ls
-ls -l
-l
-ls
-clear
-ls
-ls ./rofi
-clear
-ls ./rofi/
-ls
-clear
-cd ../
-cd -
-clear
-clear
-rf ./scr.qrk
-clear
-help
-ls
-ls -l
-clear
-ls
-ls
-ls -l
-clear
-ls
-ls -l
-ls
-ls -l
-clear
-help
-rf ./scr.qrk
-clear
-help
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-clear
-ls
-ls -l
-clear
-cd
-ls
-ls
-clear
-cd ./AUR_pulls/
-clear
-ls
-clear
-cd ../
-ls
-clear
-help
-clear
-ls
-clear
-ls
-l
-ll
-clear
-help
-ls
-ls -l
-cmd
-clear
-help
-clear
-help
-clear
-ls
-ls -l
-clear
-help
-clear
-ls
-ls -l
-hlp
-help
-ls
-ls -l
-clear
-help
-clear
-clear
-ls
-ls -l
-clear
-ls
-ls -l
-ls
-ls -l
-clear
-clear
-ls
-ls -l
-clear
-rf ./scr.qrk
-clear
-help
-ls
-l-l
-clear
-clear
-whr ./
-ls
-ls -l
-whr ls
-whr ls ./
-whr ls cd
-ls
-ls -l
-clear
-help
-cmd
-cmd help
-clear
-cmd ~
-cmd !
-clear
-cmd `
-clear
-ls
-ls -l
-clear
-help
-clear
-hell
-clear
-help
-clear
-get
-L
-clear
-ls
-ls -l
-clear
-help
-clear
-set
-true
-get
-get | test
-clear
-ls
-ls -l
-clear
-clear
-ls
-ls -l
-clear
-cd ./	
-ls
-ls -l
-ls
-ls -l
-cd ./finan_mkts/
-ls
-ls
-ls -l
-clear
-ls
-ls -l
-clear
-ls
-ls
-cd ./ltr_drafts/
-ls
-clear
-cd ../
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-clear
-ls
-ls -l
-clear
-ls -l
-clear
-help
-pwd
-clear
-help
-'help
-'help'
-clear
-ls
-ls -ll
-true
-clear
-help
-false
-clear
-help
-ls
-ls -l
-clearh
-clear
-help
-thiruvalluvan
-snoo
-clear
-ls
-ls -l
-clear
-clear
-ls
-ls -l
-ls
-ls -l
-clear
-ls
-ls -l
-clear
-help
-cmd
-cmd ~
-cmd !
-clear
-ls
-ls -l
-clear
-help
-pwd
-ts
-rs
-clear
-rs ./scr.qrk
-clear
-rs ./src/qrk
-rf ./src/qrk
-rf ./src.qrk
-rf ./scr.qrk
-clear
-l
-ls 
-ls -l
-clear
-help
-cd ./txt/
-ls
-ls
-prn ./03-03-2026.txx
-prn ./03-03-2026.txt
-clear
-ls 
-clear
-clear
-ls
-clear
-clear
 ls -l
 clear
 help
 ls
 ls -
 clear
-help
-ls
- l-l
-ls -l
-clear
-help
-ls
-ls -l
-clear
-rm ./	
-ls
-ls -l
-rm ./	
-ls
-ls -l
-rm ./				ahelp
-ls
-ls -l
-cllear
-clear
-help
-ls
-ls -l
-clear
-ls
-ls -l
-p		athi
-clear
-ls
-ls -l
 clear
 clear
 ls
 ls -l
-help -a
 clear
-who
 clear
-host
-machine
+ls -am ? boo.txt
+ls -naks ? boo.txt
+help -asdnk ? boo.txt
+prn ./boo.txt
 clear
-help
+ls -asin ? boo.txt
+prn ./boo.txt
+ls -l | cnt -oiand ? help.txt
+prn ./help.txt
+cnt -oiand
+ls -pakmd ? boo.txt
+as
+prn ./boo.txt
+clear
+heoamsd ? boo.txt
+prn ./boo.txt
+asd
+asd
+asd
 ls
-ls -lm
-ls -help
-ls -help
-clear
 ls -l
-clear
-help -l
-clear
-help
+help ? boo.txt
 ls
-ls -l
-evl
-clear
-help
-get
-get | test
-get --help
-clea
-help get
-clear
-vim 
-!vim
-?
-clear
-hlelp
-help
 l
-sls -l
 clear
-l
-sls -l
+helpoams ? boo.txt
+as
 clear
-lhep
+hlep
+ls
+help -asdm ? boo.txt
+a
 clear
+help
+ls
+ls -la
+ls- lasm
+clear
+ls ~/pojasd ? boo.txt
+a
+help
+evl "import os; os._exit(0)"
+ls
+ls
+clear
+ls
 ls -l
 clear
 help
+ls
+ls
+ls -l
 ls
 ls -l
 clear
 help
 ls
 ls -l
-clear
-help \t
-hlep help
 help ls
+help ls
+clear
+ls
+'s
+;
+'s
+'s'
+clear
+ls
 ls -l
-clear
-unsorted
-clear
 help
-ls
-ls -l
-clear
-false
-ls
-ls -l
-true
-clear
-clear
-ls
-ls -l
-ls
-clear
--l
+ls -l; help
 clear
 ls
 ls -l
 clear
-cler
-clear
-s
+ls -l; help ? none.txt
 ls
-clear
+prn ./help.txt
 ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-clear
-ls
-ls -l
-clear
-ls
-ls \
-lclear
 l
-sl
-ls l
-ls -l
-clear
-help
-ls \
-ls -l ./
-ls -l ~/
+ls ? help
 ls
 ls -l
-clear
-s
-ls
-start 
-clear
-xdg-open
-ls
-ls -l
-clear
-ls
-ls
-clear
-ls
-ls
-clear
-ls
-ls
-ls
-ls
-ls
-ls
-ls
-ls
-ls
-clear
-ls
-ls -l
-hel
-help
-clear
-ls
-ls -l
-ls
-s
-l
-clea
-ls
-clear
-ls
-ls
-ls
-clear
-ls
-ls -l
-ls -l | help
-ls -l | help
-ls -l | wc -l
-ls
-ls
-ls -l | wc -l
-ls -l | cnt -l
-clear
-help
-help | les
-ls -l | cnt -l 
-clear
-ls -l | cnt -l 
-ls -l | cnt -l 
-clear
-ls
-ls -l
-clear
-ls -l | cnt -l
-clear
-ls -l | cnt -l
-ls -l | cnt -l 
-clear
-ls -l | cnt -l
-clear
-ls -l | cnt -l
-ls -l | cnt -l
-ls -l | cnt -l
-clear
-ls -l | cnt -l
-ls -l | cnt -l
-ls -l | cnt -l 
-clear
-ls -l | cnt -l 
-ls -l | cnt -l 
-clear
-ls -l | cnt -l
-clear
-ls -l | cnt -l 
 claer
-clear
 help
-ls -l | cnt -l
 clear
-ls -l | cnt -l
-clear
-ls -l | cnt -l
-ls -l | cnt -l
-ls -l | cnt -l
-ls -l | cnt -l
-ls -l
-ls -l | cnt -l
-ls -l | cnt -l
-clear
-ls -l | cnt -l
-clear
-ls -l | cnt -l
-clear
-ls -l | cnt -l
-clear
-ls -l | cnt -l
-ls -l | cnt -l
-ls -l | cnt -l 
-ls -l | cnt -l
-ls -l | cnt -l
-ls -l | cnt -l
-clear
-ls -l | cnt -l
-ls -l | cnt -l 
-ls -l | cnt -l
-ls -l | cnt -l
-ls -l
-clear
-ls -l
-clear
-ls -l | cnt -l
-clear
-l
-sl
-ls
-sl
-clear
-ls
-ls -l
-cls
-clear
-sle
-sl
-clear
-help
-pwd
-hist
-clear
-ls -allah
-clear
-ls -allah
-clear
-ls
-ls -l
-sl
-get $PATH
-get PTH
-get PATH
-get _PTH_
+rs
 clear
 ls
 ls -l
@@ -659,213 +107,61 @@ ls
 ls -l
 clear
 help
-ltr_drafts
-ltr_drafts/
-./ltr_drafts/
+clear
+clear
+help
+clear
+help
 ls
-ls -
-clear
-cd -
-clear
-ls
-ls -a
-ls -la
-clear
-ls -la
 ls -l
+helpa
 clear
-cd ./de/
-cd ./dev/
-ls
-clear
-cd ./
-sl
-if nmcli -t -f WIFI g | grep -q enabled; then
+h
+help
 clear
 ls
 ls -l
 clear
-ls | wc -l
-ls | cnt -l
+ls
 clear
-ls | cnt -l
-ls -l | cnt -l
+help
+ls
+ls -l
+clear
+ls
+clear
+ls -l
+clear
+help
+helpa
+ls
+ls -l
+clear
+help
+ls
+ls fo
 clear
 ls
 ls -l
+clear
+ls
+clear
+ls -l
+clear
+ls foo.txt
+clear
+ls foo.txt
 clear
 help
 l
-l
-clear
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-l
-l
-ls
-ls -l
-clear
-help
-ls
-ls -l
-help
-whr
-whr ./
-clear
-whr ./
-whr ./help
-whr ls
-clear
-whr ls
-whr ls
-whr ls
-clear
-ls
-whr ls
-whr ls
-whr ls ls
-clear
-whr ls
-whr ls ls
-ls
-whr ls
-ls ~/
-clear
-ls -a ~/
-ls -a ~/
-ls -a \-
-ls -l | cnt -l
-clear
-ls -l | cnt -l
-clear
-ls
-ls -l
-ls -l | cnt -l
-ls
-ls -l
-ls -l | cnt -l
-clear
-clear
-ls
-ls -l
-clear
-ls
-ls -l
-clear
-help
-sl
-ls
-ls -l
-clear
-help
-ls
-ls -l
-help
-ls
-ls -l
-clear
-ls
-clear
-help
-ls
-ls -l
-clear
-help
-cat ./txt/
-prn ./txt/
-prn ./txt/ help
-prn help
-ls
-ls -l
-cnt
-clear
-cache
-help
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-claer
-clear
-clear
-l
-clear
-help
-l
-sls -l
-clear
-hlep
-ls
-ls -l
-clear
-ls
-ls -l
-clear
-ls
-ls -l
-clear
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-ls
-ls -l
-txt
-clear
-getpos)_
-getpos()
-clear
-help
-ls
-ls -l
-why
-whr
-clear
-ls
-whr 1
-clear
-whr ls
-clear
-clear
-ls
-ls -l
-clear
-ls -l | cnt -l
-clear
-ls
-ls 
-ls -l
-help
 pwd
 clear
-help
 ls
 ls -l
-false
-get
 clear
+            ls
 ls
-ls
-clear
+ls -l
 ls
 ls -l
 clear
@@ -873,950 +169,269 @@ help
 ls
 ls -l
 clear
-ls
-clear
-ls
-ls
-ls -l
-clear
-asd
-aspin
-clear
-ls
-ls -l
-clear
-help
-ls
-ls -l
-lear
-]c
-clear
-ls
-ls -l
-help
-          anisdm
-clear
-help
-snoo
-clear
-clear
-sl
-ls
-ls -l
-clear
-ls
-sl
-sl
-sl
-clear
-sl
-ls
-ls -l
-clear
-ls
-ls
-sl
-sl
-sl
-clear
-sl
-sl
-sl
-clear
-sl
-sl
-clear
-123
-sl
-sl
-clear
-sl
-sl
-clear
-ls
-ls
-sl
-sl
-sl
-clear
-ls
-s
-clear
-sl
-sl
-clear
-clear
-sl
-ls
-sl
-clear
-clear
-ls
-sl
-clear
-e
-clear
-clear
-ls
-ls -l
-sl
-clear
-sl
-sl
-clear
-sl
-sl
-clear
-ls
-ls -l
-clear
-help
-sl
-sl
-sl
-sl
-sl
-sl
 ls
 l
-clear
-sl
-clear
-ls
-ls -l
-clear
-help
-as
-asd
-sl -l
-help -a
-clear
-ls ankd
-ls ojnasd
-ls ansk
-ls inakd
-ls
-sl
-sl 
-ls
-ls -l
-clear
-ls -l | cnt -l
-clear
-ls
-ls
-l
-sl
-sl
-as
-clear
-ls
-sl
-clear
-ls
-sl
-ls
-ls -l | cnt -l
-ls -l | cnt -l
-ls -l | cnt -l
-ls -l | cnt -l
-clear
-clear
-clear
-ls -l | cnt -l
-sl
-ls
- l -l
-ls -l
-clear
-ls -l | cnt -l
-clear
-ls -l | cnt -l
-ls -l | cnt -l
-ls -l | cnt -l
-ls
-ls -l | cnt -l
-ls -l
-clear
-help
-ls -l | cnt -l
-ls -l | cnt -l
-sl 
-sl
-clea
-clear
-sl
-clear
-ls
-ls -l
-clear
-ls | | ls
-ls | | ls
-ls -l
-ls | | ls
-ls | | ls
-ls
-clear
-help
-ls
-ls -l
-ls | | ls
-ls | | cnt
-ls | | cnt
-ls | | cnt
-ls | | cnt
-ls | | cnt
-;s
-ls
-ls -l
-ls | cnt
-clear
-ls
-ls | cnt
-clear
-ls | cnt
-ls | cnt
-ls > hee.txt
-ls > hee.txt
-ls > cnt
-ls > cnt
-ls > cnt
-ls > cnt
-ls > cnt
-clear
-ls > cnt
-ls > cnt
-clear
-ls > hee.txt
-ls > hee.txt
-ls | ls
-ls | ls
-clear
-ls | ls
-ls | ls
-ls | cnt
-clear
-ls
-ls -l
-clear
-help
-ls
-ls -l
-whr ls
-ls
-ls -l
-clear
-ls | cnt
-ls
-ls -l
-clear
-ls
-ls -
-ls -
-cd -
-cd -
-clear
-help
-ls
-ls -l
-clear
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-help
 ls
 ls -l
 clear
 help
 ls
 ls
-ls -l
-clear
-ls
-ls -l
-clear
-help
-help 
+ls --help
+help ls
+ls -fl > foo.txt
+prn ./foo.txt
 clear
 help
-l
-ls -l
-cearl
-bluetoothctl
-clear
-!bluetoothctl
-clear
-ls
-ls -l
-clear
-ls -l | cnt -l
-ls
-ls -l
-ls
-ls
-ls
-ls -l | cnt 
-clear
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-clear
-l
-ls
-clear
-ls
-ls
-ls
-ls
-ls
-clear
-ls
-clear
-ls
-clear
-ls
-ls
-ls
-clear
-ls
-clear
-ls
-clear
-ls
-clear
-ls
-ls
-ls
-ls
-ls
-clear
-clear
-ls
-lear
-clear
-ls
-ls
-clear
-ls
-clear
-ls
-clear
-ls
-clear
-ls
-clear
-help
-ls
-clar
-help
-ls
-clear
-help
-ls
-clear
-help
-ls
-clear
-help
-ls
-clear
-clear
-ls
-clear
-ls
-lcear
-ls
-clear
-ls
-ls
-ls
-ls
-ls -l
-ls -l | cnt
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-ls
-ls ./txt/
-clear
-ls
-ls -l
-clear
-clear
-ls
-ls -l
-ls ./txt/
-cnt ./txt/03-03-2026.txt
-cnt ./txt/03-03-2026.txt
-clear
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-ls
-clear
-ls -l | cnt -l
-ls
-ls -l
-clear
-help
-ls
-ls -l
-true
-ls
-ls -l | cnt
-clear
-ls -l | test
-ls -l | test
-clear
-ls -l | test
-l
-ls
-lear
-help
-test
-ls -l | test
-test
-test
-test
-clear
-test
-clear
-test
-test
-clear
-test
-clear
-test
-clear
-celr
-ls
-ls -l
-ls -l | cnt
-ls -l > haha
-ls
-ls -onakd
-ls -onakd ? haha
-ls -anksd ? haha
-ls -anksd > haha
-ls -l > haha
-ls -lasodn > haha
-ls > haha
-clear
-ls
-ls -l
-clear
-ls
-ls
-ls -l
-clear
-ls -ipasd ? haha
-clear
-help
-help -asd
-help -asd ? haha
-help -asd > haha
-clear
-l
-s
-ls -l
-clear
-ls
-ls | test
-clear
-test
-test
-cela
-s
-ls
-ls -l
-clear
-help
-ls
-ls -l
-help b
-ls
-ls -l
-clear
-helpp
-ls
-ls -l
-help
-help
-ls
-ls -l
-whr ls
-ls | cnt
-ls -l | cnt -l
-
-ls | cnt
-ls -l | cnt -l
-help | cnt
-clear
-help | cn
-help | cnt
-clear
-ls
-ls -l | cnt -l
-clear
-help | cn
-ls | cnt
-help | cnt
-clear
-ls | help
-clear
-ls | help
-ls | cnt
-clear
-ls
-ls -l
-clear
-clear
-ls
-ls -l
-clear
-rm
-clear
-ls } cnt
-ls | cnt
-ls | cnt
-cleaer
-ls
-help | cnt
-clear
-ls
-ls
-ls -l
-clear
-help | cnt
-ls  ccnt
-ls | cnt
-ls
-ls -l
-clear
-ls -l | cnt
-ls
-ls -l
-clear
-ls
-ls -l | cnt
-clear
-ls -l
-clear
-ls -l | cnt
-clear
-clear
-test | 
-prn 
-clear
-ls
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-ls -l | cnt
-ls -l | cnt
 ls
 rs ./script.qrk
-rs ./script.qr
-rs ./script.qrk
+rf ./script.qrk
 clear
+help
 ls
 ls -l
-rs ./script.qrk
+clear
 rf ./script.qrk
 rs ./script.qrk
 rs ./script.qrk
+rf ./script.qrk
+rf ./script.qrk
 ls
-ls -l | gelp
-ls -l | help
-ls -l | wc
-ls -l | cnt
-help | cnt
 clear
-ls -l | cnt
+rf ./script.qrk
+rf ./script.qrk
+rf ./script.qrk
+rf ./script.qrk
+rf ./script.qrk
+rf ./script.qrk
+rf ./script.qrk
+rf ./script.qrk
+rf ./script.qrk
+rf ./script.qrk
+rf ./script.qrk
+rf ./script.qrk
+rf ./script.qrk
+rf ./script.qrk
+rf ./script.qrk
+rf ./script.qrk
+rf ./script.qrk
+fg
 clear
-ls -l | cnt
-clear
-ls
 ls
 ls -l
-clear
-help 
+nontxt.
+help
 clear
 help
 ls
 ls -l
-clear
-help | cnt
-help | cnt
-clear
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-ls
-ls -l | cnt
-help | cnt
-clear
-claer
-as
-clear
-ls
-ls -l
-clear
-help
-get
-get -a
-get -adp
-clear
-ls
-ls -l
-ls -l ~/ad
-pad
-clear
-ls
-ls -l
-ls
-ls -l
-clear
-ls
-ls -l
-sl
-ls
-ls -l
-clear
-hlep
-ls
-clear
-l
-ls > haha
-'
-clear
-ls
-ls -l
-ls ? ad
-ls -apsm ? ad
-ls
-ls -l
-clear
-help
-ls
-ls l
-pwd
-clear
-ls
-ls -l
-clear
-ls -l > ad
-ls > ad
-s
-ls
-ls -l
-clear
-ls -l | help
-ls -l | cnt
-help | cnt
-ls
-clear
-help
-help | cnt
-help | cnt
-ls
-ls -l
-ls | cnt
-cnt ./ad
-clear
-help
-ls | cnt
-clear
-ls | cnt ./ad
-clear
-ls
-ls -l
-help
-help | help
-help | cnt
-ls
-ls
-clear
-ls
-ls -l | cmd
-ls
-sl
-l
-l
-l
-ls
-ls
-sl
-ls
-ls -l
-sl
-clear
-ls
-ls -l
-ls
-ls
-ls
-
-ls
-ls -l
-]clear
-help
-help
-help | cnt
-clear
-clear
-ls
-help | cnt
-help;cnt
-clear
-ls
-ls -l
-clear
-ls
-ls
-ls;cnt
-ls;cnt
-clear
-clear
-ls
-ls  | cnt
-clear
-ls | cnt
-ls
-ls
-ls
-ls
-ls
-ls
-clear
-help
-ls
-help > ltr_drafts
-help > ltr_drafts
-ls
-ls
-ls -l
-clear
-test
-test
-clear
-ls
-ls -l
-test
-clear
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-help
-ls
-ls -l
-sl
-ls
-ls -l
-clear
-help
-ls
-ls -l
-clear
-help
-clear
-ls
-ls
-
-ls
-
-ls
-help
-
-clear
-
-clear
-
-thiru
-
-snoo
-
-clear
-
-ls
-
-ls
-
-ls
-
-ls
-
-ls
-
-clear
-
-ls
-
-ls
-
-ls
-ls
-ls -l
-ls
-ls -l
-clear
-thiru
-ls
-ls
-ls -l
-clear
-help
-l
-ls
-ls -l
-help
-ls
-help ls -l help
-help ls -l help
-ls
-ls -l
-clear
-clear
-ls
-clear
-clear
-help
-ls
-ls -l
-ls
-ls
-ls
-clear
-help
-ls
-ls
-ls -l
-clear
-help
-help
-help
-ls
-help
-help | cnt
-clear
-help
-ls
-help | cnt
-ls
-ls
-ls -l
-clear
-help
-c
-cd
-clearr
-help
-ls
-sl
-help
-ls
-ls -l
-clear
-help
-ls -l
-ls -l ./tmp/
-ls
-ls -l
-cd ../
-ls
-rm
-ls
-~
-!
-prn ~/tmp/foo.txt
-clear
-prn ~/tmp/foo.txt
-cnt ~/tmp/foo.txt
-cnt ~/tmp/foo.txt
-ls
-prn ~/tmp/foo.txt
-cnt ~/tmp/foo.txt
-cnt ~/tmp/foo.txt
-cnt ~/tmp/foo.txt
-prn ~/tmp/foo.txt
-clear
-ls
-ls -l
-clear
-help
-ls
-ls -l
-echo
 evl
 clear
-cnt ~/tmp/foo.txt
+help
+help -a
 ls
-prn ./Downloads/
-prn ./Downloads/
-prn ./Downloads/
-prn ./Downloads/
-prn ./Downloads/ -l
-prn -l ~/tmp/foo.txt
-prn -l ~/personal/arch_cmds.md
-prn -l ~/personal/arch_cmds.md
-prn -l ~/personal/arch_cmds.md
+ls -l
+clear
+help
+a
+clear
+help
 ls
-prn ~/personal/arch_cmds.md
-prn ~/personal/arch_cmds.md
-prn ~/personal/arch_cmds.mda
+ls -l
+prn ./boo.txt
+clear
+rm ./boo.txt
+ls
+ls -l
+clear
+sl
+help pakmsd
+help -asod
+ls
+l
+clear
+help
+sl
+clear
+help
+ls
+ls -le
+echo
+clear
+hlp
+help
+cd
+]
+clear
+cd 
+ls
+ls -l
+cd ]
+clear
+ls
+ls -l
+cd [
+cd ./foo.txt
+cd ./txt/
+cd ./ojad
+clear
+cd
+ls
+ls -l
+clear
+help
+help pwd
+help ls
+ls 
+clear
+help ls
+help ls
+ls -l
+help less
+help prn
+clear
+help
+help prn
+clear
+ls
+ls -l
+ls
+ls -l
+clear
+help
+ls
+ls -l
+cmd
+cmd help
+cmd !
+cmd ?
+clear
+cmd [[ if $VER -neq 1 ]]; then echo hello fi
+cmd "[[ if $VER -neq 1 ]]; then echo hello fi"
+clear
+help cmd
+help ls
+help mon
+help help
+help ls cnt
+clear
+ls
+sl 
+ls -l
+help
+ls
+ls -l
+cat ./src/
+ls
+clrat
+prn ~/
+prn !/
+prn !
+prn /
+clear
+md /
+help md
+md -o /
+md /
+clear
+md -o /
+clear
+help
+help -a
+get
+help
+set
+rs
+clear
+rf
+clear
+help
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+help
+cmd
+clear
+ls
+ls -l
+clear
+help
+ls
+ls -l
+whr
+clear
+help
+ls
+ls -l
+clear
+help -a
+set
+rand
+rand -e
+help rand
+rand -i
+rand -i
+rand -i -r 10000000,100000000000000000
+rand -i -r 100000000000000,100000000000000000000
+rand -i -r 100000000000000,100000000000000000000
+rand -i -r 100000000000000,100000000000000000000
+rand -i -r 100000000000000,100000000000000000000
+ls
+clear
+rand -i -r 100000000000000,100000000000000000000
+rand -i -r 100000000000000,100000000000000000000
+rand -i -r 100000000000000,100000000000000000000
+rand -i -r 100000000000000,100000000000000000000
+rand -i -r 100000000000000,100000000000000000000
+rand -i -r 100000000000000,100000000000000000000
+rand -i --range 100000000000000,100000000000000000000
+rand -i --range 100000000000000,100000000000000000000
+rand -i -r 100000000000000,100000000000000000000
+clear
+rand -i -r 100000000000000,100000000000000000000
+rand -i --range 1000000000000000000000000,100000000000000000000
+rand -i --range 1000000000000000000000000,1000000000000000000000000000000000000000000000000000000
+rand -i --range 1000000000000000000000000,100000000000000000000000000000000000000000000000000000000000000000000000000
+rand -i --range 1000000000000000000000000,1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+clear
+rand -i --range 1000000000000000000000000,10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+rand -i --range 1000000000000000000000000,100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000,
+clear
+ls
+ls -l
+ls
+ls -l
+clear
+help
+ls
+ls -l
+help
+ls
+ls -l
+clear
+ls
+ls
+l -l
+ls -l
+clear
+help
+clear
+ls
+ls
+ls -l
+ls
+ls
+ls -l
+clear
+s
+ls
+ls l
+clear
+dir
+dir
+dir
+clear

@@ -1,0 +1,96 @@
+The interpreter crashes when reading `^4`. I know `^\` is SIGQUIT. I tested other sequences, and I didn't find anything else that crashes the interpreter. I also ran `stty -a`, which yielded this:
+```
+speed 38400 baud; rows 28; columns 117; line = 0;
+intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>; eol2 = <undef>; swtch = <undef>; start = ^Q;
+stop = ^S; susp = ^Z; rprnt = ^R; werase = ^W; lnext = ^V; discard = ^O; min = 1; time = 0;
+-parenb -parodd -cmspar cs8 -hupcl -cstopb cread -clocal -crtscts
+-ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr icrnl ixon -ixoff -iuclc -ixany -imaxbel iutf8
+opost -olcuc -ocrnl onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 bs0 vt0 ff0
+isig icanon iexten echo echoe echok -echonl -noflsh -xcase -tostop -echoprt echoctl echoke -flusho -extproc
+```
+I'm on Python 3.14.4 on Arch Linux, kernel version 6.19.13-arch1-1.
+
+An example:
+```python
+#!/usr/bin/env -S python3 -BOO
+import atexit
+import os
+import select
+import sys
+import termios
+import tty
+
+class InpHdlr:
+    def __init__(self) -> None:
+        self.fd = sys.stdin.fileno()
+        self.old_sett = termios.tcgetattr(self.fd)
+        atexit.register(self.reset_sett)
+
+    def set_new_sett(self):
+        tty.setcbreak(self.fd)
+
+    def reset_sett(self) -> None:
+        termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old_sett)
+
+    def kbhit(self, timeout=0):
+        r, _, _ = select.select([self.fd], [], [], timeout)
+        return bool(r)
+
+    def getch(self) -> str:
+        return os.read(self.fd, 1).decode()
+
+def test():
+    h = InpHdlr()
+    h.set_new_sett()
+    k = h.getch()
+    while h.kbhit():
+        k += h.getch()
+    print(repr(k))
+
+test()
+```
+
+I've tried changing `os.read(...)` to `sys.stdin.read` in the hope that it'd change the outcome, but it produced the same result.
+
+This is the core dump I obtained:
+```
+           PID: 2928085 (python3.14)
+           UID: 1000 (vallu)
+           GID: 983 (users)
+        Signal: 3 (QUIT)
+     Timestamp: Sun 2026-04-26 22:35:39 IST (59s ago)
+  Command Line: python3.14 -BOO ./src/test.py
+    Executable: /usr/bin/python3.14
+ Control Group: /user.slice/user-1000.slice/session-c1.scope
+          Unit: session-c1.scope
+         Slice: user-1000.slice
+       Session: c1
+     Owner UID: 1000 (vallu)
+       Boot ID: 418b7d396009454f8c6ca39c1f9d6356
+    Machine ID: 3bcca37ff0fa439883eb9f848307a600
+      Hostname: yaazh
+       Storage: /var/lib/systemd/coredump/core.python3\x2e14.1000.418b7d396009454f8c6ca39c1f9d6356.2928085.1777223139000000.zst (present)
+  Size on Disk: 636.7K
+       Message: Process 2928085 (python3.14) of user 1000 dumped core.
+
+                Stack trace of thread 2928085:
+                #0  0x00007f838e4933be n/a (libc.so.6 + 0x933be)
+                #1  0x00007f838e4933e4 n/a (libc.so.6 + 0x933e4)
+                #2  0x00007f838e50d32e read (libc.so.6 + 0x10d32e)
+                #3  0x00007f838ea9ab46 n/a (libpython3.14.so.1.0 + 0x29ab46)
+                #4  0x00007f838eadb1a9 n/a (libpython3.14.so.1.0 + 0x2db1a9)
+                #5  0x00007f838e97261d PyObject_Vectorcall (libpython3.14.so.1.0 + 0x17261d)
+                #6  0x00007f838e986473 _PyEval_EvalFrameDefault (libpython3.14.so.1.0 + 0x186473)
+                #7  0x00007f838e9816a5 n/a (libpython3.14.so.1.0 + 0x1816a5)
+                #8  0x00007f838ea6f6de PyEval_EvalCode (libpython3.14.so.1.0 + 0x26f6de)
+                #9  0x00007f838eab0301 n/a (libpython3.14.so.1.0 + 0x2b0301)
+                #10 0x00007f838eab0e5b n/a (libpython3.14.so.1.0 + 0x2b0e5b)
+                #11 0x00007f838eab08b7 n/a (libpython3.14.so.1.0 + 0x2b08b7)
+                #12 0x00007f838eab0527 n/a (libpython3.14.so.1.0 + 0x2b0527)
+                #13 0x00007f838ea61dc8 Py_RunMain (libpython3.14.so.1.0 + 0x261dc8)
+                #14 0x00007f838ea5b52b Py_BytesMain (libpython3.14.so.1.0 + 0x25b52b)
+                #15 0x00007f838e4276c1 n/a (libc.so.6 + 0x276c1)
+                #16 0x00007f838e4277f9 __libc_start_main (libc.so.6 + 0x277f9)
+                #17 0x000055909fc90045 _start (/usr/bin/python3.14 + 0x1045)
+                ELF object binary architecture: AMD x86-64
+```

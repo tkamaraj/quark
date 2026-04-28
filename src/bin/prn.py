@@ -46,8 +46,8 @@ def run(data: ugen.CmdData) -> int:
             err_code = err_code or uerr.ERR_IS_A_DIR
             continue
         except OSError as e:
-            ugen.err(f"OS error; {e.strerror}: \"{arg}\"")
-            err_code = err_code or uerr.ERR_INV_ARG
+            err_code = err_code or uerr.ERR_OS_ERR
+            ugen.err(f"OS error; {e.strerror}")
             continue
 
         if not ln_nums:

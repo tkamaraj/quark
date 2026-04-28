@@ -39,9 +39,11 @@ def run(data: ugen.CmdData) -> int:
         except PermissionError:
             ugen.err(f"Access denied: \"{arg}\"")
             return uerr.ERR_PERM_DENIED
-        except OSError:
-            ugen.err(f"Is a directory or invalid argument: \"{arg}\"")
-            return uerr.ERR_INV_ARG
+        except IsADirectoryError:
+            ugen.err(f"Is a directory: \"{arg}\"")
+        except OSError as e:
+            ugen.err(f"OS error; {e.strerror}")
+            return uerr.ERR_OS_ERR
 
     err = uerr.ERR_ALL_GOOD
     for ln in fl_cntnt.splitlines():

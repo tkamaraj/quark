@@ -46,11 +46,12 @@ def ld_hist_fl(mode: str = "r") -> "io.TextIOBase | int":
     except PermissionError:
         ugen.err(f"Access denied: \"{uconst.HIST_FL}\"")
         return uerr.ERR_PERM_DENIED
+    except IsADirectoryError:
+        ugen.err(f"Is a directory: \"{uconst.HIST_FL}\"")
+        return uerr.ERR_IS_A_DIR
     except OSError as e:
-        ugen.err(f"OS error; {e.strerror}: \"{uconst.HIST_FL}\"")
+        ugen.err(f"OS error; {e.strerror}")
         return uerr.ERR_OS_ERR
-    except Exception:
-        return uerr.ERR_UNK_ERR
 
 
 def run(data: ugen.CmdData) -> int:

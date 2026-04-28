@@ -36,7 +36,7 @@ echo -s haha foo bar
 
 ## Building from source
 
-Nuitka 4.0.5 is (currently) required for building the project. See the full
+Nuitka 4.0.8 is (currently) required for building the project. See the full
 list of requirements in `build_reqmts.txt`.
 
 Go to the project root, and build the project with the build script,
@@ -69,38 +69,15 @@ For pre-built binaries, check the
 |-- cfg.py
 |-- main.py
 |-- bin
-|   |-- cnt.py
-|   |-- cp.py
-|   |-- head.py
-|   |-- ls.py
-|   |-- pl.py
-|   |-- prn.py
-|   |-- rand.py
-|   |-- rn.py
-|   |-- stat.py
-|   |-- test.py
-|   `-- whoami.py
+|   `-- ...
 |-- intrpr
 |   |-- cfg_mgr.py
 |   |-- cmd_reslvr.py
 |   |-- eng.py
 |   |-- __init__.py
 |   |-- internals.py
-|   `-- builtin_cmds
-|       |-- cd.py
-|       |-- clear.py
-|       |-- echo.py
-|       |-- exec.py
-|       |-- exit.py
-|       |-- false.py
-|       |-- get.py
-|       |-- help.py
-|       |-- __init__.py
-|       |-- pwd.py
-|       |-- set.py
-|       |-- src.py
-|       |-- true.py
-|       `-- which.py
+|   `-- builtin_cmds/
+|       `-- ...
 |-- parser
 |   |-- eng.py
 |   |-- __init__.py

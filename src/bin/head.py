@@ -45,8 +45,8 @@ def run(data: ugen.CmdData) -> int:
             try:
                 num_of_lns = int(val)
             except ValueError:
-                ugen.err(f"Invalid value for option '{opt}': '{val}'")
-                return uerr.ERR_INV_VAL_TYP_FOR_OPT
+                ugen.err(f"Cannot cast to int for '{opt}': '{val}'")
+                return uerr.ERR_CANT_CAST_VAL
 
     for arg in data.args:
         try:
@@ -60,9 +60,9 @@ def run(data: ugen.CmdData) -> int:
             err_code = err_code or uerr.ERR_PERM_DENIED
             ugen.err(f"Access denied: \"{arg}\"")
             continue
-        except OSError:
-            err_code = err_code or uerr.ERR_INV_ARG
-            ugen.err(f"Invalid argument: '{arg}'")
+        except OSError as e:
+            err_code = err_code or uerr.ERR_OS_ERR
+            ugen.err(f"OS error; {e.strerror}")
             continue
 
         len_num_lns_avail = len(str(len(cntnt)))

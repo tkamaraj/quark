@@ -120,11 +120,11 @@ class CmdReslvr:
                 return uerr.ERR_CMD_SYN_ERR
             except Exception as e:
                 ugen.crit_Q(
-                    f"resolver: loading '{cmd}' raised {e.__class__.__name__}"
+                    f"(resolver) Loading '{cmd}' raised {e.__class__.__name__}"
                 )
                 ugen.lg_to_fl(
                     "c",
-                    f"resolver: loading '{cmd}' raised:\n{tb.format_exc()}"
+                    f"(resolver) Loading '{cmd}' raised:\n{tb.format_exc()}"
                 )
                 return uerr.ERR_CANT_LD_CMD_MOD
             # except RecursionError:
@@ -239,7 +239,7 @@ class CmdReslvr:
 
         help_obj = getattr(cmd_mod, "HELP")
         if not isinstance(help_obj, ugen.HelpObj):
-            return uerr.ERR_MALFORMED_HELP_OBJ
+            return uerr.ERR_INV_HELP_OBJ
         return help_obj
 
     def get_builtin_cmd(self, cmd: str) -> \
@@ -327,9 +327,9 @@ class CmdReslvr:
         if not is_num_fn_params_ok:
             return uerr.ERR_INV_NUM_PARAMS
         if not is_spec_ok:
-            return uerr.ERR_MALFORMED_CMD_SPEC
+            return uerr.ERR_INV_CMD_SPEC
         if not is_help_ok:
-            return uerr.ERR_MALFORMED_HELP_OBJ
+            return uerr.ERR_INV_HELP_OBJ
 
         return (cmd_fn, cmd_spec)
 

@@ -7,10 +7,10 @@ CMD_NM = __name__.split(".")[-1]
 
 HELP = ugen.HelpObj(
     usage=f"{CMD_NM} fl [...]",
-    summary="Run a script in a child process",
+    summary="Run a script in forked child process",
     details=(
         "ARGUMENTS",
-        ("fl", "Script to run"),
+        ("file", "Script to run"),
         "OPTIONS",
         ("none", ""),
         "FLAGS",
@@ -39,9 +39,12 @@ def run(data: ugen.CmdData) -> int:
         except PermissionError:
             ugen.err(f"Access denied: \"{arg}\"")
             return uerr.ERR_PERM_DENIED
-        except OSError:
-            ugen.err(f"Invalid argument: \"{arg}\"")
-            return uerr.ERR_INV_ARG
+        except IsADirectoryError:
+            ugen.err(f"Is a directory: \"{arg}\"")
+            return uerr.ERR_IS_A_DIR
+        except OSError as e:
+            ugen.err(f"OS error; {e.strerror}")
+            return uerr.ERR_OS_ERR
 
     err = uerr.ERR_ALL_GOOD
     for ln in fl_cntnt.splitlines():

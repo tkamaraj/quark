@@ -65,9 +65,9 @@ def cp_fl(
     except PermissionError:
         ugen.err(f"Access denied: cannot copy \"{src}\" => \"{dst}\"")
         return uerr.ERR_PERM_DENIED
-    except OSError:
-        ugen.err("Invalid argument")
-        return uerr.ERR_INV_ARG
+    except OSError as e:
+        ugen.err(f"OS error; {e.strerror}")
+        return uerr.ERR_OS_ERR
 
     return uerr.ERR_ALL_GOOD
 

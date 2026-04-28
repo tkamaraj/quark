@@ -11,6 +11,9 @@ _ANSI_YELLOW = "\x1b[33m"
 _ANSI_BLUE = "\x1b[34m"
 
 PTH = ("@bin",)
+ALIASES = {
+    "dir": "ls"
+}
 
 usr = f"{_ANSI_BLUE}!u{_ANSI_RESET}"
 host = f"{_ANSI_YELLOW}!h{_ANSI_RESET}"

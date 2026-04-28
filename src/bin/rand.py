@@ -39,7 +39,7 @@ def hdl_rng_diff_typs(opt: str, val: str, cast_fns: tuple[type]) \
         -> tuple[ty.Any] | int:
     split_val = val.split(",")
     if len(split_val) != 2:
-        return uerr.ERR_INV_FMT_FOR_OPT
+        return uerr.ERR_INV_OPT_FMT
 
     for cast_fn in cast_fns:
         try:
@@ -75,13 +75,13 @@ def run(data: ugen.CmdData) -> int:
                 round_to = int(val)
             except ValueError:
                 ugen.err(f"Cannot cast to int for option '{opt}': '{val}'")
-                return uerr.ERR_EXPD_INT_VAL_FOR_OPT
+                return uerr.ERR_CANT_CAST_VAL
 
         # Range specifier option
         elif opt in ("-r", "--range"):
             rng = hdl_rng_diff_typs(opt, val, valid_rng_typs)
             if isinstance(rng, int):
-                if rng == uerr.ERR_INV_FMT_FOR_OPT:
+                if rng == uerr.ERR_INV_OPT_FMT:
                     ugen.err(f"Invalid value for option '{opt}': '{val}'")
                     return rng
                 elif rng == uerr.ERR_CANT_CAST_VAL:

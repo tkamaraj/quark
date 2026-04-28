@@ -9,20 +9,20 @@ import utils.gen as ugen
 CMD_NM = __name__.split(".")[-1]
 
 HELP = ugen.HelpObj(
-    usage=f"{CMD_NM} [flag ...] [fl ...] [STDIN]",
+    usage=f"{CMD_NM} [flag ...] [file ...] [STDIN]",
     summary="Count text objects",
     details=(
         "ARGUMENTS",
-        ("fl", "Filename to read"),
+        ("file", "Filename to read"),
         "OPTIONS",
         ("none", ""),
         "FLAGS",
-        ("-N", "Do not include newlines in character count"),
-        ("-p", "Include punctuation in word boundaries"),
-        ("-b", "Count bytes (only files)"),
-        ("-c", "Count characters"),
-        ("-w", "Count words"),
-        ("-l", "Count lines")
+        ("-N, --no-newlines", "Do not include newlines in character count"),
+        ("-p, --include-punctuation", "Include punctuation in word boundaries"),
+        ("-b, --bytes", "Count bytes (only files)"),
+        ("-c, --chars", "Count characters"),
+        ("-w, --words", "Count words"),
+        ("-l, --lines", "Count lines")
     )
 )
 
@@ -30,7 +30,14 @@ CMD_SPEC = ugen.CmdSpec(
     min_args=0,
     max_args=float("inf"),
     opts=(),
-    flags=("-N", "-p", "-b", "-c", "-w", "-l")
+    flags=(
+        "-N", "--no-include-newlines",
+        "-p", "--include-punctuation",
+        "-b", "--bytes",
+        "-c", "--chars",
+        "-w", "--words",
+        "-l", "--lines"
+    )
 )
 
 
@@ -62,19 +69,24 @@ def ld_fl(orig_fl_nm: str) -> tuple[int, str] | Err:
     except PermissionError:
         return Err(f"Access denied: \"{orig_fl_nm}\"", uerr.ERR_PERM_DENIED)
     except UnicodeDecodeError:
-        return Err(f"Does not appear to contain text: \"{orig_fl_nm}\"",
-                   uerr.ERR_DECODE_ERR)
+        return Err(
+            f"Does not appear to contain text: \"{orig_fl_nm}\"",
+            uerr.ERR_DECODE_ERR
+        )
     except IsADirectoryError:
         return Err(f"Is a directory: \"{orig_fl_nm}\"", uerr.ERR_IS_A_DIR)
-    except Exception:
-        return Err(f"Unknown error ({e.__class__.__name__}): \"{orig_fl_nm}\"",
-                   uerr.ERR_UNK_ERR)
+    except OSError as e:
+        return Err(f"OS error; {e.strerror}", uerr.ERR_OS_ERR)
 
     return (str(fl_sz), fl_cntnt)
 
 
-def get_txt_obj_cnt(txt: str, words_sepd_by_ws: bool, incl_nls_in_chrs: bool,
-                    alpha_patt: re.Pattern) -> tuple[int, int, int]:
+def get_txt_obj_cnt(
+    txt: str,
+    words_sepd_by_ws: bool,
+    incl_nls_in_chrs: bool,
+    alpha_patt: re.Pattern
+) -> tuple[int, int, int]:
     # Lines
     lns = txt.count("\n")
     # Words
@@ -87,7 +99,6 @@ def get_txt_obj_cnt(txt: str, words_sepd_by_ws: bool, incl_nls_in_chrs: bool,
         chrs = len(txt)
     else:
         chrs = len(txt.replace("\n", ""))
-
     return (str(lns), str(words), str(chrs))
 
 

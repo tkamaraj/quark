@@ -135,8 +135,8 @@ def run(data: ugen.CmdData) -> int:
             ugen.err(f"Access denied: \"{arg}\"")
             continue
         except OSError:
-            err_code = err_code or uerr.ERR_INV_ARG
-            ugen.err(f"Invalid argument: \"{arg}\"")
+            err_code = err_code or uerr.ERR_OS_ERR
+            ugen.err(f"OS error; {e.strerror}")
             continue
 
         mode = item_stat.st_mode

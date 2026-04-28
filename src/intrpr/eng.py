@@ -55,11 +55,6 @@ def fmt_t_ns(time_expo: int, ns: int) -> str | ty.NoReturn:
         unit = "ns"
     elif time_expo == 9:
         unit = "s"
-    else:
-        ugen.fatal(
-            "Unrecognised debug time unit; this is not supposed to happen",
-            uerr.ERR_UNK_ERR
-        )
 
     return str(round(ns / 10 ** time_expo, 3)) + unit
 
@@ -102,18 +97,18 @@ class Intrpr:
         _t_intrpr_init = time.perf_counter_ns()
 
         self.GET_CMD_ERR_MSG_MAP = {
-            uerr.ERR_BAD_CMD: "bad command",
-            uerr.ERR_NOT_VALID_CMD: "invalid command file",
-            uerr.ERR_NO_CMD_FN: "missing command function",
-            uerr.ERR_NO_CMD_SPEC: "missing command spec",
-            uerr.ERR_NO_HELP_OBJ: "missing help object",
-            uerr.ERR_UNCALLABLE_CMD_FN: "uncallable command function",
-            uerr.ERR_INV_NUM_PARAMS: "bad function argument count",
-            uerr.ERR_MALFORMED_CMD_SPEC: "bad command spec",
-            uerr.ERR_MALFORMED_HELP_OBJ: "bad help oject",
-            uerr.ERR_RECUR_ERR: "recursion limit exceeded",
-            uerr.ERR_CMD_SYN_ERR: "syntax error",
-            uerr.ERR_CANT_LD_CMD_MOD: "load failed"
+            uerr.ERR_BAD_CMD: "Bad command",
+            uerr.ERR_INV_CMD: "Invalid command file",
+            uerr.ERR_NO_CMD_FN: "Missing command function",
+            uerr.ERR_NO_CMD_SPEC: "Missing command spec",
+            uerr.ERR_NO_HELP_OBJ: "Missing help object",
+            uerr.ERR_UNCALLABLE_CMD_FN: "Uncallable command function",
+            uerr.ERR_INV_NUM_PARAMS: "Bad function argument count",
+            uerr.ERR_INV_CMD_SPEC: "Bad command spec",
+            uerr.ERR_INV_HELP_OBJ: "Bad help oject",
+            uerr.ERR_RECUR_ERR: "Recursion limit exceeded",
+            uerr.ERR_CMD_SYN_ERR: "Syntax error",
+            uerr.ERR_CANT_LD_CMD_MOD: "Load failed"
         }
 
         ugen.warn_Q("Exercise caution when running untrusted commands")
@@ -342,7 +337,8 @@ class Intrpr:
         config given.
         """
         self.env_vars.set("_PROMPT_", self.cfg.prompt)
-        expansion = {"@bin": uconst.BIN_PTH, "@prog": uconst.RUN_PTH}
+        self.env_vars.set("_ALIASES_", self.cfg.aliases)
+        # expansions = {"@bin": uconst.BIN_PTH, "@prog": uconst.RUN_PTH}
         pths = []
 
         for pth in self.cfg.pth:
@@ -453,6 +449,7 @@ class Intrpr:
         flags = []
         arg_cnt = 0
         skip = 0
+        params_len = len(params)
 
         # Iterate through the parser output
         for idx, param in enumerate(params):
@@ -462,16 +459,16 @@ class Intrpr:
                 continue
 
             # LONG-FORM OPTIONS AND FLAGS
-            if param_val.startswith("--") and not param.escd_hyphen:
+            if param_val.startswith("--") and not param.escd_hyp:
                 # Flags are given more preference
                 if param_val in cmd_spec.flags:
                     flags.append(param_val)
                 # Then options
                 elif param_val in cmd_spec.opts:
-                    if idx >= len(tok_grp) - 2:
+                    if idx >= params_len - 1:
                         ugen.err(f"Expected value for option '{param_val}'")
-                        return uerr.ERR_EXPECTED_VAL_FOR_OPT
-                    opts[param_val] = tok_grp[idx + 2].val
+                        return uerr.ERR_EXPD_VAL_OPT
+                    opts[param_val] = params[idx + 1].val
                     skip += 1
                 # Invalid long-form option/flag
                 else:
@@ -488,10 +485,10 @@ class Intrpr:
                 if param_val in cmd_spec.flags:
                     flags.append(param_val)
                 elif param_val in cmd_spec.opts:
-                    if idx >= len(tok_grp) - 2:
+                    if idx >= params_len - 1:
                         ugen.err(f"Expected value for option '{param_val}'")
-                        return uerr.ERR_EXPECTED_VAL_FOR_OPT
-                    opts[param_val] = tok_grp[idx + 2].val
+                        return uerr.ERR_EXPD_VAL_OPT
+                    opts[param_val] = params[idx + 1].val
                     skip += 1
                 else:
                     # Lone '-'
@@ -583,6 +580,16 @@ class Intrpr:
         )
 
         if isinstance(get_cmd_res, int):
+            aliases = self.env_vars.get("_ALIASES_")
+            if cmd_nm in aliases:
+                get_cmd_res = self.get_cmd(
+                    aliases[cmd_nm],
+                    self.ext_cached_cmds,
+                    self.cmd_reslvr,
+                    self.env_vars
+                )
+
+        if isinstance(get_cmd_res, int):
             # Write error message to current STDERR
             err_msg = self.GET_CMD_ERR_MSG_MAP.get(
                 get_cmd_res,
@@ -640,6 +647,7 @@ class Intrpr:
         pid = None
         try:
             if cmd_src == "external":
+                ugen.debug("resolved to external command")
                 # Two pipes, 1 and 2, for command output and return code
                 r1, w1 = os.pipe()
                 r2, w2 = os.pipe()
@@ -690,6 +698,7 @@ class Intrpr:
 
             # Built-in command, run in same process as the interpreter
             elif cmd_src == "built-in":
+                ugen.debug("resolved to built-in command")
                 cmd_ret = self.rn_cmd_fn(cmd_fn, data)
                 err_code = err_code or cmd_ret
 
@@ -722,6 +731,10 @@ class Intrpr:
             return iint.CmdCompdObj(tmp)
         args, opts, flags = tmp
 
+        try:
+            term_sz = os.get_terminal_size()
+        except OSError:
+            term_sz = None
         data = ugen.CmdData(
             cmd_nm=cmd_nm,
             args=tuple(args),
@@ -730,10 +743,10 @@ class Intrpr:
             cmd_reslvr=self.cmd_reslvr,
             env_vars=self.env_vars,
             ext_cached_cmds=self.ext_cached_cmds,
-            term_sz=os.get_terminal_size(),
+            term_sz=term_sz,
             is_tty=is_tty,
             stdin=stdin,
-            exec_fn=iint.exec_fn_dummy,
+            exec_fn=self.exec,
             operation=""                        # Dummy as of now
         )
         return self.exec_cmd_fn(cmd_fn, cmd_src, data, stdout_obj, stderr_obj)
@@ -743,6 +756,9 @@ class Intrpr:
         cmd_expr: past.CmdExpr,
         stdin: str
     ):
+        # DEBUG: Expression execute time start
+        _t_exec_expr = time.perf_counter_ns()
+
         syn_ok = self.is_syn_ok(cmd_expr)
         if syn_ok:
             return syn_ok
@@ -769,12 +785,22 @@ class Intrpr:
 
             op = cmd_expr.get_op(i)
             params = simp_cmd.params
+            # Resolve command
+            cmd_nm = params.pop(0).val
+            cmd_resln_res = self.cmd_resln(cmd_nm)
+            if isinstance(cmd_resln_res, int):
+                return cmd_resln_res
+            cmd_fn = cmd_resln_res.cmd_fn
+            cmd_spec = cmd_resln_res.cmd_spec
+            cmd_src = cmd_resln_res.cmd_src
+
             is_tty = True
             is_pipe = isinstance(op, past.Pipe)
             is_redir_stdout = isinstance(op, past.RedirSTDOUT)
             is_redir_stderr = isinstance(op, past.RedirSTDERR)
             stdout_obj = sys.stdout
             stderr_obj = sys.stderr
+
             if is_pipe or is_redir_stdout or is_redir_stderr:
                 is_tty = False
 
@@ -826,23 +852,13 @@ class Intrpr:
                     )
                     return uerr.ERR_PERM_DENIED
                 except OSError as e:
-                    # TODO: Change the error code later
                     ugen.err_Q(
                         f"{err_msg_head} OS error; {e.strerror}"
                     )
                     return uerr.ERR_OS_ERR
                 stderr_obj = stderr_fl
-                self.loop_set_lgr_streams(old_stdout, stderr_fl)
+                self.loop_set_lgr_streams(sys.stderr, stderr_obj)
                 skip += 1
-
-            # Resolve command
-            cmd_nm = params.pop(0).val
-            cmd_resln_res = self.cmd_resln(cmd_nm)
-            if isinstance(cmd_resln_res, int):
-                return cmd_resln_res
-            cmd_fn = cmd_resln_res.cmd_fn
-            cmd_spec = cmd_resln_res.cmd_spec
-            cmd_src = cmd_resln_res.cmd_src
 
             # I don't know what the problem is, but I have to do this to make
             # piping work for expressions involving built-in commands
@@ -867,6 +883,8 @@ class Intrpr:
                 # Undo changes made for piping involving built-in commands
                 if is_pipe and cmd_src == "built-in":
                     sys.stdout = old_stdout
+                if is_redir_stderr:
+                    self.loop_set_lgr_streams(stderr_obj, sys.stderr)
 
             stdin = ""
             if is_pipe:
@@ -875,23 +893,42 @@ class Intrpr:
                     ugen.fmt_d_stmt(
                         "gen",
                         f"STDIN from '{cmd_nm}'",
-                        repr(stdin)
+                        f"{len(stdin)} chrs"
                     )
                 )
 
+        # DEBUG: Expression execute time end
+        ugen.debug_Q(
+            ugen.fmt_d_stmt(
+                "time",
+                "expr_exec",
+                fmt_t_ns(
+                    self.debug_time_expo,
+                    time.perf_counter_ns() - _t_exec_expr
+                )
+            )
+        )
         return err_code
 
     def exec_cmd_seq(self, cmd_seq: past.CmdSeq):
         err_code = uerr.ERR_ALL_GOOD
-        ugen.debug_Q(
-            ugen.fmt_d_stmt(
-                "gen",
-                "exec seq",
-                cmd_seq
-            )
-        )
+        # DEBUG: Full sequence execute time start
+        _t_full_seq = time.perf_counter_ns()
+
         for cmd_expr in cmd_seq:
             err_code = self.exec_cmd_expr(cmd_expr, stdin="")
+
+        # DEBUG: Full sequence execute time end
+        ugen.debug_Q(
+            ugen.fmt_d_stmt(
+                "time",
+                "full_seq_exec",
+                fmt_t_ns(
+                    self.debug_time_expo,
+                    time.perf_counter_ns() - _t_full_seq
+                )
+            )
+        )
         return err_code
 
     def is_syn_ok(self, cmd_expr: past.CmdExpr) -> int:
@@ -950,6 +987,9 @@ class Intrpr:
         """
         cmd_ret = uerr.ERR_ALL_GOOD
 
+        # DEBUG: Run command function time start
+        _t_rn_cmd_fn = time.perf_counter_ns()
+
         try:
             cmd_ret = cmd_fn(data)
         # Variable type mismatch
@@ -969,11 +1009,22 @@ class Intrpr:
         # Other exceptions raised
         except Exception as e:
             cmd_ret = cmd_ret or uerr.ERR_CMD_RNTIME_ERR
-            ugen.crit_Q(f"Errant command: '{data.cmd_nm}'")
-            ugen.crit_Q(f"Raised {e.__class__.__name__}")
-            ugen.crit_Q(f"Message: {e}")
-            ugen.crit_Q(tb.format_exc())
+            ugen.crit_Q(
+                f"Uncaught exception in command '{data.cmd_nm}': {e.__class__.__name__}"
+            )
+            ugen.lg_to_fl("c", tb.format_exc())
 
+        # DEBUG: Run command function time end
+        ugen.debug(
+            ugen.fmt_d_stmt(
+                "time",
+                "rn_cmd_fn",
+                fmt_t_ns(
+                    self.debug_time_expo,
+                    time.perf_counter_ns() - _t_rn_cmd_fn
+                )
+            )
+        )
         return cmd_ret
 
     def exec(self, ln: str):

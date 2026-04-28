@@ -53,9 +53,7 @@ def run(data: ugen.CmdData) -> int:
             err_code = err_code or uerr.ERR_PERM_DENIED
             ugen.err(f"Access denied: cannot create \"{arg}\"")
         except OSError as e:
-            err_code = err_code or uerr.ERR_INV_ARG
-            ugen.err(
-                f"Cannot create directory; {e.strerror}: \"{arg}\""
-            )
+            err_code = err_code or uerr.ERR_OS_ERR
+            ugen.err(f"OS error; {e.strerror}")
 
     return err_code

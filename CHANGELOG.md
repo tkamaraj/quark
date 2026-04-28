@@ -2,6 +2,19 @@
 
 ## Latest commit
 
+Basic alias functionality implemented; minor bug fixes and updates
+
+- `README.md`: Updated and improved a few sections.
+- `src/bin/ls.py`: Added a flag to keep formatting even when no TTY is
+available.
+- `src/utils/gen.py`: Minor bug fixes and changes in inp(...); added SIGSTOP
+handling.
+- `src/intrpr/eng.py`: Implemented aliasing.
+- `src/intrpr/cfg_mgr.py`: Implemented alias support in the config file;
+improved error reporting.
+
+## Commit c8671553518104a1602f10e346492274ac90df78
+
 fix: minor bug fixes, refactor: interpreter engine; ops: change interpreter
 architecture; docs: general update; style: several changes, mainly in external
 commands

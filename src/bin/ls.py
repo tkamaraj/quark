@@ -27,6 +27,7 @@ HELP = ugen.HelpObj(
         ("-a, --all", "Display all (including hidden files)"),
         ("-c, --ctime", "Display CTIME instead of MTIME"),
         ("-e, --case-sensitive", "Case sensitive sort"),
+        ("-f, --format-no-tty", "Format output even if stream is not a TTY (assumed 80 characters)"),
         ("-h, --human-readable", "Display human-readable sizes"),
         ("-i, --inode", "Display inode number in long listing"),
         ("-l, --long-list", "Use long listing format"),
@@ -47,6 +48,7 @@ CMD_SPEC = ugen.CmdSpec(
         "-a", "--all",
         "-c", "--ctime",
         "-e", "--case-sensitive",
+        "-f", "--format-no-tty",
         "-h", "--human-readable",
         "-i", "--inode",
         "-l", "--long-list",
@@ -132,76 +134,6 @@ def esc_item_nm(nm: str, esc_which: EscWhichObj = EscWhichObj()) -> str:
         return "".join(str_arr)
 
 
-def _old_short_list_prn(
-    items: list[tuple[pl.Path, os.stat_result]],
-    slashes: bool,
-    is_tty: bool,
-    term_sz: os.terminal_size
-) -> int:
-    # Behold the most unoptimised and brain-dead algorithm known to mankind
-    to_prn = []
-    max_len = 0
-    padding = 3
-    for_quotes = False
-
-    for (item, item_stat) in items:
-        quotes = False
-        if " " in item.name:
-            for_quotes = True
-
-        if stat.S_ISDIR(item_stat.st_mode):
-            if tmp := [char for char in item.name if char in " \t\r\n\'\""]:
-                quotes = True
-            tmp = item.name + (os.sep if slashes else "")
-            tmp_w_quotes = f"\"{tmp}\"" if quotes else tmp
-            to_prn.append(tmp_w_quotes)
-            max_len = max(max_len, len(tmp_w_quotes))
-        elif stat.S_ISREG(item_stat.st_mode):
-            to_prn.append(
-                f"\"{item.name}\"" if " " in item.name else item.name
-            )
-            max_len = max(max_len, len(item.name))
-        elif stat.S_ISLNK(item_stat.st_mode):
-            to_prn.append(
-                f"\"{item.name}\"" if " " in item.name else item.name
-            )
-            max_len = max(max_len, len(item.name))
-
-    if is_tty:
-        # Assume a 80-character terminal for if errors are encountered when
-        # determining the number of columns
-        cols_avail = 80
-        try:
-            cols_avail = term_sz.columns
-        except OSError:
-            # Happens when STDOUT is not a tty or something? Happened when I
-            # piped output to less
-            pass
-        max_cols = (cols_avail - for_quotes) // (max_len + padding)
-        if max_cols == 0:
-            max_cols = 1
-
-        tmp = []
-
-        for i in range(len(to_prn))[:: max_cols]:
-            tmp.append(to_prn[i : i + max_cols])
-
-        for i in tmp:
-            for idx, j in enumerate(i):
-                has_quotes = "\"" in j
-                ugen.write(
-                    ("" if has_quotes else " ")
-                    + j.ljust(max_len)
-                    + (" " if has_quotes else "")
-                    + "  "
-                )
-            ugen.write("\n")
-
-    else:
-        for i in to_prn:
-            ugen.write(i)
-
-
 def get_items(
     pth: str,
     hidden: bool,
@@ -267,9 +199,9 @@ def get_items(
             ugen.err(f"Access denied: \"{pth}\"")
         # Don't think this is reachable, but is here just to be on the safer
         # side
-        except OSError:
-            err_code = uerr.ERR_INV_PTH
-            ugen.err(f"Invalid path: \"{pth}\"")
+        except OSError as e:
+            err_code = uerr.ERR_OS_ERR
+            ugen.err(f"OS error; {e.strerror}")
 
     # Doesn't exist
     else:
@@ -440,6 +372,7 @@ def short_list_prn(
     symlnk_syms: bool,
     xble_syms: bool,
     is_tty: bool,
+    fmt_no_tty: bool,
     term_sz: os.terminal_size,
 ) -> None:
     """
@@ -501,10 +434,10 @@ def short_list_prn(
         fmted_items_app(nm)
         max_len = max(max_len, len(ugen.rm_ansi("", nm)))
 
-    if is_tty:
+    if is_tty or fmt_no_tty:
         # Assume a 80-character terminal for if errors are encountered when
         # determining the number of columns
-        cols_avail = term_sz.columns
+        cols_avail = 80 if fmt_no_tty else term_sz.columns
         max_cols = cols_avail // (max_len + padding)
         if max_cols <= 0:
             max_cols = 1
@@ -548,6 +481,7 @@ def run(data: ugen.CmdData) -> int:
     case_sensi = "-e" in data.flags or "--case-sensitive" in data.flags
     unsorted = "-u" in data.flags or "--unsorted" in data.flags
     iso = "-o" in data.flags or "--iso" in data.flags
+    fmt_no_tty = "-f" in data.flags or "--format-no-tty" in data.flags
     symlnk_syms = True
     xble_syms = True
     if "-N" in data.flags or "--no-symlink-symbols" in data.flags:
@@ -587,6 +521,7 @@ def run(data: ugen.CmdData) -> int:
                     symlnk_syms=symlnk_syms,
                     xble_syms=xble_syms,
                     is_tty=data.is_tty,
+                    fmt_no_tty=fmt_no_tty,
                     term_sz=data.term_sz
                 )
 
@@ -626,6 +561,7 @@ def run(data: ugen.CmdData) -> int:
                     symlnk_syms=symlnk_syms,
                     xble_syms=xble_syms,
                     is_tty=data.is_tty,
+                    fmt_no_tty=fmt_no_tty,
                     term_sz=data.term_sz
                 )
 

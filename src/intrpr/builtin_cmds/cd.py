@@ -62,17 +62,17 @@ def actually_chg_dir(
             ugen.write(str(pth) + "\n")
     except FileNotFoundError:
         err_code = uerr.ERR_DIR_404
-        ugen.err(f"No such file/directory: \"{pth}\"")
+        ugen.err(f"No such directory: \"{pth}\"")
     except NotADirectoryError:
-        err_code = uerr.ERR_NOT_DIR
+        err_code = uerr.ERR_NOT_A_DIR
         ugen.err(f"Not a directory: \"{pth}\"")
     except PermissionError:
         err_code = uerr.ERR_PERM_DENIED
         ugen.err(f"Access denied: \"{pth}\"")
     # Don't think this is reachable, but let's be on the safer side
-    except OSError:
-        err_code = uerr.ERR_INV_ARG
-        ugen.err(f"Invalid argument: \"{pth}\"")
+    except OSError as e:
+        err_code = uerr.ERR_OS_ERR
+        ugen.err(f"OS error; {e.strerror}")
 
     return err_code
 
@@ -142,11 +142,9 @@ def run(data: ugen.CmdData) -> int:
         except PermissionError:
             ugen.err(f"Cannot make directory; Access denied: \"{chg_to}\"")
             return uerr.ERR_PERM_DENIED
-        except OSError:
-            ugen.err(
-                f"No idea how this might have happened. Invalid path? \"{chg_to}\"",
-            )
-            return uerr.ERR_UNK_ERR
+        except OSError as e:
+            ugen.err(f"OS error; {e.strerror}")
+            return uerr.ERR_OS_ERR
 
     err_code = actually_chg_dir(chg_to, prn_dir, data.env_vars)
     return err_code

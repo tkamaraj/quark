@@ -121,7 +121,7 @@ def parse_argv(passed_params: list[str]) -> MainProgParsed:
             # No value for the option found...
             if i == len_passed_params - 1:
                 ugen.err_Q(f"Expected value for '{param}'\n")
-                sys.exit(uerr.ERR_MP_EXPECTED_VAL_FOR_OPT)
+                sys.exit(uerr.ERR_MP_EXPD_VAL_OPT)
             val = passed_params[i + 1]
             if val == "ms":
                 debug_time_expo = 6
@@ -158,7 +158,7 @@ def main() -> None:
         except PermissionError:
             ugen.warn_Q(f"Access denied: \"{uconst.HIST_FL}\"\n")
         except OSError as e:
-            ugen.warn_Q(f"OS error; {e.strerror}: \"{uconst.HIST_FL}\"\n")
+            ugen.warn_Q(f"OS error; {e.strerror}\n")
         except Exception as e:
             ugen.warn_Q(
                 f"Unknown error; ({e.__class__.__name__}) {e}; cannot write history\n"
@@ -180,6 +180,7 @@ def main() -> None:
             debug_time_expo=parsed_params.debug_time_expo,
             log_lvl=parsed_params.log_lvl
         )
+        inp_hdlr = ugen.InpHdlr()
     except Exception as e:
         ugen.fatal_Q(
             f"During initialisation: {e.__class__.__name__}: {e}",
@@ -193,7 +194,10 @@ def main() -> None:
             ugen.write(intrpr.reslv_prompt(prompt))
             hist_fl.seek(0)
             hist = hist_fl.read().splitlines()
-            raw_ln = ugen.inp(hist=list(dict.fromkeys(hist)))
+            try:
+                raw_ln = ugen.inp(inp_hdlr, hist=list(dict.fromkeys(hist)))
+            finally:
+                inp_hdlr.reset_sett()
             if raw_ln and hist_fl is not None:
                 hist_fl.write(raw_ln + "\n")
                 hist_fl.flush()
@@ -202,12 +206,12 @@ def main() -> None:
 
         # ^c on a built-in command
         except KeyboardInterrupt:
-            intrpr.env_vars.set("_LAST_RET_", uerr.ERR_KEYBOARD_INTERR)
+            intrpr.env_vars.set("_LAST_RET_", uerr.ERR_KB_INTERR)
             ugen.write("\n")
 
         # ^c on an external command
         except ugen.KeyboardInterruptWPrevileges as e:
-            intrpr.env_vars.set("_LAST_RET_", uerr.ERR_KEYBOARD_INTERR)
+            intrpr.env_vars.set("_LAST_RET_", uerr.ERR_KB_INTERR)
             os.kill(e.child_pid, sig.SIGKILL)
             ugen.write("\n")
 

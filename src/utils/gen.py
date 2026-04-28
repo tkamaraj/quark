@@ -3,6 +3,7 @@ import os
 import pathlib as pl
 import re
 import select
+import signal as sig
 import sys
 import termios
 import tty
@@ -57,7 +58,7 @@ class CmdData(ty.NamedTuple):
     cmd_reslvr: "icrsr.CmdReslvr"
     env_vars: "iint.Env"
     ext_cached_cmds: dict[str, "iint.CmdCacheEntry"]
-    term_sz: os.terminal_size
+    term_sz: os.terminal_size | None
     is_tty: bool
     stdin: str | None
     exec_fn: ty.Callable[["ieng.Intrpr", str], int | ty.NoReturn]
@@ -363,7 +364,7 @@ class InpHdlr:
         atexit.register(self.reset_sett)
 
     def set_new_sett(self):
-        tty.setcbreak(self.fd)
+        tty.setraw(self.fd)
 
     def reset_sett(self) -> None:
         termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old_sett)
@@ -376,7 +377,7 @@ class InpHdlr:
         return os.read(self.fd, 1).decode()
 
 
-def inp(hist: str) -> str:
+def inp(inp_hdlr: InpHdlr, hist: str, tab_spaces: int = 4) -> str:
     init_pos = get_pos()
     while init_pos is None:
         init_pos = get_pos()
@@ -391,7 +392,6 @@ def inp(hist: str) -> str:
     # hist.append("")
     hist_len = len(hist)
     hist_pos = hist_len
-    inp_hdlr = InpHdlr()
     inp_hdlr.set_new_sett()
 
     while True:
@@ -399,6 +399,11 @@ def inp(hist: str) -> str:
         full_key = inp_hdlr.getch()
         while inp_hdlr.kbhit():
             full_key += inp_hdlr.getch()
+
+        # For tab completion
+        # write(mv_cur(cur_ln + 1, 0))
+        # write("\x1b[0J")
+        # write(mv_cur(cur_ln, cur_col))
 
         # ^a - move to start of line
         if full_key == "\x01":
@@ -495,17 +500,38 @@ def inp(hist: str) -> str:
                 cur_col -= 1
                 buf.pop(cur_col - init_col)
 
+        # Tab
+        elif full_key == "\t":
+            for i in range(tab_spaces):
+                buf.insert(cur_col - init_col, " ")
+                cur_col += 1
+        # Tab (completion)
+        # elif full_key == "\t":
+        #     mv_cur(cur_ln + 1, 0)
+        #     items = os.listdir(".")
+        #     write(f"\n{mv_cur_col(0)}".join(items))
+        #     mv_cur(cur_ln, cur_col)
+
         # Return
-        elif full_key == "\n":
+        elif full_key in ("\r", "\n"):
             write(mv_cur_col(0) + "\n", flush=True)
             break
+
+        # ^z - send SIGSTOP to self
+        elif full_key == "\x1a":
+            inp_hdlr.reset_sett()
+            os.kill(os.getpid(), sig.SIGSTOP)
+            cur_pos = get_pos()
+            while cur_pos is None:
+                cur_pos = get_pos()
+            cur_ln, cur_col = cur_pos
 
         # Ununsed
         elif full_key in (
             "\x00", "\x1c", "\x1d", "\x1e", "\x1f", "\x7f",        # Number row
-            "\t", "\x11", "\x12", "\x14", "\x19", "\x0f", "\x1c",  # Top row
+            "\x11", "\x12", "\x14", "\x19", "\x0f", "\x1c",        # Top row
             "\x13", "\x07", "\x08", "\n", "\x0b",                  # Middle row
-            "\x1a", "\x18", "\x16", "\x02", "\x0e", "\r", "\x1f",  # Bottom row
+            "\x18", "\x16", "\x02", "\x0e", "\r", "\x1f",          # Bottom row
         ):
             pass
 
@@ -534,9 +560,9 @@ mv_cur_col = lambda col: f"\x1b[{col}G"
 
 
 def test():
-    x = InpHdlr()
-    x.set_new_sett()
-    k = x.getch()
-    while x.kbhit():
-        k += x.getch()
+    h = InpHdlr()
+    h.set_new_sett()
+    k = h.getch()
+    while h.kbhit():
+        k += h.getch()
     print(repr(k))
