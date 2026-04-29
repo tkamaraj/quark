@@ -1028,7 +1028,7 @@ class Intrpr:
         return cmd_ret
 
     def exec(self, ln: str):
-        tmp = self.parser.get_cmd_seq(ln, start=0)
+        tmp = self.parser.get_cmd_seq(ln, os.getcwd(), start=0)
         if isinstance(tmp, int):
             return tmp
         return self.exec_cmd_seq(tmp)

@@ -1,4 +1,3 @@
-import inspect  # TODO: Remove
 import importlib.machinery as ilm
 import typing as ty
 import types
@@ -16,7 +15,6 @@ class CmdCompdObj(ty.NamedTuple):
 
 class CmdCacheEntry(ty.NamedTuple):
     cmd: str
-    # fn: ty.Callable[[CmdData], int]
     spec: ilm.ModuleSpec
     mod: types.ModuleType
     sz: int

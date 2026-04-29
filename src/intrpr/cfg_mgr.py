@@ -99,5 +99,3 @@ def get_cfg() -> Cfg:
             aliases = val
 
     return Cfg(prompt=prompt, pth=pth, aliases=aliases)
-
-

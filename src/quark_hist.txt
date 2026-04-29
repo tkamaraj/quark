@@ -745,3 +745,117 @@ ls -l
 clar
 clear
 clear
+ls *
+ls
+ls
+ls
+l
+ls
+ls
+clear
+help
+ls *
+clear
+help
+ls
+ls -l
+whr ls
+whr cd
+whr cd ls
+whr cd ls
+clear
+help
+ls
+ls -l
+eho
+echo
+pwd
+clear
+help
+cd ../
+ls
+clear
+help
+ls
+clear
+ls
+sl
+clear
+sl
+clear
+help
+sl
+clear
+sl
+ls
+ls -l
+cache
+cache
+cache
+cache
+cache
+cache
+cache
+cache
+cache
+cache
+cache
+cache
+clear
+cache
+cache
+cache
+cache
+cache
+cache -s
+cache
+cache
+cache
+cache -s
+clear
+cache
+cache
+cache -m
+cache -t
+cache -p
+cache -p
+cache -p
+cache -p
+cache -p
+cache -p -m
+cache -p -t
+cache -p -t
+cache
+cache
+cache -m
+cache -p -t
+cache -p-t
+cache -p
+cache -p -t
+cache
+cache -t
+cache -m
+cache -p
+cache -p-t
+cache -p 
+cache -p -t
+cache -p 
+cache -p 
+cache -p 
+clear
+cache -p 
+clear
+cache
+clear
+cache
+cache help
+clear
+cache
+clear
+help
+cache
+cache
+cache help
+cache help
+clear
+cache | test

@@ -28,6 +28,8 @@ impossible to guarantee that a keypress means a particular key.
 2. inp(...): Sometimes raises an IndexError. I'm not sure of what I need to do
 in order to reproduce it, but it's has happened twice or three times now, so
 need to look out for that.
+3. inp(...): alt+d does not seem to work properly. Something broke during the
+getch() re-design and kbhit() implementation.
 
 ### Help command (src/intrpr/builtin_cmds/help.py)
 

@@ -5,6 +5,7 @@
 ### Parser engine (src/intrpr/eng.py)
 
 1. [DONE] Rewrite the parser to return an AST.
+2. Implement globbing.
 
 ## Core interpreter
 

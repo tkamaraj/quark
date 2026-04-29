@@ -2,6 +2,13 @@
 
 ## Latest commit
 
+feat: command cache
+
+- `src/bin/cache.py`: Implemented the cache command.
+- `src/bin/sl.py`: Minor, miscellaneous changes.
+
+## Commit f882e982af26c94cc484eece265040935990012b
+
 chore: add help object in module alias
 
 - `src/bin/alias.py`: Added the help object.

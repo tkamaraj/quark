@@ -34,6 +34,7 @@ QUOTES = ("'", "\"")
 LOGI_OPS = ("&", "^")
 DATA_OPS = ("|", ">", "?")
 CMD_SEPRS = (";",)
+GLOB_CHS = ("*",)
 ESC_CHR_MAP = {
     "\\\\": "\\",
     "\\'": "'",

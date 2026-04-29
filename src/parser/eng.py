@@ -97,21 +97,9 @@ class Parser:
     def _get_nxt_param(
         self,
         ln: str,
+        pth: str,
         start: int
     ) -> past.Tok | past.Op | None | int:
-        """
-        Get the next token from the source line.
-
-        :param ln: The source line to lex.
-        :type ln: str
-
-        :param start: The index to start lexing from in the source.
-        :type start: int
-
-        :returns: A token object, special character object, error code or
-                  NoneType object.
-        :rtype: parser.internals.Tok | parser.internals.SpChr | int | None
-        """
         param: past.Param | past.Op | int | None
 
         # Encountered whitespace
@@ -130,23 +118,26 @@ class Parser:
         if isinstance(param, int):
             return param
 
-        return self._reslv_esc_chrs(param)
+        escd_param = self._reslv_esc_chrs(param)
+        param_len = len(escd_param.val)
+        param_recons = []   # WHAT?!?
+        skip = 0
+        for i, ch in enumerate(escd_param.val, start=start):
+            if skip:
+                skip -= 1
+                continue
+            if ch == "\\" and i < param_len - 1 and ln[i + 1] == "*":
+                skip += 1
+                param_recons.append("*")
+                continue
+            # TODO: Add logic for globbing!
+
+        return escd_param
 
     def _reslv_esc_chrs(
         self,
         param: past.Param | past.Op
     ) -> past.Param | int:
-        """
-        "Resolve" escape characters in tokens lexed. Resolution in this context
-        means escaped characters in the source string to escape characters
-        (like "\\n" to "\n").
-
-        :param tok: The token to "resolve" escape characters in.
-        :type tok: parser.internals.Tok | parser.internals.SpChr
-
-        :returns: The "resolved" token or error code.
-        :rtype: parser.internals.Tok | parser.internals.SpChr | int
-        """
         reslvd_val = []
         param_len = len(param.val)
         skip = 0
@@ -168,7 +159,10 @@ class Parser:
                 return uerr.ERR_LONE_B_SLASH
 
             tmp = pint.ESC_CHR_MAP.get("\\" + param.val[i + 1])
-            if tmp is None:
+            # If 2nd character is not in the escape character dict AND the 2nd
+            # character is not one of the globbing characters, append it as it
+            # is to the array, because, for example, we shouldn't change \*.
+            if tmp is None and param.val[i + 1] not in pint.GLOB_CHS:
                 reslvd_val.append(param.val[i + 1])
             else:
                 reslvd_val.append(tmp)
@@ -195,13 +189,18 @@ class Parser:
                 end=param.end,
             )
 
-    def _get_simp_cmd(self, ln: str, start: int) -> past.SimpCmd | int:
+    def _get_simp_cmd(
+        self,
+        ln: str,
+        pth: str,
+        start: int
+    ) -> past.SimpCmd | int:
         ln_len = len(ln)
         idx = start
         idx = self._skip_ws(ln, ln_len, idx)
         params = []
         while idx < ln_len:
-            nxt_param = self._get_nxt_param(ln, idx)
+            nxt_param = self._get_nxt_param(ln, pth, idx)
             if isinstance(nxt_param, int):
                 return nxt_param
             # When the next parameter is not related to SimpCmd, e.g. an
@@ -216,6 +215,7 @@ class Parser:
     def _get_cmd_expr(
         self,
         ln: str,
+        pth: str,
         start: int
     ) -> tuple[list[past.SimpCmd], list[past.Op], int] | int:
         ln_len = len(ln)
@@ -223,7 +223,7 @@ class Parser:
         ops = []
 
         # Get the first operand
-        simp_cmd = self._get_simp_cmd(ln, start)
+        simp_cmd = self._get_simp_cmd(ln, pth, start)
         if isinstance(simp_cmd, int):
             return simp_cmd
         simp_cmds.append(simp_cmd)
@@ -254,7 +254,7 @@ class Parser:
 
             # Get each subsequent operand
             idx = self._skip_ws(ln, ln_len, idx)
-            simp_cmd = self._get_simp_cmd(ln, idx)
+            simp_cmd = self._get_simp_cmd(ln, pth, idx)
             if isinstance(simp_cmd, int):
                 return simp_cmd
             simp_cmds.append(simp_cmd)
@@ -263,13 +263,13 @@ class Parser:
 
         return (past.CmdExpr(simp_cmds, ops), idx)
 
-    def get_cmd_seq(self, ln: str, start: int = 0):
+    def get_cmd_seq(self, ln: str, pth: str, start: int = 0):
         ln_len = len(ln)
         idx = start
         cmd_exprs = []
 
         idx = self._skip_ws(ln, ln_len, idx)
-        res = self._get_cmd_expr(ln, start)
+        res = self._get_cmd_expr(ln, pth, start)
         if isinstance(res, int):
             return cmd_exprs
         cmd_expr, idx = res
@@ -284,7 +284,7 @@ class Parser:
             idx += 1
 
             idx = self._skip_ws(ln, ln_len, idx)
-            res = self._get_cmd_expr(ln, idx)
+            res = self._get_cmd_expr(ln, pth, idx)
             if isinstance(res, int):
                 return cmd_exprs
             cmd_expr, idx = res
@@ -297,6 +297,3 @@ class Parser:
         while idx < ln_len and ln[idx].isspace():
             idx += 1
         return idx
-
-    def test(self, ln: str, start: int) -> None:
-        udeb.pprn(self.get_cmd_seq(ln, start))
