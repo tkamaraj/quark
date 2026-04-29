@@ -2,6 +2,12 @@
 
 ## Latest commit
 
+chore: add help object in module alias
+
+- `src/bin/alias.py`: Added the help object.
+
+## Commit 7808bcfea2e05080c52c301b3e6ad880712123c8
+
 Basic alias functionality implemented; minor bug fixes and updates
 
 - `README.md`: Updated and improved a few sections.

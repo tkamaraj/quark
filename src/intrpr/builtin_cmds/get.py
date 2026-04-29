@@ -45,7 +45,12 @@ def run(data: ugen.CmdData) -> int:
                 )
             else:
                 to_prn = var.nm
-            ugen.write(to_prn + " = " + repr(var.val) + "\n")
+            ugen.write(
+                to_prn
+                + (" = " if data.is_tty else "=")
+                + repr(var.val)
+                + "\n"
+            )
 
     # This is needed here, with the get statement, to prevent unknown variable
     # names influencing padding
@@ -66,7 +71,12 @@ def run(data: ugen.CmdData) -> int:
                 )
             else:
                 to_prn = arg
-            ugen.write(to_prn + " = " + repr(var_val) + "\n")
+            ugen.write(
+                to_prn
+                + (" = " if data.is_tty else "=")
+                + repr(var_val)
+                + "\n"
+            )
         except ugen.UnkVarErr:
             err_code = err_code or uerr.ERR_ENV_UNK_VAR
             ugen.err(f"Unknown variable: '{arg}'")

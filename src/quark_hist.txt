@@ -435,3 +435,313 @@ dir
 dir
 dir
 clear
+clear
+ls
+alias
+clear
+help
+ls
+ls -l
+clear
+help
+ls
+ls -l
+evl
+ls
+clear
+alias
+alias
+alias
+alias
+clear
+alias
+clear
+alias
+alias
+clear
+clear
+alias
+alias
+alias
+alias 
+clear
+alias
+ll
+ll
+alias
+ls
+alias
+clear
+alias
+clear
+alias
+alias | test
+ls
+clear
+alias
+ls
+alias
+alias | test
+ls
+ls -l
+alias
+clear
+alias | test
+clear
+help
+ls
+ls -l
+clear
+ls
+alias
+alias
+ls
+alias
+alias
+alias | test
+clear
+alias
+alias
+alias
+alias
+alias
+clear
+ls
+ls -l
+l
+ls
+ls -l
+clear
+clear
+help
+rs
+ls
+rs ./script.qrk
+alias | test
+alias | test
+ls
+alias
+alias dir
+alias
+alias dir
+alias
+alias dir
+ls
+alias
+alias dir
+alias dir copy
+clear
+alias dir copy | test
+``
+help
+help alias
+alias oan
+alias 
+clear
+get
+get
+c;ear
+alias
+clear
+ls
+ls -l
+clear
+alias
+alias
+"m'ov=e "
+"m\'ov=e "
+"m'ov=e "
+"m\'ov\=e "
+"m\'ov=e "
+clear
+alias
+"m'ov=e "
+ls
+ls -l
+alias
+alias
+clear
+alias
+clear
+alias
+clear
+help
+ls
+ls -l
+true
+help
+ls
+ls l
+ls
+alias
+alias
+clear
+l
+sl
+ls
+sl -l
+clear
+help
+help -a
+prn
+rd
+rf
+help help
+ls sl
+ls .....
+ls ../
+ls ./
+ls
+clear
+help
+clear
+ls
+alias
+clear
+alias
+alias
+clear
+cfg
+get
+get | test
+get
+get | test
+ls
+clear
+help
+ls
+ls -l
+set
+set help
+help set
+set name 
+set name snoo
+get
+set name sneha
+get
+set name snoo 1
+get
+set name snoo int
+set name PROMPT function
+set name PROMPT callable
+set name "def main(): print(\"Hello world\")" callable
+set name "def main(): print(\"Hello world\")" callable
+set name "def main(): print(\"Hello world\")" callable
+set name "def main():\n\tprint(\"Hello world\")" callabble
+set name "def main():\n\tprint(\"Hello world\")" callable
+set name "def main():\n\tprint(\"Hello world\")" callable
+set name "def main():\n\tprint(\"Hello world\")" callable
+set name "def main():\n\tprint(\"Hello world\")" callable
+set name "def main():\n\tprint(\"Hello world\")" callable
+clear
+help
+set name callable
+get
+set name snoo
+get
+ls
+ls
+ls -l
+clear
+help
+ls
+ls -l
+clear
+get
+alias
+alias | test
+get | test
+clear
+alias
+alias | test
+clear
+help
+ls
+ls -l
+false
+help
+true
+whr
+why
+clear
+help
+ls
+ls -l
+help
+hist
+hist
+clear
+clear
+help
+ls
+ls -l
+clear
+help | test
+ls
+ls -l
+clear
+ls
+ls -l
+clear
+help
+clear
+help
+clear
+help | test
+get
+false
+ls
+ls -l
+true
+clear
+help
+ls
+ls -l
+clear
+help
+ls
+clear
+help
+ls
+ls -l
+clear
+help
+clear
+help
+ls
+ls -l
+clear
+help
+help
+help
+pwd
+clear
+pwd | help
+pwd | wc
+pwd | cnt
+clear
+clear
+alias
+]
+clear
+wc
+wc ./
+clear
+ls
+ls -l
+clear
+help
+wc ./*
+clear
+help
+clear
+help
+ls
+ls -l
+clear
+wc ./*
+ls
+ls -l
+clar
+clear
+clear

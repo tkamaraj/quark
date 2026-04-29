@@ -12,7 +12,9 @@ _ANSI_BLUE = "\x1b[34m"
 
 PTH = ("@bin",)
 ALIASES = {
-    "dir": "ls"
+    "dir": "ls",
+    "copy": "cp",
+    "wc": "cnt"
 }
 
 usr = f"{_ANSI_BLUE}!u{_ANSI_RESET}"

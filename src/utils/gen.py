@@ -10,6 +10,7 @@ import tty
 import types
 import typing as ty
 
+import parser.internals as pint
 import utils.consts as uconst
 import utils.loggers as ulog
 
@@ -132,6 +133,19 @@ def ljust(string: str, amt: int) -> str:
 
 def rjust(string: str, amt: int) -> str:
     return string.rjust(amt + len(string) - len(rm_ansi("", string)))
+
+
+def esc_chrs(s: str, extra: tuple[str]) -> str:
+    to_ret = []
+    for ch in s:
+        if ch in pint.REV_ESC_CHR_MAP:
+            to_ret.append(pint.REV_ESC_CHR_MAP[ch])
+            continue
+        if ch in extra:
+            to_ret.append("\\" + ch)
+            continue
+        to_ret.append(ch)
+    return "".join(to_ret)
 
 
 def set_lgrs(lgrs) -> None:

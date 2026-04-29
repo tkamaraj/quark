@@ -10,13 +10,13 @@ import utils.err_codes as uerr
 CMD_NM = __name__.split(".")[-1]
 
 HELP = ugen.HelpObj(
-    usage=f"{CMD_NM} nm val [typ]",
+    usage=f"{CMD_NM} name value [type]",
     summary="Set an interpreter variable",
     details=(
         "ARGUMENTS",
-        ("nm", "Variable name"),
-        ("val", "Variable value"),
-        ("typ", "Variable type (Python built-in type)"),
+        ("name", "Variable name"),
+        ("value", "Variable value"),
+        ("type", "Variable type (Python built-in type)"),
         "OPTIONS",
         ("none", ""),
         "FLAGS",
@@ -33,6 +33,7 @@ CMD_SPEC = ugen.CmdSpec(
 
 ERR_NO_SUCH_TYP_IN_BUILTINS = 1000
 ERR_INV_VAL_FOR_TYP = 1001
+ERR_TXT_SYN_ERR = 1002
 
 
 class NoTypSpecified:
@@ -70,6 +71,9 @@ def run(data: ugen.CmdData) -> int:
         except ValueError:
             ugen.err(f"Invalid value for type '{var_typ}': '{var_val}'")
             return ERR_INV_VAL_FOR_TYP
+        except SyntaxError:
+            ugen.err("Syntax error: invalid text")
+            return ERR_TXT_SYN_ERR
 
     try:
         data.env_vars.set(var_nm, var_val)
