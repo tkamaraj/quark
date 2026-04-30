@@ -6,7 +6,7 @@
 
 1. [DONE] inp() in still remains largely broken and missing core features.
 
-### Old interpreter engine (OLD ARCHITECTURE) (src/old_vers/intrpr_eng_old_archi.py)
+### [IRRELEVANT] Old interpreter engine (OLD ARCHITECTURE) (src/old_vers/intrpr_eng_old_archi.py)
 
 1. Large text somehow makes io.StringIO buffers empty; I think this may be
 because of the output length being larger than what is reported by the 8 bytes

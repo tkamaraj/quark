@@ -2,6 +2,14 @@
 
 ## Latest commit
 
+fix: input function sequences; doc: added some documentation in same function
+
+- `src/utils/gen.py`: Fixed a few special sequences not working in the input
+function `inp(...)` due to indexing logic problems; Added some documentation in
+the same function.
+
+## Commit b2c1bb5217951568a8c7ab2a76a27c0248dea70c
+
 feat: command cache
 
 - `src/bin/cache.py`: Implemented the cache command.

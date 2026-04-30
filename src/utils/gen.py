@@ -482,16 +482,37 @@ def inp(inp_hdlr: InpHdlr, hist: str, tab_spaces: int = 4) -> str:
             write("Work in progress")
 
         # alt+b or ^left - move one word backward
+        # No buffer modification. While the start of the buffer is not reached
+        # (which happens when current column is same as initial column) and
+        # character before the cursor is to be jumped (trailing whitespace or
+        # actual word character), then move the cursor one character back
         elif full_key in ("\x1bb", "\x1b[1;5D"):
             # Whitespace before cursor and after previous word
             while cur_col > init_col and buf[cur_col - init_col - 1].isspace():
                 cur_col -= 1
-            # The actual word
+            # Actual word
             while (
                 cur_col > init_col
                 and not buf[cur_col - init_col - 1].isspace()
             ):
                 cur_col -= 1
+
+        # alt+d or ^del - kill word forward
+        # Current column does not change; current index in the buffer is
+        # calculated, and while it's less than length of the buffer (ensure
+        # delete range does not go beyond buffer) pop character under cursor
+        # (i.e. character at current index)
+        elif full_key in ("\x1bd", "\x1b[3;5~"):
+            curr_idx = cur_col - init_col
+            # Kill whitespace after cursor and before next word
+            while curr_idx < len(buf) and buf[cur_col - init_col].isspace():
+                buf.pop(cur_col - init_col)
+            # Kill actual word forward
+            while (
+                curr_idx < len(buf)
+                and not buf[cur_col - init_col].isspace()
+            ):
+                buf.pop(cur_col - init_col)
 
         # alt+f or ^right - move one word forward
         elif full_key in ("\x1bf", "\x1b[1;5C"):

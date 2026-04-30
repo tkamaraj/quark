@@ -859,3 +859,29 @@ cache help
 cache help
 clear
 cache | test
+cache | test
+clear
+ls
+ls -l
+cache
+cache -help
+cache -h
+cache \-h
+clear
+help
+ls
+ls -l
+alias
+clear
+alias
+help
+ls
+ls -l
+pwd
+clear
+help
+ls
+clear
+ls
+helps
+clear
