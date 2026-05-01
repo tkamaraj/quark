@@ -2,6 +2,12 @@
 
 ## Latest commit
 
+chore: change default date format
+
+- `src/bin/ls.py`: Changed default output date format.
+
+## Commit dbf3841789622351db17acac3cc8527987ea6adc
+
 fix: input function sequences; doc: added some documentation in same function
 
 - `src/utils/gen.py`: Fixed a few special sequences not working in the input

@@ -885,3 +885,24 @@ clear
 ls
 helps
 clear
+ls
+ls -l
+ls -l
+ls -l
+ls -li
+ls -lo
+ls -lo
+ls -l
+ls -lo
+ls -l
+ls -lo
+ls -l
+clear
+ls
+ls -l
+ls
+ls -l
+cd ./ppt/
+ls
+cd ../
+ls

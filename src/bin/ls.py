@@ -261,7 +261,7 @@ def long_list_prn(
         others_perms = PERM_LOOKUP[mode & 7]
 
         # Times, CTIME and MTIME
-        fmt_str = r"%Y-%m-%d %H:%M:%S" if iso else r"%d-%m-%Y %H:%M.%S"
+        fmt_str = r"%Y-%m-%d %H:%M:%S" if iso else r"%b %d '%y %I.%M%p"
         ctime_timestamp = int(item_stat.st_ctime)
         mtime_timestamp = int(item_stat.st_mtime)
         ctime = dt.datetime.fromtimestamp(ctime_timestamp).strftime(fmt_str)
