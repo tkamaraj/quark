@@ -27,6 +27,7 @@ class Cfg(ty.NamedTuple):
     run: bool
     build_dir: str | None
     out_fl_nm: str | None
+    mode: str
     args: list[str]
 
 
@@ -38,6 +39,8 @@ def parse_args() -> Cfg:
     quiet = True
     show_mods = False
     run = False
+    mode = "standalone"
+    onefile = False
     build_dir = None
     out_fl_nm = None
     args = []
@@ -77,27 +80,31 @@ def parse_args() -> Cfg:
                 sys.exit(1)
             build_dir = toks[i + 1]
             skip = 1
-        elif tok in ("-of", "--output-filename"):
+        elif tok in ("-ofl", "--output-filename"):
             if i == len_toks - 1:
                 sys.stderr.write(f"{called_nm}: Expected value for option '{tok}'\n")
                 sys.exit(1)
             out_fl_nm = toks[i + 1]
             skip = 1
+        elif tok in ("-sa", "--standalone"):
+            mode = "standalone"
+        elif tok in ("-of", "--onefile"):
+            mode = "onefile"
         elif tok == "--":
             parse_opts_flags = False
         else:
             args.append(tok)
 
-    min_num_of_args = 1
-    max_num_of_args = 1
-    if len(args) < min_num_of_args:
+    min_num_args = 1
+    max_num_args = 1
+    if len(args) < min_num_args:
         sys.stderr.write(
-            f"{called_nm}: Insufficient arguments; expected at least {min_num_of_args}, got {len(args)}\n"
+            f"{called_nm}: Insufficient arguments; expected at least {min_num_args}, got {len(args)}\n"
         )
         sys.exit(2)
-    elif len(args) > max_num_of_args:
+    elif len(args) > max_num_args:
         sys.stderr.write(
-            f"{called_nm}: Unexpected arguments; expected at most {max_num_of_args}, got {len(args)}\n"
+            f"{called_nm}: Unexpected arguments; expected at most {max_num_args}, got {len(args)}\n"
         )
         sys.exit(2)
 
@@ -111,6 +118,7 @@ def parse_args() -> Cfg:
         run=run,
         build_dir=build_dir,
         out_fl_nm=out_fl_nm,
+        mode=mode,
         args=args
     )
 
@@ -118,7 +126,7 @@ def parse_args() -> Cfg:
 def main() -> None:
     cfg = parse_args()
 
-    lgr.info(f"Using Python at {sys.executable}")
+    lgr.info(f"Using binary {sys.executable}")
     fl = cfg.args[0]
     base_nm = os.path.splitext(os.path.basename(fl))[0]
     proj_root_dir = os.path.dirname(os.path.dirname(fl))
@@ -133,7 +141,7 @@ def main() -> None:
         "python",
         "-m",
         "nuitka",
-        "--mode=standalone",
+        f"--mode={cfg.mode}",
         "--follow-imports",
         "--python-flag=no_docstrings" if cfg.no_docstrs else "",
         "--lto=yes" if cfg.lto else "--lto=no",

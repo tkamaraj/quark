@@ -170,6 +170,10 @@ def main() -> None:
             parsed_params.log_lvl,
             ulog.CRIT
         )
+        # Recommended not to put any debug, info or warning statements above
+        # this, because even though those functions can handle loggers not
+        # being initialised, they do not obey the log levels, because log
+        # levels aren't available before the following line
         ugen.set_lgrs(lgrs)
         cfg = cmgr.get_cfg()
         intrpr = ieng.Intrpr(
@@ -181,9 +185,10 @@ def main() -> None:
             log_lvl=parsed_params.log_lvl
         )
         inp_hdlr = ugen.InpHdlr()
+        ugen.info_Q(f"Running from \"{uconst.RUN_PTH}\"")
     except Exception as e:
         ugen.fatal_Q(
-            f"During initialisation: {e.__class__.__name__}: {e}",
+            f"Interpreter init failed; {e.__class__.__name__}",
             uerr.ERR_UNK_FATAL,
             exc_txt=tb.format_exc()
         )

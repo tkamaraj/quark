@@ -166,95 +166,57 @@ def lg_to_fl(lvl: str, txt: str) -> None:
 
 
 def fatal(msg: str, ret: int, exc_txt: str | None = None) -> ty.NoReturn:
-    """
-    Reports a fatal error.
-
-    :param msg: The message
-    :type msg: str
-
-    :param ret: Return code for the calling program
-    :type ret: int
-
-    :returns: Error code
-    :rtype: int
-    """
     _lgrs.lgr_c.fatal(msg)
     _lgrs.fl_lgr.fatal(msg if exc_txt is None else exc_txt)
     sys.exit(ret)
 
 
 def fatal_Q(msg: str, ret: int, exc_txt: str | None = None) -> ty.NoReturn:
-    """
-    Reports a fatal interpreter error.
-
-    :param msg: The message
-    :type msg: str
-
-    :param ret: Return code for the calling program
-    :type ret: int
-
-    :returns: Error code
-    :rtype: int
-    """
-    _lgrs.lgr_q.fatal(msg)
-    _lgrs.fl_lgr.fatal(msg if exc_txt is None else exc_txt)
+    # To output to STDERR before initialisation of loggers
+    if _lgrs is not None:
+        _lgrs.lgr_q.fatal(msg)
+        _lgrs.fl_lgr.fatal(msg if exc_txt is None else exc_txt)
+    else:
+        sys.stderr.write(
+            uconst.ANSI_BOLD_RED_4
+            + "FQ:"
+            + uconst.ANSI_RESET
+            + " "
+            + msg
+        )
+        sys.stderr.flush()
     sys.exit(ret)
 
 
 def crit(msg: str) -> None:
-    """
-    Reports a critical error.
-
-    :param msg: The message
-    :type msg: str
-
-    :param ret: The return code to pass on
-    :type ret: int
-    """
     _lgrs.lgr_c.critical(msg)
     _lgrs.fl_lgr.critical(msg)
 
 
 def crit_Q(msg: str) -> None:
-    """
-    Reports a critical interpreter error.
-
-    :param msg: The message
-    :type msg: str
-
-    :param ret: The return code to pass on
-    :type ret: int
-    :rtype: int
-    """
-    _lgrs.lgr_q.critical(msg)
-    _lgrs.fl_lgr.critical(msg)
+    # To output to STDERR before initialisation of loggers
+    if _lgrs is not None:
+        _lgrs.lgr_q.critical(msg)
+        _lgrs.fl_lgr.critical(msg)
+    else:
+        sys.stderr.write(
+            uconst.ANSI_BOLD_RED_4
+            + "CQ:"
+            + uconst.ANSI_RESET
+            + " "
+            + msg
+        )
+        sys.stderr.flush()
+    sys.exit(ret)
 
 
 def err(msg: str) -> None:
-    """
-    Reports an error.
-
-    :param msg: The message
-    :type msg: str
-
-    :param ret: The return code to pass on
-    :type ret: int
-    """
     _lgrs.lgr_c.error(msg)
     _lgrs.fl_lgr.error(msg)
 
 
 def err_Q(msg: str) -> None:
-    """
-    Reports an interpreter error.
-
-    :param msg: The message
-    :type msg: str
-
-    :param ret: The return code to pass on
-    :type ret: int
-    """
-    # To output to STDERR before the initialisation of loggers
+    # To output to STDERR before initialisation of loggers
     if _lgrs is not None:
         _lgrs.lgr_q.error(msg)
         _lgrs.fl_lgr.error(msg)
@@ -275,6 +237,7 @@ def warn(msg: str) -> None:
 
 
 def warn_Q(msg: str) -> None:
+    # To output to STDERR before initialisation of loggers
     if _lgrs is not None:
         _lgrs.lgr_q.warning(msg)
         _lgrs.fl_lgr.warning(msg)
@@ -290,47 +253,44 @@ def warn_Q(msg: str) -> None:
 
 
 def info(msg: str) -> None:
-    """
-    Displays a message.
-
-    :param msg: The message
-    :type msg: str
-    """
     _lgrs.lgr_c.info(msg)
     _lgrs.fl_lgr.info(msg)
 
 
 def info_Q(msg: str) -> None:
-    """
-    Displays an interpreter message.
-
-    :param msg: The message
-    :type msg: str
-    """
-    _lgrs.lgr_q.info(msg)
-    _lgrs.fl_lgr.info(msg)
+    # To output to STDERR before initialisation of loggers
+    if _lgrs is not None:
+        _lgrs.lgr_q.info(msg)
+        _lgrs.fl_lgr.info(msg)
+    else:
+        sys.stderr.write(
+            uconst.ANSI_BOLD_4
+            + "IQ:"
+            + uconst.ANSI_RESET
+            + " "
+            + msg
+        )
+        sys.stderr.flush()
 
 
 def debug(msg: str) -> None:
-    """
-    Displays a debug message.
-
-    :param msg: The message
-    :type msg: str
-    """
     _lgrs.lgr_c.debug(msg)
     _lgrs.fl_lgr.debug(msg)
 
 
 def debug_Q(msg: str) -> None:
-    """
-    Displays an interpreter debug message.
-
-    :param msg: The message
-    :type msg: str
-    """
-    _lgrs.lgr_q.debug(msg)
-    _lgrs.fl_lgr.debug(msg)
+    if _lgrs is not None:
+        _lgrs.lgr_q.debug(msg)
+        _lgrs.fl_lgr.debug(msg)
+    else:
+        sys.stderr.write(
+            uconst.ANSI_BOLD_4
+            + "DQ:"
+            + uconst.ANSI_RESET
+            + " "
+            + msg
+        )
+        sys.stderr.flush()
 
 
 def fmt_d_stmt(src: str, lhs: str, rhs: str | None = None, pad: int = 24) \
@@ -576,6 +536,9 @@ def inp(inp_hdlr: InpHdlr, hist: str, tab_spaces: int = 4) -> str:
         if ins_ch:
             buf.insert(cur_col - init_col, full_key)
             cur_col += 1
+        # cols = os.get_terminal_size().columns
+        # for i, sli in enumerate(buf[:: cols - init_cols]):
+        #     if i 
         write(mv_cur(cur_ln, init_col) + str_join(buf).expandtabs(4))
         write(uconst.ANSI_ERASE_CUR_TO_EOL)
         write(mv_cur_col(cur_col))

@@ -338,12 +338,12 @@ class Intrpr:
         """
         self.env_vars.set("_PROMPT_", self.cfg.prompt)
         self.env_vars.set("_ALIASES_", self.cfg.aliases)
-        # expansions = {"@bin": uconst.BIN_PTH, "@prog": uconst.RUN_PTH}
+        # expansions = {"@bin": uconst.USR_BIN_PTH, "@prog": uconst.RUN_PTH}
         pths = []
 
         for pth in self.cfg.pth:
             if pth.startswith("@bin"):
-                pth = re.sub("^@bin", uconst.BIN_PTH, pth)
+                pth = re.sub("^@bin", uconst.USR_BIN_PTH, pth)
             elif pth.startswith("@prog"):
                 pth = re.sub("^@prog", uconst.RUN_PTH, pth)
             pths.append(str(pl.Path(pth).expanduser().absolute()))
@@ -358,18 +358,30 @@ class Intrpr:
         pths = self.env_vars.get("_PTH_")
         for pth in pths:
             pth = pl.Path(pth).expanduser().resolve()
-            for i in os.scandir(pth):
-                if os.path.isdir(i):
-                    continue
-                if not i.name.endswith(".py"):
-                    continue
-                if i.name == "__init__.py":
-                    continue
-                self.cmd_reslvr.ld_mod(
-                    os.path.splitext(i.name)[0],
-                    self.ext_cached_cmds,
-                    pths
-                )
+            try:
+                for i in os.scandir(pth):
+                    if os.path.isdir(i):
+                        continue
+                    if not i.name.endswith(".py"):
+                        continue
+                    if i.name == "__init__.py":
+                        continue
+                    tmp = self.cmd_reslvr.get_ext_cmd(
+                        os.path.splitext(i.name)[0],
+                        ext_cached_cmds=self.ext_cached_cmds,
+                        pths=pths
+                    )
+                    if isinstance(tmp, int):
+                        continue
+                    ugen.info_Q(f"Loaded {i.path}")
+            except FileNotFoundError:
+                ugen.warn_Q(f"No such directory: \"{pth}\"")
+            except NotADirectoryError:
+                ugen.warn_Q(f"Not a directory: \"{pth}\"")
+            except PermissionError:
+                ugen.warn_Q(f"Access denied; cannot load modules: \"{pth}\"")
+            except OSError as e:
+                ugen.warn_Q(f"OS error; {e.strerror}")
 
     def get_cmd(
         self,

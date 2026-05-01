@@ -5,7 +5,15 @@ VER = "0.1"
 TAB_SZ = 2
 
 RUN_PTH = os.path.dirname(os.path.dirname(__file__))
-BIN_PTH = os.path.join(RUN_PTH, "bin")
+USR_BIN_PTH = os.path.join(os.path.expanduser("~"), "bin")
+SYS_BIN_PTHS = (
+    "/usr/bin",
+    "/usr/sbin",
+    "/usr/local/bin",
+    "/usr/local/sbin",
+    "/bin",
+    "/sbin"
+)
 CFG_FL = os.path.join(RUN_PTH, "cfg.py")
 BUILTIN_PTH = os.path.join(RUN_PTH, "intrpr", "builtin_cmds")
 HIST_FL = os.path.join(RUN_PTH, "quark_hist.txt")
@@ -29,6 +37,22 @@ ANSI_ERASE_CUR_TO_EOL = "\x1b[0K"
 ANSI_ERASE_FULL_LN = "\x1b[2K"
 
 
+# For default prompt value
+usr = f"{ANSI_BLUE_4}!u{ANSI_RESET}"
+host = f"{ANSI_YELLOW_4}!h{ANSI_RESET}"
+cwd = f"{ANSI_GREEN_4}!P{ANSI_RESET}"
+
+
 class Defaults:
-    PROMPT = f"┌ !? {ANSI_BLUE_4}!u{ANSI_RESET}@{ANSI_YELLOW_4}!h{ANSI_RESET} {ANSI_GREEN_4}!P{ANSI_RESET}\n└─❯ "
-    PTH = (BIN_PTH,)
+    PTH = (os.path.join(RUN_PTH, "bin"),)
+    # TODO: Uncomment on final release and remove previous line
+    # PTH = (USR_BIN_PTH, *SYS_BIN_PTHS, os.path.join(RUN_PTH, "bin"))
+
+    # PROMPT = f"┌ !? {ANSI_BLUE_4}!u{ANSI_RESET}@{ANSI_YELLOW_4}!h{ANSI_RESET} {ANSI_GREEN_4}!P{ANSI_RESET}\n└─❯ "
+    def PROMPT(env_vars: "iint.Env") -> str:
+        if env_vars.get("_LAST_RET_") != 0:
+            err = f"{ANSI_RED_4}•!?{ANSI_RESET}"
+        else:
+            err = f"{ANSI_GREEN_4}•{ANSI_RESET}"
+
+        return f"┌ {err} {usr}@{host} {cwd}\n└─❯ "

@@ -93,11 +93,10 @@ class CmdReslvr:
             except FileNotFoundError as e:
                 continue
 
-            if cache_entry is not None \
-                    and not self._is_new_ld_reqd(
-                        fl_stat,
-                        cache_entry
-                    ):
+            if (
+                cache_entry is not None
+                and not self._is_new_ld_reqd(fl_stat, cache_entry)
+            ):
                 return cache_entry.mod
 
             mod_spec = ilu.spec_from_file_location(cmd, fl)

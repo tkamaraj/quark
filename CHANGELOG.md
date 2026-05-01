@@ -2,6 +2,15 @@
 
 ## Latest commit
 
+fix: load all modules in interpreter engine; chore: tweaked config values
+
+- `src/intrpr/eng.py`: Changed how load all modules is handled in the
+interpreter engine.
+- `src/cfg.py`: Moved the prompt function to `src/utils/consts.py`, thus making
+it the default.
+
+## Commit dd2fc566b680c28740e06f7edb5295aeebaf4023
+
 chore: clean up ignored files
 
 ## Commit 313f210292e17a159b7d9c3e56b32dad71daf3e8
