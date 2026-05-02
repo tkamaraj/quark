@@ -2,6 +2,11 @@
 
 ## Latest commit
 
+- `src/bin/ls.py`: Slight performance-related change (maybe noticable for large
+directories)
+
+## Commit a9bce692b03d02b7928b0517ef24e36354115610
+
 feat, refactor: command module ls
 
 - `src/intrpr/builtin_cmds/rs.py`: Removed import of math module and changed

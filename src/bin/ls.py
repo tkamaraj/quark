@@ -168,10 +168,11 @@ def get_items(pth: str, ctx: LsCtx) \
     elif os.path.isdir(pth):
         # Case-sensitivity of sorting by name
         sort_fn = lambda e: (e.name if ctx.case_sensi else e.name.lower())
-        iterator = sorted(os.scandir(pth), key=sort_fn)
-        # Unsorted option, overwrite var iterator
+        # Unsorted listing
         if ctx.unsorted:
             iterator = os.scandir(pth)
+        else:
+            iterator = sorted(os.scandir(pth), key=sort_fn)
 
         # Special directories, i.e. ".." and "."
         if ctx.item_visibility == "all":
