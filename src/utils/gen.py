@@ -207,7 +207,6 @@ def crit_Q(msg: str) -> None:
             + msg
         )
         sys.stderr.flush()
-    sys.exit(ret)
 
 
 def err(msg: str) -> None:

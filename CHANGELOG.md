@@ -2,6 +2,20 @@
 
 ## Latest commit
 
+feat, refactor: command module ls
+
+- `src/intrpr/builtin_cmds/rs.py`: Removed import of math module and changed
+max_args from math.inf to float("inf")
+- `src/bin/ls.py`: Internal restructure (don't know what else to call it) of
+the command, with a new LsCtx (ls context) object added; Minor refactors and
+code improvements; Added flags -t and --almost-all to suppress entries `.` and
+`..`; Fixed a bug where slashes are not inserted at the end of directory names
+by default due to a boolean error
+- `src/intrpr/builtin_cmds/echo.py`: Changed the number of minimum arguments
+from 0 to 1
+
+## Commit b52c590d0a4d6213c6d8ea2c40cbc185fbe141f7
+
 fix: load all modules in interpreter engine; chore: tweaked config values
 
 - `src/intrpr/eng.py`: Changed how load all modules is handled in the

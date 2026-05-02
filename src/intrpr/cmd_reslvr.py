@@ -116,6 +116,13 @@ class CmdReslvr:
             except (FileNotFoundError, ImportError) as e:
                 continue
             except SyntaxError:
+                ugen.crit_Q(
+                    f"(resolver) Syntax error in command module '{cmd}'"
+                )
+                ugen.lg_to_fl(
+                    "c",
+                    f"(resolver) Syntax error in command module '{cmd}':\n{tb.format_exc()}"
+                )
                 return uerr.ERR_CMD_SYN_ERR
             except Exception as e:
                 ugen.crit_Q(

@@ -20,7 +20,7 @@ HELP = ugen.HelpObj(
 )
 
 CMD_SPEC = ugen.CmdSpec(
-    min_args=0,
+    min_args=1,
     max_args=float("inf"),
     opts=("-s", "-e"),
     flags=("-T",)

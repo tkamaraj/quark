@@ -35,6 +35,7 @@ HELP = ugen.HelpObj(
         ("-N, --no-symlink-symbols", "Suppress symlink indicators"),
         ("-o, --iso", "Use ISO-8601 for dates and times"),
         ("-S, --no-slashes", "Suppress slashes at the end of directory names"),
+        ("-t, --almost-all", "Do not list .. and ."),
         ("-u, --unsorted", "Unsorted listing"),
         ("-X, --no-executable-symbols", "Suppress executable indicators")
     )
@@ -56,6 +57,7 @@ CMD_SPEC = ugen.CmdSpec(
         "-N", "--no-symlink-symbols",
         "-o", "--iso",
         "-S", "--no-slashes",
+        "-t", "--almost-all",
         "-u", "--unsorted",
         "-X", "--no-executable-symbols"
     )
@@ -78,6 +80,22 @@ WS = " \t\r\n"
 BSLASH = "\\"
 OTHER = "@*"
 QUOTE_STR = QUOTES + SP_CHRS + WS + BSLASH + OTHER
+
+
+class LsCtx(ty.NamedTuple):
+    long_list: bool
+    item_visibility: str
+    slashes: bool
+    symlnk_syms: bool
+    xble_syms: bool
+    inodes: bool
+    num_inode_lnks: bool
+    human_rdble: bool
+    disp_ctime: bool
+    iso: bool
+    case_sensi: bool
+    unsorted: bool
+    fmt_no_tty: bool
 
 
 class ItemEntry:
@@ -134,74 +152,43 @@ def esc_item_nm(nm: str, esc_which: EscWhichObj = EscWhichObj()) -> str:
         return "".join(str_arr)
 
 
-def get_items(
-    pth: str,
-    hidden: bool,
-    case_sensi: bool,
-    unsorted: bool
-) -> tuple[list[tuple[pl.Path, os.stat_result]], int]:
-    """
-    List a directory.
-
-    :param pth: The path of the file/directory.
-    :type pth: str
-
-    :returns: A tuple containing:
-                 - a list of:
-                     - a tuple containing the path object and stat result of
-                       each item and
-                 - an integer, which is the error code.
-    :rtype: tuple[list[str], int]
-    """
+def get_items(pth: str, ctx: LsCtx) \
+        -> tuple[list[tuple[pl.Path, os.stat_result]], int]:
     err_code = uerr.ERR_ALL_GOOD
     typ = ""
     items = []
 
     # Is a file
     if os.path.isfile(pth):
-        try:
-            fl_obj = FlEntry(pth)
-            fl_stat = fl_obj.lstat()
-            items.append((fl_obj, fl_stat))
-        except FileNotFoundError:
-            err_code = uerr.ERR_FL_DIR_404
-            ugen.err(f"No such file/directory: \"{pth}\"")
+        fl_obj = FlEntry(pth)
+        fl_stat = fl_obj.lstat()
+        items.append((fl_obj, fl_stat))
 
     # Is a directory
     elif os.path.isdir(pth):
-        try:
-            # Unsorted option
-            if unsorted:
-                iterator = os.scandir(pth)
-            else:
-                # Case-sensitivity of sorting by name
-                sort_fn = lambda e: e.name if case_sensi else e.name.lower()
-                iterator = sorted(os.scandir(pth), key=sort_fn)
+        # Case-sensitivity of sorting by name
+        sort_fn = lambda e: (e.name if ctx.case_sensi else e.name.lower())
+        iterator = sorted(os.scandir(pth), key=sort_fn)
+        # Unsorted option, overwrite var iterator
+        if ctx.unsorted:
+            iterator = os.scandir(pth)
 
-            # Special directories, i.e. ".." and "."
-            if hidden:
-                parent = SplDirEntry("..")
-                curr = SplDirEntry(".")
-                items.append((parent, parent.lstat()))
-                items.append((curr, curr.lstat()))
+        # Special directories, i.e. ".." and "."
+        if ctx.item_visibility == "all":
+            parent = SplDirEntry("..")
+            curr = SplDirEntry(".")
+            items.append((parent, parent.lstat()))
+            items.append((curr, curr.lstat()))
 
-            for i in iterator:
-                # Hidden option filtering
-                if not hidden and i.name.startswith("."):
-                    continue
-                items.append((i, i.stat(follow_symlinks=False)))
+        for i in iterator:
+            # Hidden option filtering
+            if (
+                ctx.item_visibility not in ("all", "almost-all")
+                and i.name.startswith(".")
+            ):
+                continue
+            items.append((i, i.stat(follow_symlinks=False)))
 
-        except FileNotFoundError:
-            err_code = uerr.ERR_FL_DIR_404
-            ugen.err(f"No such file/directory: \"{pth}\"")
-        except PermissionError:
-            err_code = uerr.ERR_PERM_DENIED
-            ugen.err(f"Access denied: \"{pth}\"")
-        # Don't think this is reachable, but is here just to be on the safer
-        # side
-        except OSError as e:
-            err_code = uerr.ERR_OS_ERR
-            ugen.err(f"OS error; {e.strerror}")
 
     # Doesn't exist
     else:
@@ -214,14 +201,7 @@ def get_items(
 def long_list_prn(
     items: list[tuple[pl.Path, os.stat_result]],
     is_tty: bool,
-    slashes: bool,
-    inodes: bool,
-    num_inode_lnks: bool,
-    symlnk_syms: bool,
-    xble_syms: bool,
-    human_rdble: bool,
-    disp_ctime: bool,
-    iso: bool
+    ctx: LsCtx
 ) -> None:
     entry: dict[str, ty.Any]
 
@@ -237,7 +217,7 @@ def long_list_prn(
         entry = {}
         mode = item_stat.st_mode
 
-        # Get the item type
+        # Item type
         if stat.S_ISDIR(mode):
             typ = "d"
         elif stat.S_ISREG(mode):
@@ -260,8 +240,8 @@ def long_list_prn(
         grp_perms = PERM_LOOKUP[(mode >> 3) & 7]
         others_perms = PERM_LOOKUP[mode & 7]
 
-        # Times, CTIME and MTIME
-        fmt_str = r"%Y-%m-%d %H:%M:%S" if iso else r"%b %d '%y %I.%M%p"
+        # CTIME and MTIME
+        fmt_str = r"%Y-%m-%d %H:%M:%S" if ctx.iso else r"%b %d '%y %I.%M%p"
         ctime_timestamp = int(item_stat.st_ctime)
         mtime_timestamp = int(item_stat.st_mtime)
         ctime = dt.datetime.fromtimestamp(ctime_timestamp).strftime(fmt_str)
@@ -270,7 +250,7 @@ def long_list_prn(
         # Size
         sz = item_stat.st_size
         sz_char = ""
-        if human_rdble:
+        if ctx.human_rdble:
             sz_len = len(str(sz))
             if 0 <= sz_len <= 3:
                 sz_char = "B"
@@ -309,21 +289,21 @@ def long_list_prn(
 
         nm = item.name
         if is_tty:
+            # Quote names with special characters
             if [ch for ch in nm if ch in QUOTE_STR]:
                 nm = esc_item_nm(nm, esc_which=EscWhichObj(sp_chrs=False))
                 nm = "\"" + nm + "\""
-
+            # Colours
             if typ == "d":
                 nm = ugen.S.fmt(nm, is_tty, ugen.S.green_4)
             else:
                 nm = ugen.S.fmt(nm, is_tty, ugen.S.blue_4)
-
-            if slashes and typ == "d":
+            # Item type symbols
+            if ctx.slashes and typ == "d":
                 nm += os.sep
-            elif symlnk_syms and typ == "l":
+            elif ctx.symlnk_syms and typ == "l":
                 nm += ugen.S.fmt("@", is_tty, ugen.S.magenta_4)
-            # Executable files
-            if xble_syms and typ != "d" and os.access(item.path, os.X_OK):
+            if ctx.xble_syms and typ != "d" and os.access(item.path, os.X_OK):
                 nm += ugen.S.fmt("*", is_tty, ugen.S.cyan_4)
 
         entry["mode"] = mode
@@ -340,24 +320,22 @@ def long_list_prn(
         entry["inode"] = inode
         entry["num_inode_lnk"] = num_inode_lnk
         entry["name"] = nm
-
         to_prn.append(entry)
 
-    # Actually print the data obtained
+    # Actually print data obtained
     for i in to_prn:
         sz_w_chr = str(i["sz"]) + i["sz_char"]
         item_perms = i["owner_perms"] + i["grp_perms"] + i["others_perms"]
-        c_or_mtime = str(i["ctime"]) if disp_ctime else str(i["mtime"])
+        c_or_mtime = str(i["ctime"]) if ctx.disp_ctime else str(i["mtime"])
         padded_inode = str(i["inode"]).rjust(max_inode_len)
         padded_num_inode_lnk = (
             str(i["num_inode_lnk"]).rjust(max_num_inode_lnk_len)
         )
-
         ugen.write(
             i["typ"]
             + " " + item_perms
-            + (("  " + padded_inode) if inodes else "")
-            + (("  " + padded_num_inode_lnk) if num_inode_lnks else "")
+            + (("  " + padded_inode) if ctx.inodes else "")
+            + (("  " + padded_num_inode_lnk) if ctx.num_inode_lnks else "")
             + "  " + i["owner_nm"].ljust(max_owner_nm_len)
             + "  " + c_or_mtime
             + "  " + sz_w_chr.rjust(max_sz_len)
@@ -368,34 +346,10 @@ def long_list_prn(
 
 def short_list_prn(
     items: list[tuple[pl.Path, os.stat_result]],
-    slashes: bool,
-    symlnk_syms: bool,
-    xble_syms: bool,
     is_tty: bool,
-    fmt_no_tty: bool,
     term_sz: os.terminal_size,
+    ctx: LsCtx
 ) -> None:
-    """
-    Short listing for the ls command.
-
-    :param items: Directory items fetched.
-    :type items: list[tuple[pathlib.Path, os.stat_result]]
-
-    :param slashes: Insert slashes at the end of directory names?
-    :type slashes: bool
-
-    :param symlnk_syms: Insert symlink symbol at the end of symlink names?
-    :type symlnk_syms: bool
-
-    :param xble_syms: Insert executable symbols at the end of executable names?
-    :type xble_syms: bool
-
-    :param is_tty: Is STDOUT a TTY?
-    :type is_tty: bool
-
-    :param term_sz: Terminal window size.
-    :type term_sz: os.terminal_size
-    """
     # ALL HAIL THE WORST ls ALGORITHM KNOWN TO MAN!
     fmted_items = []
     fmted_items_app = fmted_items.append
@@ -411,42 +365,39 @@ def short_list_prn(
             quotes = True
 
         if is_tty:
+            # Quote item if contains special chars
             if quotes:
                 nm = esc_item_nm(nm, esc_which=EscWhichObj(sp_chrs=False))
                 nm = "\"" + nm + "\""
-
             is_dir = stat.S_ISDIR(mode)
+            # Colours
             if is_dir:
                 nm = ugen.S.fmt(nm, is_tty, ugen.S.green_4)
             else:
                 nm = ugen.S.fmt(nm, is_tty, ugen.S.blue_4)
-
-            # Directory symbols
-            if slashes and is_dir:
+            # Item type symbols
+            if ctx.slashes and is_dir:
                 nm += os.sep
-            # Symlink symbols
-            if symlnk_syms and stat.S_ISLNK(mode):
+            if ctx.symlnk_syms and stat.S_ISLNK(mode):
                 nm += ugen.S.fmt("@", is_tty, ugen.S.magenta_4)
-            # Executable symbols
-            if xble_syms and not is_dir and os.access(item.path, os.X_OK):
+            if ctx.xble_syms and not is_dir and os.access(item.path, os.X_OK):
                 nm += ugen.S.fmt("*", is_tty, ugen.S.cyan_4)
 
         fmted_items_app(nm)
         max_len = max(max_len, len(ugen.rm_ansi("", nm)))
 
-    if is_tty or fmt_no_tty:
-        # Assume a 80-character terminal for if errors are encountered when
-        # determining the number of columns
-        cols_avail = 80 if fmt_no_tty else term_sz.columns
+    if is_tty or ctx.fmt_no_tty:
+        # Assume 80-character terminal if errors are encountered when
+        # determining number of columns
+        cols_avail = 80 if ctx.fmt_no_tty else term_sz.columns
         max_cols = cols_avail // (max_len + padding)
         if max_cols <= 0:
             max_cols = 1
 
         to_prn = []
-        # col_lens makes the output look more structured, but inefficiencies in
-        # the algorithm make it not the best use of space, which looks enhanced
-        # when the columns are tight-packed by the use of col_lens. I've
-        # removed it for now.
+        # col_lens makes output look more structured, but inefficiencies in the
+        # algorithm make it not the best use of space, which looks enhanced
+        # when columns are tight-packed by use of col_lens. Removed it for now
         col_lens = [0] * max_cols
         num_lns = math.ceil(len(fmted_items) / max_cols)
         for i in range(num_lns):
@@ -470,99 +421,126 @@ def short_list_prn(
 
 def run(data: ugen.CmdData) -> int:
     err_code = uerr.ERR_ALL_GOOD
-
-    long_list = "-l" in data.flags or "--long-list" in data.flags
-    slashes = "-S" in data.flags or "--no-slashes" in data.flags
-    inodes = "-i" in data.flags or "--inode" in data.flags
-    num_inode_lnks = "-m" in data.flags or "--number-inode-links" in data.flags
-    human_rdble = "-h" in data.flags or "--human-readble" in data.flags
-    disp_ctime = "-c" in data.flags or "--ctime" in data.flags
-    hidden = "-a" in data.flags or "--all" in data.flags
-    case_sensi = "-e" in data.flags or "--case-sensitive" in data.flags
-    unsorted = "-u" in data.flags or "--unsorted" in data.flags
-    iso = "-o" in data.flags or "--iso" in data.flags
-    fmt_no_tty = "-f" in data.flags or "--format-no-tty" in data.flags
+    long_list = False
+    inodes = False
+    num_inode_lnks = False
+    human_rdble = False
+    disp_ctime = False
+    item_visibility = "normal"
+    case_sensi = False
+    unsorted = False
+    iso = False
+    fmt_no_tty = False
     symlnk_syms = True
     xble_syms = True
-    if "-N" in data.flags or "--no-symlink-symbols" in data.flags:
-        symlnk_syms = False
-    if "-X" in data.flags or "--no-executable-symbols" in data.flags:
-        xble_syms = False
+    slashes = True
+
+    for flag in data.flags:
+        if flag in ("-l", "--long-list"):
+            long_list = True
+        elif flag in ("-i", "--inode"):
+            inodes = True
+        elif flag in ("-m", "--number-inode-links"):
+            num_inode_lnks = True
+        elif flag in ("-h", "--human-readble"):
+            human_rdble = True
+        elif flag in ("-c", "--ctime"):
+            disp_ctime = True
+        elif flag in ("-a", "--all"):
+            item_visibility = "all"
+        elif flag in ("-e", "--case-sensitive"):
+            case_sensi = True
+        elif flag in ("-u", "--unsorted"):
+            unsorted = True
+        elif flag in ("-o", "--iso"):
+            iso = True
+        elif flag in ("-f", "--format-no-tty"):
+            fmt_no_tty = True
+        elif flag in ("-t", "--almost-all"):
+            item_visibility = "almost-all"
+        elif flag in ("-S", "--no-slashes"):
+            slashes = False
+        elif flag in ("-N", "--no-symlink-symbols"):
+            symlnk_syms = False
+        elif flag in ("-X", "--no-executable-symbols"):
+            xble_syms = False
+
+    ctx = LsCtx(
+        long_list=long_list,
+        item_visibility=item_visibility,
+        symlnk_syms=symlnk_syms,
+        xble_syms=xble_syms,
+        slashes=slashes,
+        inodes=inodes,
+        num_inode_lnks=num_inode_lnks,
+        human_rdble=human_rdble,
+        disp_ctime=disp_ctime,
+        iso=iso,
+        case_sensi=case_sensi,
+        unsorted=unsorted,
+        fmt_no_tty=fmt_no_tty
+    )
 
     # No arguments
     if not data.args:
-        items, err_code = get_items(
-            os.path.expanduser("./"),
-            hidden=hidden,
-            case_sensi=case_sensi,
-            unsorted=unsorted
-        )
+        try:
+            items, err_code = get_items(os.path.expanduser("./"), ctx)
+        # FileNotFoundError, PermissionError will be caused by race conditions
+        except FileNotFoundError:
+            ugen.err(f"No such file/directory: \"{pth}\"")
+            return uerr.ERR_FL_DIR_404
+        except PermissionError:
+            ugen.err(f"Access denied: \"{pth}\"")
+            return uerr.ERR_PERM_DENIED
+        except OSError as e:
+            ugen.err(f"OS error; {e.strerror}")
+            return uerr.ERR_OS_ERR
 
-        # No errors encountered when getting items from current directory
         if not err_code:
             ugen.write(ugen.S.fmt("./", data.is_tty, ugen.S.green_4) + "\n")
             if long_list:
-                long_list_prn(
-                    items,
-                    is_tty=data.is_tty,
-                    slashes=slashes,
-                    inodes=inodes,
-                    num_inode_lnks=num_inode_lnks,
-                    symlnk_syms=symlnk_syms,
-                    xble_syms=xble_syms,
-                    human_rdble=human_rdble,
-                    disp_ctime=disp_ctime,
-                    iso=iso
-                )
+                long_list_prn(items, is_tty=data.is_tty, ctx=ctx)
             else:
                 short_list_prn(
                     items,
-                    slashes=slashes,
-                    symlnk_syms=symlnk_syms,
-                    xble_syms=xble_syms,
                     is_tty=data.is_tty,
-                    fmt_no_tty=fmt_no_tty,
-                    term_sz=data.term_sz
+                    term_sz=data.term_sz,
+                    ctx=ctx
                 )
 
     # Yes arguments
     else:
         for arg in data.args:
-            items, tmp_err_code = get_items(
-                os.path.expanduser(arg),
-                hidden=hidden,
-                case_sensi=case_sensi,
-                unsorted=unsorted
-            )
-            err_code = err_code or tmp_err_code
+            try:
+                items, tmp_err_code = get_items(
+                    os.path.expanduser(arg),
+                    ctx=ctx
+                )
+                err_code = err_code or tmp_err_code
+            # FileNotFoundError, PermissionError will be due to race conditions
+            except FileNotFoundError:
+                err_code = err_code or uerr.ERR_FL_DIR_404
+                ugen.err(f"No such file/directory: \"{pth}\"")
+            except PermissionError:
+                err_code = err_code or uerr.ERR_PERM_DENIED
+                ugen.err(f"Access denied: \"{pth}\"")
+            except OSError as e:
+                err_code = err_code or uerr.ERR_OS_ERR
+                ugen.err(f"OS error; {e.strerror}")
 
-            # Errors has been encountered when getting items for this argument
+            # Errors encountered when "getting" items for current argument
             if tmp_err_code:
                 continue
 
             ugen.write(ugen.S.fmt(arg, data.is_tty, ugen.S.green_4) + "\n")
             if long_list:
-                long_list_prn(
-                    items,
-                    is_tty=data.is_tty,
-                    slashes=slashes,
-                    symlnk_syms=symlnk_syms,
-                    xble_syms=xble_syms,
-                    inodes=inodes,
-                    num_inode_lnks=num_inode_lnks,
-                    human_rdble=human_rdble,
-                    disp_ctime=disp_ctime,
-                    iso=iso
-                )
+                long_list_prn(items, is_tty=data.is_tty, ctx=ctx)
             else:
                 short_list_prn(
                     items,
-                    slashes=slashes,
-                    symlnk_syms=symlnk_syms,
-                    xble_syms=xble_syms,
                     is_tty=data.is_tty,
-                    fmt_no_tty=fmt_no_tty,
-                    term_sz=data.term_sz
+                    term_sz=data.term_sz,
+                    ctx=ctx
                 )
 
     return err_code

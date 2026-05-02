@@ -1,5 +1,3 @@
-import math
-
 import utils.err_codes as uerr
 import utils.gen as ugen
 
@@ -20,7 +18,7 @@ HELP = ugen.HelpObj(
 
 CMD_SPEC = ugen.CmdSpec(
     min_args=1,
-    max_args=math.inf,
+    max_args=float("inf"),
     opts=(),
     flags=()
 )
@@ -41,6 +39,7 @@ def run(data: ugen.CmdData) -> int:
             return uerr.ERR_PERM_DENIED
         except IsADirectoryError:
             ugen.err(f"Is a directory: \"{arg}\"")
+            return uerr.ERR_IS_A_DIR
         except OSError as e:
             ugen.err(f"OS error; {e.strerror}")
             return uerr.ERR_OS_ERR
