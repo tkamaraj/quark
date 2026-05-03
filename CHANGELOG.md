@@ -2,6 +2,14 @@
 
 ## Latest commit
 
+feat: command module pl process filtering
+
+- `src/bin/pl.py`: Added process filtering.
+
+## Commit 0ca6ba44f6c21c457a167d0a29233f24dcc66d54
+
+perf: command module ls
+
 - `src/bin/ls.py`: Slight performance-related change (maybe noticable for large
 directories)
 

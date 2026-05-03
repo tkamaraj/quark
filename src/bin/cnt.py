@@ -166,7 +166,7 @@ def run(data: ugen.CmdData) -> int:
 
         op_buf.append(Out("STDIN", "-", in_chrs, in_words, in_lns))
 
-    # Go through arguments, which will considered filenames
+    # Go thru arguments, which are considered filenames
     for arg in data.args:
         res = ld_fl(arg)
         if isinstance(res, Err):
@@ -189,7 +189,7 @@ def run(data: ugen.CmdData) -> int:
 
         op_buf.append(Out(arg, fl_sz, fl_chrs, fl_words, fl_lns))
 
-    # 1 to account for colon at the end of filename
+    # 1 to account for colon at end of filename
     max_arg_len += 1
     for i in op_buf:
         if isinstance(i, Err):

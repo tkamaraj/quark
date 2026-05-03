@@ -1,4 +1,4 @@
-# TODO: Add process filtering
+import re
 import subprocess as sp
 import typing as ty
 
@@ -8,23 +8,32 @@ import utils.gen as ugen
 CMD_NM = __name__.split(".")[-1]
 
 HELP = ugen.HelpObj(
-    usage=f"{CMD_NM} [flag]",
+    usage=f"{CMD_NM} [flag ...] proc ...",
     summary="Get a list of running processes",
     details=(
         "ARGUMENTS",
-        ("none", ""),
+        (
+            "proc",
+            "Regex to match with process names, unless -e/--exact is given"
+        ),
         "OPTIONS",
         ("none", ""),
         "FLAGS",
-        ("-l, --long", "Process long listing")
+        ("-l, --long", "Process long listing"),
+        ("-e, --escape", "Escape regex strings"),
+        ("-x, --exact", "Exactly match arguments")
     )
 )
 
 CMD_SPEC = ugen.CmdSpec(
     min_args=0,
-    max_args=0,
+    max_args=float("inf"),
     opts=(),
-    flags=("-l", "--long")
+    flags=(
+        "-l", "--long",
+        "-x", "--exact",
+        "-e", "--escape"
+    )
 )
 
 ERR_CANT_GET_PROC_LIST = 1000
@@ -36,7 +45,17 @@ tuple7 = tuple[T, T, T, T, T, T, T]
 
 def run(data: ugen.CmdData) -> int:
     err_code = uerr.ERR_ALL_GOOD
-    long = "-l" in data.flags or "--long" in data.flags
+    long = False
+    esc_patt = False
+    exact_match = False
+
+    for flag in data.flags:
+        if flag in ("-l", "--long"):
+            long = True
+        elif flag in ("-e", "--escape"):
+            esc_patt = True
+        elif flag in ("-x", "--exact"):
+            exact_match = True
 
     if long:
         ps_fmt_str = "uid,pid,ppid,psr,stime,time,cmd"
@@ -52,7 +71,7 @@ def run(data: ugen.CmdData) -> int:
         return ERR_CANT_GET_PROC_LIST
     stdout = compd_proc.stdout.splitlines()
 
-    op_buf = []
+    proc_list = []
     len_arr = []
 
     for ln in stdout:
@@ -60,16 +79,43 @@ def run(data: ugen.CmdData) -> int:
         # "If sep is not specified or is None, a different splitting algorithm
         # is applied: runs of consecutive whitespace are regarded as a single
         # separator, [...]"
-        out = ln.split(None, maxsplit=num_cols - 1)
-        op_buf.append(tuple(out))
+        out = ln.split(None, maxsplit=num_cols)
+        proc_list.append(tuple(out))
         len_arr.append(tuple(map(len, out)))
 
-    # Determine the length of the longest element in each column.
-    # Iterate over the lengths array, which is a list of tuples of containing
-    # column length for each process
-    max_len_arr = [0] * num_cols
-    for j in range(num_cols):
-        max_len_arr[j] = max(col_len[j] for col_len in len_arr)
+    if not data.args:
+        # Determine the length of the longest element in each column.
+        # Iterate over the lengths array, which is a list of tuples of containing
+        # column length for each process
+        max_len_arr = [0] * num_cols
+        for j in range(num_cols):
+            max_len_arr[j] = max(row[j] for row in len_arr)
+        op_buf = proc_list
+
+    else:
+        matches = []
+        seen = set()
+        for arg in data.args:
+            patt = arg if not esc_patt else re.escape(arg)
+            # Var item is the whole row, i.e. the full process entry
+            for i, item in enumerate(proc_list):
+                if item in seen:
+                    continue
+                if not exact_match and re.match(patt, item[-1]) is None:
+                    continue
+                if exact_match and arg != item[-1]:
+                    continue
+                matches.append((i, item))
+                seen.add(item)
+
+        op_buf = [entry for _, entry in matches]
+        # Populate max_len_arr with values
+        max_len_arr = [0] * num_cols
+        for j in range(num_cols):
+            # max(...) raises ValueError if iterable is empty
+            if not matches:
+                break
+            max_len_arr[j] = max(len_arr[idx][j] for idx, _ in matches)
 
     for proc_entry in op_buf:
         to_write = "  ".join(
