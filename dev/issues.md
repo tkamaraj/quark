@@ -43,3 +43,9 @@ the file. For example, try running a file with the text "help\n" inside it as
 race between the output text and the debug messages. I suspect it's due to the
 output being slow to reach the parent process from the child process through
 the pipe.
+
+### Process list command (src/bin/pl.py)
+
+1. The length of all the entries are calculated even when not using all the
+entries, like when supplying arguments to filter processes. Modify the module
+so that entries that are included the output only get their lengths calculated.

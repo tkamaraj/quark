@@ -2,6 +2,12 @@
 
 ## Latest commit
 
+docs: update releases link
+
+- `src/README.md`: Update releases link from GitHub to Gitea.
+
+## Commit 15174a9ee2e65b6f776cb3beadbaabc2be152b84
+
 feat: command module pl process filtering
 
 - `src/bin/pl.py`: Added process filtering.

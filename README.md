@@ -58,7 +58,7 @@ available.
 ## Pre-build binaries
 
 For pre-built binaries, check the
-[Releases](https://github.com/tkamaraj/quark1/releases/) page.
+[Releases](https://gitea.com/tkamaraj/quark1/releases/) page.
 
 ## Project structure
 
