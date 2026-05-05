@@ -8,7 +8,7 @@ import utils.gen as ugen
 CMD_NM = __name__.split(".")[-1]
 
 HELP = ugen.HelpObj(
-    usage=f"{CMD_NM} [flag ...] proc ...",
+    usage=f"{CMD_NM} [flag ...] [proc ...]",
     summary="Get a list of running processes",
     details=(
         "ARGUMENTS",

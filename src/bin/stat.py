@@ -65,17 +65,22 @@ PERM_LOOKUP_NORM = {
 
 def run(data: ugen.CmdData) -> int:
     err_code = uerr.ERR_ALL_GOOD
-    json_indent = 2
     len_args = len(data.args)
-    write_json = "-j" in data.flags or "--write-json" in data.flags
-    flw_symlnks = "-l" in data.flags or "--follow-symlinks" in data.flags
-    iso = "-i" in data.flags or "--iso" in data.flags
-    short_perms = "-p" in data.flags or "--short-permissions" in data.flags
+    json_indent = 2
+    write_json = False
+    flw_symlnks = False
+    iso = False
+    short_perms = False
 
-    if iso or write_json:
-        fmt_str = r"%Y-%m-%d %H:%M:%S"
-    else:
-        fmt_str = r"%d-%m-%Y %H:%M.%S"
+    for flag in data.flags:
+        if flag in ("-j", "--write-json"):
+            write_json = True
+        elif flag in ("-l", "--follow-symlinks"):
+            flw_symlnks = True
+        elif flag in ("-i", "--iso"):
+            iso = True
+        elif flag in ("-p", "--short-permissions"):
+            short_perms = True
 
     for opt in data.opts:
         val = data.opts[opt]
@@ -85,6 +90,11 @@ def run(data: ugen.CmdData) -> int:
             except ValueError:
                 ugen.err(f"Cannot cast to int for '{opt}': '{val}'")
                 return uerr.ERR_CANT_CAST_VAL
+
+    if iso or write_json:
+        fmt_str = r"%Y-%m-%d %H:%M:%S"
+    else:
+        fmt_str = r"%b %d '%y %I.%M%p"
 
     if data.is_tty:
         # Remember to change max_len when adding in columns bigger than the
@@ -224,12 +234,13 @@ def run(data: ugen.CmdData) -> int:
                 # covered in "\n" + " " * json_indent itself, but... it isn't
                 " " * json_indent
                 + ("\n" + " " * json_indent).join(dict_str_arr)
-                + (",\n" if idx < len_args) - 1 else "\n")
+                + (",\n" if idx < len_args - 1 else "\n")
             )
 
         else:
             # WRITE IT!
             ugen.write("\n".join((
+                ugen.S.fmt(arg, data.is_tty, ugen.S.cyan_4),
                 f"{nm_head} {nm}",
                 f"{pth_head} {pth}",
                 f"{inode_num_lnks_head} {inode} [{num_inode_lnks}]",

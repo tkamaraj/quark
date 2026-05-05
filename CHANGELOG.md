@@ -2,6 +2,14 @@
 
 ## Latest commit
 
+fix: command modules stat and pl
+
+- `src/stat.py`: Changed flag parsing; added item name display before stat
+output.
+- `src/pl.py`: Fixed help string.
+
+## Commit 1be7a7bce1e9e805eed19231855731e17c68361b
+
 docs: update releases link
 
 - `src/README.md`: Update releases link from GitHub to Gitea.
