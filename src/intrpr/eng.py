@@ -236,7 +236,7 @@ class Intrpr:
             # ! at the end of prompt
             if i == len_prompt - 1:
                 # Issue warning only once
-                if hash(self._last_bad_prompt_obj) != hash(prompt):
+                if self._last_bad_prompt_obj != prompt_obj:
                     ugen.warn_Q(
                         "Lone '!' in prompt variable; falling back to default prompt",
                     )
@@ -322,7 +322,7 @@ class Intrpr:
 
             else:
                 # Issue warning only once
-                if hash(self._last_bad_prompt_obj) != hash(prompt_obj):
+                if self._last_bad_prompt_obj != prompt_obj:
                     ugen.warn_Q(
                         f"Invalid prompt substitution symbol: '!{nxt_chr}'; falling back to default prompt"
                     )
@@ -771,9 +771,9 @@ class Intrpr:
         # DEBUG: Expression execute time start
         _t_exec_expr = time.perf_counter_ns()
 
-        syn_ok = self.is_syn_ok(cmd_expr)
-        if syn_ok:
-            return syn_ok
+        syn_chk_res = self.syn_chk(cmd_expr)
+        if syn_chk_res:
+            return syn_chk_res
 
         err_code = uerr.ERR_ALL_GOOD
         skip = 0
@@ -798,7 +798,8 @@ class Intrpr:
             op = cmd_expr.get_op(i)
             params = simp_cmd.params
             # Resolve command
-            cmd_nm = params.pop(0).val
+            cmd_nm = params[0].val
+            params = params[1 :]
             cmd_resln_res = self.cmd_resln(cmd_nm)
             if isinstance(cmd_resln_res, int):
                 return cmd_resln_res
@@ -824,7 +825,7 @@ class Intrpr:
             # Redirect STDOUT
             elif is_redir_stdout:
                 # get_simp_cmd can be called without worry because the syntax
-                # is guaranteed to be ok, checked by is_syn_ok at the start of
+                # is guaranteed to be ok, checked by syn_chk at the start of
                 # this method. So, there shall be atleast one element in
                 # parameter list of the SimpCmd objects
                 redir_param = cmd_expr.get_simp_cmd(i + 1).get_param(0)
@@ -943,7 +944,7 @@ class Intrpr:
         )
         return err_code
 
-    def is_syn_ok(self, cmd_expr: past.CmdExpr) -> int:
+    def syn_chk(self, cmd_expr: past.CmdExpr) -> int:
         num_ops = len(cmd_expr.ops)
         i = 0
 

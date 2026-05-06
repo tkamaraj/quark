@@ -149,8 +149,6 @@ def parse_argv(passed_params: list[str]) -> MainProgParsed:
 
 
 def main() -> None:
-    """
-    """
     try:
         hist_fl = None
         try:

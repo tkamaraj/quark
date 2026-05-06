@@ -43,7 +43,7 @@ Go to the project root, and build the project with the build script,
 `dev/pc.py`:
 
 ```bash
-git clone https://github.com/tkamaraj/quark/
+git clone https://gitea.com/tkamaraj/quark.git/
 cd ./quark/
 python -m venv ./venv/
 source ./venv/bin/activate
@@ -58,7 +58,7 @@ available.
 ## Pre-build binaries
 
 For pre-built binaries, check the
-[Releases](https://gitea.com/tkamaraj/quark1/releases/) page.
+[Releases](https://gitea.com/tkamaraj/quark/releases/) page.
 
 ## Project structure
 

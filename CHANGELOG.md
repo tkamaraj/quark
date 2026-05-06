@@ -2,6 +2,12 @@
 
 ## Latest commit
 
+docs: fixed README
+
+- `README.md`: Minor link corrections.
+
+## Commit 2ffa755a79cf80b05c849cd32e72d67cf29b08a4
+
 fix: command modules stat and pl
 
 - `src/stat.py`: Changed flag parsing; added item name display before stat
@@ -12,7 +18,7 @@ output.
 
 docs: update releases link
 
-- `src/README.md`: Update releases link from GitHub to Gitea.
+- `README.md`: Update releases link from GitHub to Gitea.
 
 ## Commit 15174a9ee2e65b6f776cb3beadbaabc2be152b84
 
