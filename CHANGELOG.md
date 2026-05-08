@@ -2,6 +2,12 @@
 
 ## Latest commit
 
+chore: removed src/cfg.py (unneeded)
+
+- `src/cfg.py`: Removed; unnecessary file, no idea how it came up here
+
+## Commit b922b568557136fb96471dee4d780955be03ed5a
+
 feat: custom logger; fix: alias command output
 
 - `src/intrpr/builtin_cmds/echo.py`: Removed unnecessary import
