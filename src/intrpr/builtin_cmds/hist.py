@@ -54,10 +54,17 @@ def ld_hist_fl(mode: str = "r") -> "io.TextIOBase | int":
         return uerr.ERR_OS_ERR
 
 
+ERR_NO_FLAGS = 1000
+
+
 def run(data: ugen.CmdData) -> int:
     clear_hist = "-c" in data.flags or "--clear" in data.flags
     rm_dupls = "-d" in data.flags or "--remove-duplicates" in data.flags
     get_sz = "-s" in data.flags or "--size" in data.flags
+
+    if not data.flags:
+        ugen.err("Cannot work without flags")
+        return ERR_NO_FLAGS
 
     if clear_hist:
         f = ld_hist_fl(mode="w")

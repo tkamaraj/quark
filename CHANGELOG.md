@@ -2,6 +2,13 @@
 
 ## Latest commit
 
+fix: history command hist
+
+- `src/intrpr/builtin_cmds/hist.py`: Now returns immediately if no flags are
+specified
+
+## Commit 114a71d154ac29148c8eb100a4fdd4233a72153b
+
 chore: removed src/cfg.py (unneeded)
 
 - `src/cfg.py`: Removed; unnecessary file, no idea how it came up here
