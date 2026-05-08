@@ -9,10 +9,10 @@ import traceback as tb
 import types
 import typing as ty
 
-import utils.consts as uconst
-import utils.gen as ugen
+import src.utils.consts as uconst
+import src.utils.gen as ugen
 import utils.err_codes as uerr
-import intrpr.internals as iint
+import src.intrpr.internals as iint
 
 
 class CmdReslvr:
@@ -206,7 +206,7 @@ class CmdReslvr:
         :type cmd: str
 
         :returns: The help object if available, integer error code otherwise.
-        :rtype: utils.gen.HelpObj | int
+        :rtype: src.utils.gen.HelpObj | int
         """
         # TODO: Decide a better name for variable tmp
         tmp = self.builtin_cmds.get(cmd)
@@ -233,7 +233,7 @@ class CmdReslvr:
 
         :returns: The help object, if it was found and valid, integer error
                   code otherwise
-        :rtype: utils.gen.HelpObj | int
+        :rtype: src.utils.gen.HelpObj | int
         """
         tmp_mod = self.ld_mod(cmd, ext_cached_cmds, pths)
         if isinstance(tmp_mod, int):
@@ -287,7 +287,7 @@ class CmdReslvr:
         Get an external command function and spec.
         A valid command file satisfies the following conditions:
         - Has a function with the name of the command, which accepts a single
-          argument of type intrpr.internals.CmdData, and returns an int, and
+          argument of type src.intrpr.internals.CmdData, and returns an int, and
         - Has a global variable CMD_SPEC, which is an instance of CmdSpec
 
         :param cmd: The command name.

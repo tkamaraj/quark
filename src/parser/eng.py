@@ -1,10 +1,10 @@
 import typing as ty
 
-import parser.ast_nodes as past
-import parser.internals as pint
+import src.parser.ast_nodes as past
+import src.parser.internals as pint
 import utils.err_codes as uerr
-import utils.consts as uconst
-import utils.gen as ugen
+import src.utils.consts as uconst
+import src.utils.gen as ugen
 import utils.debug as udeb
 
 
@@ -31,7 +31,7 @@ class Parser:
         :type start: int
 
         :returns: A token object.
-        :rtype: parser.internals.Tok
+        :rtype: src.parser.internals.Tok
         """
         idx = start
 
@@ -69,7 +69,7 @@ class Parser:
         :type quote: str
 
         :returns: A token object or error code.
-        :rtype: parser.internals.Tok | int
+        :rtype: src.parser.internals.Tok | int
         """
         # Exclude the opening quote from the index
         elem_start = idx = start + 1

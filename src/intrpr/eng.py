@@ -15,18 +15,18 @@ import time
 import traceback as tb
 import typing as ty
 
-import intrpr.cfg_mgr as cmgr
-import intrpr.cmd_reslvr as icrsr
-import intrpr.internals as iint
-import parser.eng as peng
-import parser.ast_nodes as past
-import utils.gen as ugen
-import utils.consts as uconst
+import src.intrpr.cfg_mgr as cmgr
+import src.intrpr.cmd_reslvr as icrsr
+import src.intrpr.internals as iint
+import src.parser.eng as peng
+import src.parser.ast_nodes as past
+import src.utils.gen as ugen
+import src.utils.consts as uconst
 import utils.debug as udeb
 import utils.err_codes as uerr
 
 if ty.TYPE_CHECKING:
-    import parser.internals as pint
+    import src.parser.internals as pint
 
 TH_TokGrp = tuple[list[str], "pint.SpChr"]
 TH_CmdFn = ty.Callable[[ugen.CmdData], int]
@@ -73,7 +73,7 @@ class Intrpr:
         Initialise the interpreter.
 
         :param cfg: Object containing configuration data.
-        :type cfg: intrpr.cfg_mgr.Cfg
+        :type cfg: src.intrpr.cfg_mgr.Cfg
 
         :param pre_ld_ext_cmds: Load all external commands on interpreter
                                 startup?
@@ -176,7 +176,7 @@ class Intrpr:
         a string.
 
         :param prompt: Prompt variable to "resolve."
-        :type prompt: typing.Callable[[intrpr.internals.Env], typing.Any] | str
+        :type prompt: typing.Callable[[src.intrpr.internals.Env], typing.Any] | str
 
         :returns: Raw prompt string without prompt substitutions.
         :rtype: str
@@ -210,7 +210,7 @@ class Intrpr:
 
         :param prompt_obj: Prompt string.
         :type prompt_obj: str
-                          | typing.Callable[[intrpr.internals.Env], typing.Any]
+                          | typing.Callable[[src.intrpr.internals.Env], typing.Any]
                           | None
 
         :returns: Prompt string after prompt substitutions are performed.
@@ -402,13 +402,13 @@ class Intrpr:
         :type cmd_nm: str
 
         :param ext_cached_cmds: Cached external commands
-        :type ext_cached_cmds: dict[str, intrpr.internals.CmdCacheEntry]
+        :type ext_cached_cmds: dict[str, src.intrpr.internals.CmdCacheEntry]
 
         :param cmd_reslvr: Command resolver object
-        :type cmd_reslvr: intrpr.cmd_reslvr.CmdReslvr
+        :type cmd_reslvr: src.intrpr.cmd_reslvr.CmdReslvr
 
         :param env_vars: Environment variables
-        :type env_vars: intrpr.internals.Env
+        :type env_vars: src.intrpr.internals.Env
 
         :returns: If successful in fetching the command function and spec, a
                   tuple containing:
@@ -416,8 +416,8 @@ class Intrpr:
                       - the command spec.
                   Else, an integer error code.
         :rtype: tuple[
-                    typing.Callable[[utils.gen.CmdData], int],
-                    utils.gen.CmdSpec,
+                    typing.Callable[[src.utils.gen.CmdData], int],
+                    src.utils.gen.CmdSpec,
                     str
                 ] | int
         """
@@ -444,10 +444,10 @@ class Intrpr:
         options.
 
         :param tok_grp: Token group yielded from parser.
-        :type tok_grp: list[parser.internals.Tok]
+        :type tok_grp: list[src.parser.internals.Tok]
 
         :param cmd_spec: Command spec from command file.
-        :type cmd_spec: utils.gen.CmdSpec
+        :type cmd_spec: src.utils.gen.CmdSpec
 
         :returns: If no errors occured, a tuple containing:
                       - a tuple of strings (argument array),
@@ -993,7 +993,7 @@ class Intrpr:
         :type cmd_fn: TH_CmdFn
 
         :param data: Data to be passed to the command function.
-        :type data: utils.gen.CmdData
+        :type data: src.utils.gen.CmdData
 
         :returns: Integer error code.
         :rtype: int

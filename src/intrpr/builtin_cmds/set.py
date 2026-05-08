@@ -3,8 +3,8 @@ import builtins
 import os
 import typing as ty
 
-import utils.gen as ugen
-import utils.consts as uconst
+import src.utils.gen as ugen
+import src.utils.consts as uconst
 import utils.err_codes as uerr
 
 CMD_NM = __name__.split(".")[-1]

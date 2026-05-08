@@ -1,5 +1,5 @@
 import utils.err_codes as uerr
-import utils.gen as ugen
+import src.utils.gen as ugen
 
 CMD_NM = __name__.split(".")[-1]
 
@@ -59,7 +59,7 @@ def run(data: ugen.CmdData) -> int:
                 err_code = err_code or ERR_INV_ALIAS
                 ugen.err(f"Invalid alias '{arg}'")
                 continue
-            escd_arg = "'" + ugen.esc_chrs(arg, extra=("=",))
+            escd_arg = ugen.esc_chrs(arg, extra=("=",))
             max_len = max(max_len, len(escd_arg))
             to_write.append((
                 ugen.S.fmt(escd_arg, data.is_tty, ugen.S.green_4),

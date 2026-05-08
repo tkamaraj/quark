@@ -50,3 +50,10 @@ the pipe.
 1. The length of all the entries are calculated even when not using all the
 entries, like when supplying arguments to filter processes. Modify the module
 so that entries that are included the output only get their lengths calculated.
+
+### List directory command (src/bin/ls.py)
+
+1. Quotes surrounding names with special characters get coloured. They should
+not be.
+2. Try to put in a space before the names without surrounding quotes if its
+column contains a name with surrounding quotes.

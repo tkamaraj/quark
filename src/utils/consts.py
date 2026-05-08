@@ -1,10 +1,12 @@
 import os
+import sys
 import typing as ty
+import src.parser.internals as pint
 
 VER = "0.1"
 TAB_SZ = 2
 
-RUN_PTH = os.path.dirname(os.path.dirname(__file__))
+RUN_PTH = os.path.dirname(os.path.abspath(sys.argv[0]))
 USR_BIN_PTH = os.path.join(os.path.expanduser("~"), "bin")
 SYS_BIN_PTHS = (
     "/usr/bin",
@@ -17,11 +19,12 @@ SYS_BIN_PTHS = (
 CFG_FL = os.path.join(RUN_PTH, "cfg.py")
 BUILTIN_PTH = os.path.join(RUN_PTH, "intrpr", "builtin_cmds")
 HIST_FL = os.path.join(RUN_PTH, "quark_hist.txt")
+LOG_FL = os.path.join(RUN_PTH, "quark.log")
 
-SP_CHRS = ("|", ">", "?", ";")
+SP_CHRS = pint.LOGI_OPS + pint.DATA_OPS + pint.CMD_SEPRS + pint.GLOB_CHS
 
 ANSI_RESET = "\x1b[0m"
-ANSI_BOLD_4 = "\x1b[1m"
+ANSI_BOLD = "\x1b[1m"
 ANSI_BLINK_4 = "\x1b[5m"
 ANSI_BLUE_4 = "\x1b[94m"
 ANSI_CLS_4 = "\x1b[H\x1b[J"
@@ -31,8 +34,8 @@ ANSI_HEADER_4 = "\x1b[95m"
 ANSI_RED_4 = "\x1b[91m"
 ANSI_UNDERLINE_4 = "\x1b[4m"
 ANSI_YELLOW_4 = "\x1b[93m"
-ANSI_BOLD_RED_4 = ANSI_BOLD_4 + ANSI_RED_4
-ANSI_BOLD_YELLOW_4 = ANSI_BOLD_4 + ANSI_YELLOW_4
+ANSI_BOLD_RED_4 = ANSI_BOLD + ANSI_RED_4
+ANSI_BOLD_YELLOW_4 = ANSI_BOLD + ANSI_YELLOW_4
 ANSI_ERASE_CUR_TO_EOL = "\x1b[0K"
 ANSI_ERASE_FULL_LN = "\x1b[2K"
 

@@ -1,7 +1,7 @@
 import typing as ty
 
 if ty.TYPE_CHECKING:
-    import intrpr.internals as iint
+    import src.intrpr.internals as iint
 
 # Colour codes
 _ANSI_RESET = "\x1b[0m"

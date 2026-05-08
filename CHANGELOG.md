@@ -2,6 +2,16 @@
 
 ## Latest commit
 
+feat: custom logger; fix: alias command output
+
+- `src/intrpr/builtin_cmds/echo.py`: Removed unnecessary import
+- `src/logger/`: Finished custom logger
+- `src/main.py`, `src/utils/gen.py`: Integrated custom logger
+- `src/utils/consts.py`: Updated var SP_CHRS
+- `src/intrpr/builtin_cmds/alias.py`: Removed extra character from output
+
+## Commit bb54ad79d0d0c03b40b83ba720d354c3b3df94a4
+
 docs: fixed README
 
 - `README.md`: Minor link corrections.

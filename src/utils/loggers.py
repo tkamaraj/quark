@@ -2,7 +2,7 @@ import logging as lg
 import os
 import typing as ty
 
-import utils.consts as uconst
+import src.utils.consts as uconst
 
 DEBUG = lg.DEBUG
 INFO = lg.INFO
@@ -67,7 +67,7 @@ class QuarkFormatter(lg.Formatter):
                 + prefix_chrs \
                 + uconst.ANSI_RESET
         else:
-            record.clred_prefix_chrs = uconst.ANSI_BOLD_4 \
+            record.clred_prefix_chrs = uconst.ANSI_BOLD \
                 + prefix_chrs \
                 + uconst.ANSI_RESET
         return super().format(record)
@@ -158,4 +158,3 @@ def init_lgrs(
     fl_lgr.addHandler(fl_hdlr)
 
     return AllLgrs(lgr, lgr_c, lgr_q, fl_lgr)
-

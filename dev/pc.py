@@ -2,6 +2,7 @@
 
 import logging as lg
 import os
+import re
 import shutil as sh
 import subprocess as sp
 import sys
@@ -126,7 +127,9 @@ def parse_args() -> Cfg:
 def main() -> None:
     cfg = parse_args()
 
-    lgr.info(f"Using binary {sys.executable}")
+    usr_dir = os.path.expanduser('~')
+    usr_dir = re.sub(f"^{usr_dir}", "~", sys.executable)
+    lgr.info(f"Using binary {usr_dir}")
     fl = cfg.args[0]
     base_nm = os.path.splitext(os.path.basename(fl))[0]
     proj_root_dir = os.path.dirname(os.path.dirname(fl))

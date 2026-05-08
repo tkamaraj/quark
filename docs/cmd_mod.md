@@ -46,9 +46,9 @@ which is assigned to the environment variable `_LAST_RET_`.
 
 ```python
 import utils.err_codes
-import utils.gen
+import src.utils.gen
 
-HELP = utils.gen.HelpObj(
+HELP = src.utils.gen.HelpObj(
     usage="test [flag ...] [opt] arg [...]",
     summary="Example summary",
     details=(
@@ -62,7 +62,7 @@ HELP = utils.gen.HelpObj(
     )
 )
 
-CMD_SPEC = utils.gen.CmdSpec(
+CMD_SPEC = src.utils.gen.CmdSpec(
     min_args=1,
     max_args=float("inf"),
     opts=("-opt",),
@@ -70,6 +70,6 @@ CMD_SPEC = utils.gen.CmdSpec(
 )
 
 
-def run(data: utils.gen.CmdData) -> int:
+def run(data: src.utils.gen.CmdData) -> int:
     return utils.err_codes.ERR_ALL_GOOD
 ```

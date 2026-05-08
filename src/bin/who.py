@@ -2,7 +2,7 @@ import os
 import pwd
 
 import utils.err_codes as uerr
-import utils.gen as ugen
+import src.utils.gen as ugen
 
 CMD_NM = __name__.split(".")[-1]
 

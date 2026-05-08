@@ -3,10 +3,10 @@ import typing as ty
 import types
 
 import utils.err_codes as uerr
-import utils.gen as ugen
+import src.utils.gen as ugen
 
 if ty.TYPE_CHECKING:
-    import intrpr.cmd_reslvr as icrsr
+    import src.intrpr.cmd_reslvr as icrsr
 
 
 class CmdCompdObj(ty.NamedTuple):

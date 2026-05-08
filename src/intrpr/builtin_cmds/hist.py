@@ -1,8 +1,8 @@
 import pathlib as pl
 import typing as ty
 
-import utils.consts as uconst
-import utils.gen as ugen
+import src.utils.consts as uconst
+import src.utils.gen as ugen
 import utils.err_codes as uerr
 
 if ty.TYPE_CHECKING:

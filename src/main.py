@@ -12,12 +12,13 @@ import traceback as tb
 import tty
 import typing as ty
 
-import intrpr.eng as ieng
-import intrpr.cfg_mgr as cmgr
-import utils.consts as uconst
+import src.intrpr.eng as ieng
+import src.intrpr.cfg_mgr as cmgr
+import src.utils.consts as uconst
 import utils.err_codes as uerr
-import utils.gen as ugen
-import utils.loggers as ulog
+import src.utils.gen as ugen
+import src.utils.loggers as ulog
+import src.logger.eng as leng
 
 if not sys.argv:
     called_nm = "[main]"
@@ -62,25 +63,13 @@ class MainProgParsed(ty.NamedTuple):
 
 
 def parse_argv(passed_params: list[str]) -> MainProgParsed:
-    """
-    Parse parameters passed to the main program.
-
-    :param passed_params: A list of strings, which is the passed parameters to
-                        the main program.
-    :type passed_params: list[str]
-
-    :returns: An object that contains all the data that can be received from
-              the arguments, options and flags that can be provided to the main
-              program.
-    :rtype: MainProgParsed
-    """
     len_passed_params = len(passed_params)
     skip = 0
 
     pre_ld_ext_cmds = False
     stdout_ansi = False
     stderr_ansi = False
-    log_lvl = ulog.WARN
+    log_lvl = leng.LogLvls.WARN
     debug_time_expo = 6
     args = []
 
@@ -100,7 +89,7 @@ def parse_argv(passed_params: list[str]) -> MainProgParsed:
             pre_ld_ext_cmds = True
         # Flag: Show debug
         elif param in ("-d", "--debug"):
-            log_lvl = ulog.DEBUG
+            log_lvl = leng.LogLvls.DEBUG
         elif param in ("-po", "--preserve-ANSI-stdout"):
             stdout_ansi = True
         # Flag: Preserve ANSI colour codes in STDERR redirects
@@ -108,11 +97,11 @@ def parse_argv(passed_params: list[str]) -> MainProgParsed:
             stderr_ansi = True
         # Flag: Show info
         elif param in ("-i", "--info"):
-            log_lvl = ulog.INFO
+            log_lvl = leng.LogLvls.INFO
         # Flag: No warnings
         elif param in ("-W", "--no-warnings"):
-            if log_lvl <= ulog.WARN:
-                log_lvl = ulog.ERR
+            if log_lvl <= leng.LogLvls.WARN:
+                log_lvl = leng.LogLvls.ERR
         elif param in ("-h", "--help"):
             ugen.write(HELP_TXT)
             sys.exit(uerr.ERR_ALL_GOOD)
@@ -163,11 +152,18 @@ def main() -> None:
             )
 
         parsed_params = parse_argv(sys.argv[1 :])
-        lgrs = ulog.init_lgrs(
-            parsed_params.log_lvl,
-            parsed_params.log_lvl,
-            ulog.CRIT
+        log_fd = open(uconst.LOG_FL, "a")
+        leng.set_log_lvl(parsed_params.log_lvl)
+        lgrs = leng.LgrVessel(
+            leng.Lgr("lgr_c", "C", parsed_params.log_lvl, sys.stderr),
+            leng.Lgr("lgr_q", "Q", parsed_params.log_lvl, sys.stderr),
+            leng.Lgr("fl_lgr", "F", leng.LogLvls.CRIT, log_fd)
         )
+        # lgrs = ulog.init_lgrs(
+        #     parsed_params.log_lvl,
+        #     parsed_params.log_lvl,
+        #     ulog.CRIT
+        # )
         # Recommended not to put any debug, info or warning statements above
         # this, because even though those functions can handle loggers not
         # being initialised, they do not obey the log levels, because log
@@ -185,6 +181,7 @@ def main() -> None:
         inp_hdlr = ugen.InpHdlr()
         ugen.info_Q(f"Running from \"{uconst.RUN_PTH}\"")
     except Exception as e:
+        tb.print_exc()
         ugen.fatal_Q(
             f"Interpreter init failed; {e.__class__.__name__}",
             uerr.ERR_UNK_FATAL,

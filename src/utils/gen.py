@@ -10,14 +10,18 @@ import tty
 import types
 import typing as ty
 
-import parser.internals as pint
-import utils.consts as uconst
-import utils.loggers as ulog
+import src.parser.internals as pint
+import src.utils.consts as uconst
+import src.utils.loggers as ulog
 
 if ty.TYPE_CHECKING:
-    import intrpr.cmd_reslvr as icrsr
-    import intrpr.internals as iint
+    import src.intrpr.cmd_reslvr as icrsr
+    import src.intrpr.internals as iint
 
+
+###############################################################################
+# CUSTOM EXCEPTIONS
+###############################################################################
 
 class LogicalErr(Exception):
     pass
@@ -30,8 +34,14 @@ class KeyboardInterruptWPrevileges(Exception):
 
 
 class InvVarTypErr(Exception):
-    def __init__(self, var_nm: str, var_typ: type, got_typ: type,
-                 *args, **kwargs):
+    def __init__(
+        self,
+        var_nm: str,
+        var_typ: type,
+        got_typ: type,
+        *args,
+        **kwargs
+    ):
         self.var_nm = var_nm
         self.var_typ = var_typ
         self.got_typ = got_typ
@@ -58,11 +68,11 @@ class CmdData(ty.NamedTuple):
     flags: tuple[str, ...]
     cmd_reslvr: "icrsr.CmdReslvr"
     env_vars: "iint.Env"
-    ext_cached_cmds: dict[str, "iint.CmdCacheEntry"]
+    ext_cached_cmds: "dict[str, iint.CmdCacheEntry]"
     term_sz: os.terminal_size | None
     is_tty: bool
     stdin: str | None
-    exec_fn: ty.Callable[["ieng.Intrpr", str], int | ty.NoReturn]
+    exec_fn: "ty.Callable[[ieng.Intrpr, str], int | ty.NoReturn]"
     operation: str = ""
 
 
@@ -77,19 +87,6 @@ class HelpObj(ty.NamedTuple):
     usage: str
     summary: str
     details: tuple[str | tuple[str, ...], ...]
-
-
-class Path:
-    def __init__(self, pth: str) -> None:
-        self.pth = os.path.expanduser(pth)
-        self.abs_pth = os.path.abspath(self.pth)
-        self.reslvd_pth = os.path.realpath(self.abs_pth)
-
-    def join_pth(self, pth2: str) -> pl.Path:
-        return pl.Path(os.path.join(self.abs_pth, pth2))
-
-    def exists(self) -> bool:
-        return os.path.exists(self.reslvd_pth)
 
 
 class WrapGeneratorToStealReturn:
@@ -160,7 +157,7 @@ def write(s: str, flush: bool = True) -> None:
 
 def lg_to_fl(lvl: str, txt: str) -> None:
     if lvl == "c":
-        _lgrs.fl_lgr.critical(txt)
+        _lgrs.fl_lgr.crit(txt)
     elif lvl == "f":
         _lgrs.fl_lgr.fatal(txt)
 
@@ -178,26 +175,22 @@ def fatal_Q(msg: str, ret: int, exc_txt: str | None = None) -> ty.NoReturn:
         _lgrs.fl_lgr.fatal(msg if exc_txt is None else exc_txt)
     else:
         sys.stderr.write(
-            uconst.ANSI_BOLD_RED_4
-            + "FQ:"
-            + uconst.ANSI_RESET
-            + " "
-            + msg
+            f"{uconst.ANSI_BOLD_RED_4}FQ:{uconst.ANSI_RESET} {msg}\n"
         )
         sys.stderr.flush()
     sys.exit(ret)
 
 
 def crit(msg: str) -> None:
-    _lgrs.lgr_c.critical(msg)
-    _lgrs.fl_lgr.critical(msg)
+    _lgrs.lgr_c.crit(msg)
+    _lgrs.fl_lgr.crit(msg)
 
 
 def crit_Q(msg: str) -> None:
     # To output to STDERR before initialisation of loggers
     if _lgrs is not None:
-        _lgrs.lgr_q.critical(msg)
-        _lgrs.fl_lgr.critical(msg)
+        _lgrs.lgr_q.crit(msg)
+        _lgrs.fl_lgr.crit(msg)
     else:
         sys.stderr.write(
             uconst.ANSI_BOLD_RED_4
@@ -210,15 +203,15 @@ def crit_Q(msg: str) -> None:
 
 
 def err(msg: str) -> None:
-    _lgrs.lgr_c.error(msg)
-    _lgrs.fl_lgr.error(msg)
+    _lgrs.lgr_c.err(msg)
+    _lgrs.fl_lgr.err(msg)
 
 
 def err_Q(msg: str) -> None:
     # To output to STDERR before initialisation of loggers
     if _lgrs is not None:
-        _lgrs.lgr_q.error(msg)
-        _lgrs.fl_lgr.error(msg)
+        _lgrs.lgr_q.err(msg)
+        _lgrs.fl_lgr.err(msg)
     else:
         sys.stderr.write(
             uconst.ANSI_BOLD_RED_4
@@ -231,15 +224,15 @@ def err_Q(msg: str) -> None:
 
 
 def warn(msg: str) -> None:
-    _lgrs.lgr_c.warning(msg)
-    _lgrs.fl_lgr.warning(msg)
+    _lgrs.lgr_c.warn(msg)
+    _lgrs.fl_lgr.warn(msg)
 
 
 def warn_Q(msg: str) -> None:
     # To output to STDERR before initialisation of loggers
     if _lgrs is not None:
-        _lgrs.lgr_q.warning(msg)
-        _lgrs.fl_lgr.warning(msg)
+        _lgrs.lgr_q.warn(msg)
+        _lgrs.fl_lgr.warn(msg)
     else:
         sys.stderr.write(
             uconst.ANSI_BOLD_YELLOW_4
@@ -263,7 +256,7 @@ def info_Q(msg: str) -> None:
         _lgrs.fl_lgr.info(msg)
     else:
         sys.stderr.write(
-            uconst.ANSI_BOLD_4
+            uconst.ANSI_BOLD
             + "IQ:"
             + uconst.ANSI_RESET
             + " "
@@ -283,7 +276,7 @@ def debug_Q(msg: str) -> None:
         _lgrs.fl_lgr.debug(msg)
     else:
         sys.stderr.write(
-            uconst.ANSI_BOLD_4
+            uconst.ANSI_BOLD
             + "DQ:"
             + uconst.ANSI_RESET
             + " "
@@ -330,6 +323,9 @@ def get_pos() -> tuple[int, int] | None:
     return (int(groups[0]), int(groups[1]))
 
 
+###############################################################################
+# INPUT
+###############################################################################
 class InpHdlr:
     def __init__(self) -> None:
         self.fd = sys.stdin.fileno()
@@ -545,6 +541,9 @@ def inp(inp_hdlr: InpHdlr, hist: str, tab_spaces: int = 4) -> str:
     return str_join(buf)
 
 
+###############################################################################
+# GLOBAL SCOPE
+###############################################################################
 rm_ansi = re.compile(r"""\x1b\[[;\d]*[A-Za-z]""", re.VERBOSE).sub
 _lgrs = None
 S = StyleObj()
