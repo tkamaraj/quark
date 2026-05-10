@@ -2,6 +2,13 @@
 
 ## Latest commit
 
+feat: delete variable in command module set; refactor: command module set
+
+- `src/intrpr/builtin_cmds/set.py`: Refactored. Added support for deleting
+variables.
+
+## Commit 72d98233916fbde7c60eef9a5e0a1c50144b89c5
+
 fix: history command hist
 
 - `src/intrpr/builtin_cmds/hist.py`: Now returns immediately if no flags are

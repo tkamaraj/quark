@@ -71,7 +71,7 @@ class Env:
         self.env_vars: dict[str, EnvVar]
         self.env_vars = {}
 
-    def set(self, nm: str, val: ty.Any) -> None:
+    def set(self, nm: str, val: ty.Any) -> None | ty.NoReturn:
         var_obj = self.env_vars.get(nm)
         # New variable
         if var_obj is None:
@@ -79,11 +79,17 @@ class Env:
         else:
             self.env_vars[nm].val = val
 
-    def get(self, nm: str) -> ty.Any:
+    def get(self, nm: str) -> ty.Any | ty.NoReturn:
         var_obj = self.env_vars.get(nm)
         if var_obj is None:
             raise ugen.UnkVarErr(var_nm=nm)
         return var_obj.val
+
+    def rm(self, nm: str) -> None:
+        try:
+            self.env_vars.pop(nm)
+        except KeyError as e:
+            pass
 
     def __iter__(self) -> ty.Generator[EnvVar, None, None]:
         for i in self.env_vars.values():

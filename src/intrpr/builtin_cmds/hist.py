@@ -91,6 +91,8 @@ def run(data: ugen.CmdData) -> int:
     if get_sz:
         ugen.write(str(pl.Path(uconst.HIST_FL).stat().st_size) + "\n")
 
+    # NOTE: This is useless as of now, because a condition added above returns
+    # immediately if there are no flags
     if not (get_sz or rm_dupls):
         f = ld_hist_fl(mode="r")
         if isinstance(f, int):
