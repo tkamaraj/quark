@@ -2,6 +2,14 @@
 
 ## Latest commit
 
+refactor: command module set; fix: general utils logging
+
+- `src/intrpr/builtin_cmds/set.py`: Refactor and fixed bugs; now accommodates
+NoneType
+- `src/utils/gen.py`: Fixed NameError bug in logging functions
+
+## Commit 0a31a6d6b6da8cb46f4df2032b4da407495ace8b
+
 feat: delete variable in command module set; refactor: command module set
 
 - `src/intrpr/builtin_cmds/set.py`: Refactored. Added support for deleting

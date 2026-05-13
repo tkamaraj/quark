@@ -6,6 +6,8 @@ import typing as ty
 import src.utils.gen as ugen
 import src.utils.consts as uconst
 import utils.err_codes as uerr
+if ty.TYPE_CHECKING:
+    import src.intrpr.internals as iint
 
 CMD_NM = __name__.split(".")[-1]
 
@@ -32,7 +34,10 @@ CMD_SPEC = ugen.CmdSpec(
     min_args=1,
     max_args=float("inf"),
     opts=(),
-    flags=("-r")
+    flags=(
+        "-r", "--remove",
+        "-c", "--complain"
+    )
 )
 
 ERR_NO_SUCH_BUILTIN_TYP = 1000
@@ -45,6 +50,61 @@ ERR_VAR_EXISTS = 1002
 
 class NoTypSpecified:
     pass
+
+
+def set_vars_helper(
+    var_nm: str,
+    var_typ: str,
+    var_val: str,
+    complain: bool,
+    env_vars: "iint.Env"
+) -> int:
+    err_code = uerr.ERR_ALL_GOOD
+
+    # If no 3rd argument, type is assumed str, and var_val remains the same
+    # 3rd argument passed; type was specified as "None"
+    if var_typ == "None":
+        if var_val != "None":
+            ugen.err(f"Invalid value for '{var_typ}': '{var_val}'")
+        var_val = None
+    # 3rd argument passed; type was specified
+    elif var_typ != None:
+        for nm, obj in vars(builtins).items():
+            if nm == var_typ:
+                var_obj = obj
+                found = True
+                break
+        else:
+            ugen.err(f"No such type in scope: '{var_typ}'")
+            return ERR_NO_SUCH_BUILTIN_TYP
+        try:
+            var_val = var_obj(ast.literal_eval(var_val))
+        except ValueError:
+            ugen.err(f"Illegal value for type '{var_typ}': '{var_val}'")
+            return ERR_INV_VAL_FOR_TYP
+        except SyntaxError:
+            ugen.err("Syntax error: invalid text")
+            return ERR_TXT_SYN_ERR
+
+    try:
+        if complain and var_nm in env_vars:
+            ugen.err("Variable exists: '{var_nm}'")
+            err_code = ERR_VAR_EXISTS
+        else:
+            env_vars.set(var_nm, var_val)
+    except ugen.InvVarTypErr:
+        err_code = uerr.ERR_ENV_VAR_INV_TYP
+        ugen.err(
+            f"Invalid type for '{var_nm}': '{var_val.__class__.__name__}'"
+        )
+    except ugen.InvVarNmErr:
+        err_code = uerr.ERR_ENV_VAR_INV_NM
+        ugen.err(f"Invalid variable name: '{var_nm}'")
+    except ugen.UnkVarErr:
+        err_code = uerr.ERR_ENV_UNK_VAR
+        ugen.err(f"Unknown variable: '{var_nm}'")
+
+    return err_code
 
 
 def run(data: ugen.CmdData) -> int:
@@ -60,11 +120,11 @@ def run(data: ugen.CmdData) -> int:
 
     if rm:
         for arg in data.args:
-            if arg not in data.env_vars:
+            if complain and arg not in data.env_vars:
                 err_code = err_code or ERR_NO_SUCH_VAR
                 ugen.err(f"No such variable: '{arg}'")
                 continue
-            data.env_vars.rm(arg, complain)
+            data.env_vars.rm(arg)
 
     else:
         if len(data.args) not in (2, 3):
@@ -73,55 +133,14 @@ def run(data: ugen.CmdData) -> int:
 
         var_nm = data.args[0]
         var_val = data.args[1]
-        var_typ = data.args[2] if len(data.args) == 3 else "str"
-        for nm, obj in vars(builtins).items():
-            if nm == var_typ:
-                var_obj = obj
-                found = True
-                break
-        else:
-            ugen.err(f"No such type in scope: '{var_typ}'")
-            return ERR_NO_SUCH_BUILTIN_TYP
-
-        # There's a problem with this code segment. What happens is that
-        # ast.literal_eval raises a ValueError when trying to evaluate a string
-        # literal. Like, say this: `set _PTH_ foo str`. This raises a
-        # ValueError, and thus control falls into the except block, which
-        # produces a misleading error message, even though the value was
-        # perfectly OK
-        # OK, I checked, and you need quotes around the literal to be evaluated
-        # as a string. Not quotes in the interpreter raw input line. Escaped
-        # quotes.
-        # TODO: Check and resolve this
-        try:
-            var_val = var_obj(ast.literal_eval(var_val))
-        except ValueError:
-            ugen.err(f"Illegal value for type '{var_typ}': '{var_val}'")
-            return ERR_INV_VAL_FOR_TYP
-        except SyntaxError:
-            ugen.err("Syntax error: invalid text")
-            return ERR_TXT_SYN_ERR
-        except Exception as e:
-            print(e)
-            import traceback
-            traceback.print_exc()
-
-        try:
-            if complain and var_nm in data.env_vars:
-                ugen.err("Variable exists: '{var_nm}'")
-                err_code = ERR_VAR_EXISTS
-            else:
-                data.env_vars.set(var_nm, var_val, complain)
-        except ugen.InvVarTypErr:
-            err_code = uerr.ERR_ENV_VAR_INV_TYP
-            ugen.err(
-                f"Invalid type for '{var_nm}': '{var_val.__class__.__name__}'"
-            )
-        except ugen.InvVarNmErr:
-            err_code = uerr.ERR_ENV_VAR_INV_NM
-            ugen.err(f"Invalid variable name: '{var_nm}'")
-        except ugen.UnkVarErr:
-            err_code = uerr.ERR_ENV_UNK_VAR
-            ugen.err(f"Unknown variable: '{var_nm}'")
+        var_typ = data.args[2] if len(data.args) == 3 else None
+        tmp_err_code = set_vars_helper(
+            var_nm,
+            var_typ,
+            var_val,
+            complain,
+            data.env_vars
+        )
+        err_code = err_code or tmp_err_code
 
     return err_code

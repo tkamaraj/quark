@@ -164,7 +164,7 @@ def lg_to_fl(lvl: str, txt: str) -> None:
 
 def fatal(msg: str, ret: int, exc_txt: str | None = None) -> ty.NoReturn:
     _lgrs.lgr_c.fatal(msg)
-    _lgrs.fl_lgr.fatal(rm_ansi(msg if exc_txt is None else exc_txt))
+    _lgrs.fl_lgr.fatal(rm_ansi("", msg if exc_txt is None else exc_txt))
     sys.exit(ret)
 
 
@@ -172,7 +172,7 @@ def fatal_Q(msg: str, ret: int, exc_txt: str | None = None) -> ty.NoReturn:
     # To output to STDERR before initialisation of loggers
     if _lgrs is not None:
         _lgrs.lgr_q.fatal(msg)
-        _lgrs.fl_lgr.fatal(rm_ansi(msg if exc_txt is None else exc_txt))
+        _lgrs.fl_lgr.fatal(rm_ansi("", msg if exc_txt is None else exc_txt))
     else:
         sys.stderr.write(
             f"{uconst.ANSI_BOLD_RED_4}FQ:{uconst.ANSI_RESET} {msg}\n"
@@ -183,14 +183,14 @@ def fatal_Q(msg: str, ret: int, exc_txt: str | None = None) -> ty.NoReturn:
 
 def crit(msg: str, exc_txt: str | None = None) -> None:
     _lgrs.lgr_c.crit(msg)
-    _lgrs.fl_lgr.crit(rm_ansi(msg if exc_txt is None else exc_txt))
+    _lgrs.fl_lgr.crit(rm_ansi("", msg if exc_txt is None else exc_txt))
 
 
 def crit_Q(msg: str, exc_txt: str | None = None) -> None:
     # To output to STDERR before initialisation of loggers
     if _lgrs is not None:
         _lgrs.lgr_q.crit(msg)
-        _lgrs.fl_lgr.crit(rm_ansi(msg if exc_txt is None else exc_txt))
+        _lgrs.fl_lgr.crit(rm_ansi("", msg if exc_txt is None else exc_txt))
     else:
         sys.stderr.write(
             uconst.ANSI_BOLD_RED_4

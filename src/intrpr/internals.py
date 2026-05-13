@@ -95,6 +95,9 @@ class Env:
         for i in self.env_vars.values():
             yield i
 
+    def __contains__(self, val: ty.Any) -> bool:
+        return val in self.env_vars
+
     def __repr__(self) -> str:
         return str(self.env_vars)
 
