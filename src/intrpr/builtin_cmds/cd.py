@@ -158,5 +158,5 @@ def run(data: ugen.CmdData) -> int:
             ugen.err(f"OS error; {e.strerror}", nm=data.cmd_nm)
             return uerr.ERR_OS_ERR
 
-    err_code = actually_chg_dir(chg_to, prn_dir, data.env_vars)
+    err_code = actually_chg_dir(data.cmd_nm, chg_to, prn_dir, data.env_vars)
     return err_code

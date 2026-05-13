@@ -185,7 +185,7 @@ def main() -> None:
         ugen.fatal_Q(
             f"Interpreter init failed; {e.__class__.__name__}",
             uerr.ERR_UNK_FATAL,
-            exc_txt=tb.format_exc()
+            exc_txt=tb.format_exc(),
         )
 
     while True:

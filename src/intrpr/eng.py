@@ -701,7 +701,10 @@ class Intrpr:
                                 stdout_obj.write(chunk.decode())
                     # 4 bytes for command return code in pipe 2
                     ret_packed = self.rd_from_fd(r2, 4)
-                    ret_code = st.unpack("!i", ret_packed)[0]
+                    try:
+                        ret_code = st.unpack("!i", ret_packed)[0]
+                    except st.error:
+                        ret_code = uerr.ERR_EXPD_4_BYTE_UNPACK
                     os.close(r2)
                     # To prevent zombie (defunct) processes
                     _, status = os.wait()

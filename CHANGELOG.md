@@ -2,6 +2,14 @@
 
 ## Latest commit
 
+feat: source info for all log levels; fix: interpreter engine return code
+unpack
+
+- `src/intrpr/eng.py`: Fixed unpack errors for external command return code
+- `src/utils/gen.py`: Added source info for debug, info, warn, crit and fatal
+
+## Commit e2ff7cebae373f8573046a04afac66d139b106f2
+
 feat: added source info in logging
 
 - `src/utils/gen.py`: Added source info in logging

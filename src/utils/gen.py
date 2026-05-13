@@ -163,41 +163,57 @@ def lg_to_fl(lvl: str, txt: str) -> None:
 
 
 def fatal(msg: str, ret: int, exc_txt: str | None = None) -> ty.NoReturn:
-    _lgrs.lgr_c.fatal(msg)
-    _lgrs.fl_lgr.fatal(rm_ansi("", msg if exc_txt is None else exc_txt))
+    src = f"{nm}: " if nm is not None else ""
+    fl_log_txt = rm_ansi(
+        "",
+        (src + msg) if exc_txt is None else (src + exc_txt)
+    )
+    _lgrs.lgr_c.fatal(src + msg)
+    _lgrs.fl_lgr.fatal(fl_log_txt)
     sys.exit(ret)
 
 
 def fatal_Q(msg: str, ret: int, exc_txt: str | None = None) -> ty.NoReturn:
+    src = f"{nm}: " if nm is not None else ""
+    fl_log_txt = rm_ansi(
+        "",
+        (src + msg) if exc_txt is None else (src + exc_txt)
+    )
     # To output to STDERR before initialisation of loggers
     if _lgrs is not None:
-        _lgrs.lgr_q.fatal(msg)
-        _lgrs.fl_lgr.fatal(rm_ansi("", msg if exc_txt is None else exc_txt))
+        _lgrs.lgr_q.fatal(src + msg)
+        _lgrs.fl_lgr.fatal(fl_log_txt)
     else:
         sys.stderr.write(
-            f"{uconst.ANSI_BOLD_RED_4}FQ:{uconst.ANSI_RESET} {msg}\n"
+            f"{uconst.ANSI_BOLD_RED_4}FQ:{uconst.ANSI_RESET} {src}{msg}\n"
         )
         sys.stderr.flush()
     sys.exit(ret)
 
 
-def crit(msg: str, exc_txt: str | None = None) -> None:
-    _lgrs.lgr_c.crit(msg)
-    _lgrs.fl_lgr.crit(rm_ansi("", msg if exc_txt is None else exc_txt))
+def crit(msg: str, exc_txt: str | None = None, nm: str | None = None) -> None:
+    src = f"{nm}: " if nm is not None else ""
+    fl_log_txt = rm_ansi(
+        "",
+        (src + msg) if exc_txt is None else (src + exc_txt)
+    )
+    _lgrs.lgr_c.crit(src + msg)
+    _lgrs.fl_lgr.crit(fl_log_txt)
 
 
 def crit_Q(msg: str, exc_txt: str | None = None) -> None:
+    src = f"{nm}: " if nm is not None else ""
+    fl_log_txt = rm_ansi(
+        "",
+        (src + msg) if exc_txt is None else (src + exc_txt)
+    )
     # To output to STDERR before initialisation of loggers
     if _lgrs is not None:
-        _lgrs.lgr_q.crit(msg)
-        _lgrs.fl_lgr.crit(rm_ansi("", msg if exc_txt is None else exc_txt))
+        _lgrs.lgr_q.crit(src + msg)
+        _lgrs.fl_lgr.crit(fl_log_txt)
     else:
         sys.stderr.write(
-            uconst.ANSI_BOLD_RED_4
-            + "CQ:"
-            + uconst.ANSI_RESET
-            + " "
-            + msg
+            f"{uconst.ANSI_BOLD_RED_4}CQ:{uconst.ANSI_RESET} {src}{msg}\n"
         )
         sys.stderr.flush()
 
@@ -216,21 +232,22 @@ def err_Q(msg: str, nm: str | None = None) -> None:
         _lgrs.fl_lgr.err(src + msg)
     else:
         sys.stderr.write(
-            f"{uconst.ANSI_BOLD_RED_4}EQ:{uconst.ANSI_RESET} {src}{msg}"
+            f"{uconst.ANSI_BOLD_RED_4}EQ:{uconst.ANSI_RESET} {src}{msg}\n"
         )
         sys.stderr.flush()
 
 
 def warn(msg: str) -> None:
-    _lgrs.lgr_c.warn(msg)
-    _lgrs.fl_lgr.warn(msg)
+    _lgrs.lgr_c.warn(src + msg)
+    _lgrs.fl_lgr.warn(src + msg)
 
 
 def warn_Q(msg: str) -> None:
+    src = f"{nm}: " if nm is not None else ""
     # To output to STDERR before initialisation of loggers
     if _lgrs is not None:
-        _lgrs.lgr_q.warn(msg)
-        _lgrs.fl_lgr.warn(msg)
+        _lgrs.lgr_q.warn(src + msg)
+        _lgrs.fl_lgr.warn(src + msg)
     else:
         sys.stderr.write(
             uconst.ANSI_BOLD_YELLOW_4
@@ -242,43 +259,39 @@ def warn_Q(msg: str) -> None:
         sys.stderr.flush()
 
 
-def info(msg: str) -> None:
-    _lgrs.lgr_c.info(msg)
-    _lgrs.fl_lgr.info(msg)
+def info(msg: str, nm: str | None = None) -> None:
+    src = f"{nm}: " if nm is not None else ""
+    _lgrs.lgr_c.info(src + msg)
+    _lgrs.fl_lgr.info(src + msg)
 
 
 def info_Q(msg: str) -> None:
+    src = f"{nm}: " if nm is not None else ""
     # To output to STDERR before initialisation of loggers
     if _lgrs is not None:
-        _lgrs.lgr_q.info(msg)
-        _lgrs.fl_lgr.info(msg)
+        _lgrs.lgr_q.info(src + msg)
+        _lgrs.fl_lgr.info(src + msg)
     else:
         sys.stderr.write(
-            uconst.ANSI_BOLD
-            + "IQ:"
-            + uconst.ANSI_RESET
-            + " "
-            + msg
+            f"{uconst.ANSI_BOLD}IQ:{uconst.ANSI_RESET} {src}{msg}\n"
         )
         sys.stderr.flush()
 
 
 def debug(msg: str) -> None:
-    _lgrs.lgr_c.debug(msg)
-    _lgrs.fl_lgr.debug(msg)
+    src = f"{nm}: " if nm is not None else ""
+    _lgrs.lgr_c.debug(src + msg)
+    _lgrs.fl_lgr.debug(src + msg)
 
 
 def debug_Q(msg: str) -> None:
+    src = f"{nm}: " if nm is not None else ""
     if _lgrs is not None:
-        _lgrs.lgr_q.debug(msg)
-        _lgrs.fl_lgr.debug(msg)
+        _lgrs.lgr_q.debug(src + msg)
+        _lgrs.fl_lgr.debug(src + msg)
     else:
         sys.stderr.write(
-            uconst.ANSI_BOLD
-            + "DQ:"
-            + uconst.ANSI_RESET
-            + " "
-            + msg
+            f"{uconst.ANSI_BOLD}DQ:{uconst.ANSI_RESET} {src}{msg}\n"
         )
         sys.stderr.flush()
 
