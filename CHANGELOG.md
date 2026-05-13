@@ -2,6 +2,12 @@
 
 ## Latest commit
 
+fix: logging function NameError bugs
+
+- `src/utils/gen.py`: Fixed NameError bugs in logging functions
+
+## Commit 2a195d7110ca3b8ef45f5acce645396432524219
+
 feat: source info for all log levels; fix: interpreter engine return code
 unpack
 

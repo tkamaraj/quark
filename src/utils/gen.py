@@ -162,7 +162,12 @@ def lg_to_fl(lvl: str, txt: str) -> None:
         _lgrs.fl_lgr.fatal(txt)
 
 
-def fatal(msg: str, ret: int, exc_txt: str | None = None) -> ty.NoReturn:
+def fatal(
+    msg: str,
+    ret: int,
+    exc_txt: str | None = None,
+    nm: str | None = None
+) -> ty.NoReturn:
     src = f"{nm}: " if nm is not None else ""
     fl_log_txt = rm_ansi(
         "",
@@ -173,7 +178,12 @@ def fatal(msg: str, ret: int, exc_txt: str | None = None) -> ty.NoReturn:
     sys.exit(ret)
 
 
-def fatal_Q(msg: str, ret: int, exc_txt: str | None = None) -> ty.NoReturn:
+def fatal_Q(
+    msg: str,
+    ret: int,
+    exc_txt: str | None = None,
+    nm: str | None = None
+) -> ty.NoReturn:
     src = f"{nm}: " if nm is not None else ""
     fl_log_txt = rm_ansi(
         "",
@@ -201,7 +211,11 @@ def crit(msg: str, exc_txt: str | None = None, nm: str | None = None) -> None:
     _lgrs.fl_lgr.crit(fl_log_txt)
 
 
-def crit_Q(msg: str, exc_txt: str | None = None) -> None:
+def crit_Q(
+    msg: str,
+    exc_txt: str | None = None,
+    nm: str | None = None
+) -> None:
     src = f"{nm}: " if nm is not None else ""
     fl_log_txt = rm_ansi(
         "",
@@ -237,12 +251,12 @@ def err_Q(msg: str, nm: str | None = None) -> None:
         sys.stderr.flush()
 
 
-def warn(msg: str) -> None:
+def warn(msg: str, nm: str | None = None) -> None:
     _lgrs.lgr_c.warn(src + msg)
     _lgrs.fl_lgr.warn(src + msg)
 
 
-def warn_Q(msg: str) -> None:
+def warn_Q(msg: str, nm: str | None = None) -> None:
     src = f"{nm}: " if nm is not None else ""
     # To output to STDERR before initialisation of loggers
     if _lgrs is not None:
@@ -265,7 +279,7 @@ def info(msg: str, nm: str | None = None) -> None:
     _lgrs.fl_lgr.info(src + msg)
 
 
-def info_Q(msg: str) -> None:
+def info_Q(msg: str, nm: str | None = None) -> None:
     src = f"{nm}: " if nm is not None else ""
     # To output to STDERR before initialisation of loggers
     if _lgrs is not None:
@@ -278,13 +292,13 @@ def info_Q(msg: str) -> None:
         sys.stderr.flush()
 
 
-def debug(msg: str) -> None:
+def debug(msg: str, nm: str | None = None) -> None:
     src = f"{nm}: " if nm is not None else ""
     _lgrs.lgr_c.debug(src + msg)
     _lgrs.fl_lgr.debug(src + msg)
 
 
-def debug_Q(msg: str) -> None:
+def debug_Q(msg: str, nm: str | None = None) -> None:
     src = f"{nm}: " if nm is not None else ""
     if _lgrs is not None:
         _lgrs.lgr_q.debug(src + msg)
