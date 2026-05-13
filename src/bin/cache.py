@@ -3,7 +3,7 @@ import re
 import os
 import typing as ty
 
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 import src.utils.gen as ugen
 
 CMD_NM = __name__.split(".")[-1]
@@ -96,7 +96,7 @@ def run(data: ugen.CmdData) -> int:
     nm_max_len += 2
     for j in to_write:
         if isinstance(j, Err):
-            ugen.err(f"{j.msg}: '{j.nm}'")
+            ugen.err(f"{j.msg}: '{j.nm}'", nm=data.cmd_nm)
         elif isinstance(j, Out):
             fmtd_nm = "'" + ugen.S.fmt(j.nm, data.is_tty, ugen.S.green_4) + "'"
             if mtimes or pths:

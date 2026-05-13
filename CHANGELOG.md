@@ -2,6 +2,14 @@
 
 ## Latest commit
 
+feat: added source info in logging
+
+- `src/utils/gen.py`: Added source info in logging
+- `src/bin/`, `src/intrpr/builtin_cmds/`: Edited logging function calls to
+include source info
+
+## Commit 0e155c93c7ed0194365b04734ca9a40ca57199c9
+
 refactor: command module set; fix: general utils logging
 
 - `src/intrpr/builtin_cmds/set.py`: Refactor and fixed bugs; now accommodates

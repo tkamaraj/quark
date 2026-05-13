@@ -2,7 +2,7 @@ import importlib.machinery as ilm
 import typing as ty
 import types
 
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 import src.utils.gen as ugen
 
 if ty.TYPE_CHECKING:

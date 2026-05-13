@@ -4,7 +4,7 @@ import typing as ty
 
 import src.utils.consts as uconst
 import src.utils.gen as ugen
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 
 
 class Cfg(ty.NamedTuple):

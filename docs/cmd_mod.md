@@ -21,7 +21,7 @@ The command API is provided by `utils.gen`. Command authors are encouraged not
 to access core modules of the interpreter. The documentation for the API is not
 available right now.
 
-Common error codes are provided in `utils.err_codes`. Command authors are
+Common error codes are provided in `src.utils.err_codes`. Command authors are
 encouraged to use the error codes listed in this file if their use case is
 available. To get a list of error codes available, use the FUNCTION function.
 (TODO: Implement that!)
@@ -45,7 +45,7 @@ which is assigned to the environment variable `_LAST_RET_`.
 ## Example
 
 ```python
-import utils.err_codes
+import src.utils.err_codes
 import src.utils.gen
 
 HELP = src.utils.gen.HelpObj(
@@ -71,5 +71,5 @@ CMD_SPEC = src.utils.gen.CmdSpec(
 
 
 def run(data: src.utils.gen.CmdData) -> int:
-    return utils.err_codes.ERR_ALL_GOOD
+    return src.utils.err_codes.ERR_ALL_GOOD
 ```

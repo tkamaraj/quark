@@ -5,7 +5,7 @@ import pwd
 import stat
 import typing as ty
 
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 import src.utils.gen as ugen
 
 CMD_NM = __name__.split(".")[-1]
@@ -88,7 +88,10 @@ def run(data: ugen.CmdData) -> int:
             try:
                 json_indent = int(val)
             except ValueError:
-                ugen.err(f"Cannot cast to int for '{opt}': '{val}'")
+                ugen.err(
+                    f"Cannot cast to int for '{opt}': '{val}'",
+                    nm=data.cmd_nm
+                )
                 return uerr.ERR_CANT_CAST_VAL
 
     if iso or write_json:
@@ -138,15 +141,15 @@ def run(data: ugen.CmdData) -> int:
             item_stat = pth_obj.stat(follow_symlinks=flw_symlnks)
         except FileNotFoundError:
             err_code = err_code or uerr.ERR_FL_DIR_404
-            ugen.err(f"Cannot locate item: \"{arg}\"")
+            ugen.err(f"Cannot locate item: \"{arg}\"", nm=data.cmd_nm)
             continue
         except PermissionError:
             err_code = err_code or uerr.ERR_PERM_DENIED
-            ugen.err(f"Access denied: \"{arg}\"")
+            ugen.err(f"Access denied: \"{arg}\"", nm=data.cmd_nm)
             continue
         except OSError:
             err_code = err_code or uerr.ERR_OS_ERR
-            ugen.err(f"OS error; {e.strerror}")
+            ugen.err(f"OS error; {e.strerror}", nm=data.cmd_nm)
             continue
 
         mode = item_stat.st_mode

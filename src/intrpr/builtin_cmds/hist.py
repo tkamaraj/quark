@@ -3,7 +3,7 @@ import typing as ty
 
 import src.utils.consts as uconst
 import src.utils.gen as ugen
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 
 if ty.TYPE_CHECKING:
     import io
@@ -37,20 +37,20 @@ CMD_SPEC = ugen.CmdSpec(
 )
 
 
-def ld_hist_fl(mode: str = "r") -> "io.TextIOBase | int":
+def ld_hist_fl(cmd_nm: str, mode: str = "r") -> "io.TextIOBase | int":
     try:
         return open(uconst.HIST_FL, mode)
     except FileNotFoundError:
-        ugen.err("No history file: \"{uconst.HIST_FL}\"")
+        ugen.err("No history file: \"{uconst.HIST_FL}\"", nm=cmd_nm)
         return uerr.ERR_FL_404
     except PermissionError:
-        ugen.err(f"Access denied: \"{uconst.HIST_FL}\"")
+        ugen.err(f"Access denied: \"{uconst.HIST_FL}\"", nm=cmd_nm)
         return uerr.ERR_PERM_DENIED
     except IsADirectoryError:
-        ugen.err(f"Is a directory: \"{uconst.HIST_FL}\"")
+        ugen.err(f"Is a directory: \"{uconst.HIST_FL}\"", nm=cmd_nm)
         return uerr.ERR_IS_A_DIR
     except OSError as e:
-        ugen.err(f"OS error; {e.strerror}")
+        ugen.err(f"OS error; {e.strerror}", nm=cmd_nm)
         return uerr.ERR_OS_ERR
 
 
@@ -63,17 +63,17 @@ def run(data: ugen.CmdData) -> int:
     get_sz = "-s" in data.flags or "--size" in data.flags
 
     if not data.flags:
-        ugen.err("Cannot work without flags")
+        ugen.err("Cannot work without flags", nm=data.cmd_nm)
         return ERR_NO_FLAGS
 
     if clear_hist:
-        f = ld_hist_fl(mode="w")
+        f = ld_hist_fl(data.cmd_nm, mode="w")
         if isinstance(f, int):
             return f
 
     if rm_dupls:
         uniq = []
-        f = ld_hist_fl(mode="r")
+        f = ld_hist_fl(data.cmd_nm, mode="r")
         if isinstance(f, int):
             return f
         for ln in f.readlines():
@@ -81,7 +81,7 @@ def run(data: ugen.CmdData) -> int:
                 uniq.append(ln)
         f.close()
 
-        g = ld_hist_fl(mode="w")
+        g = ld_hist_fl(data.cmd_nm, mode="w")
         if isinstance(g, int):
             return g
         to_write = "".join(uniq)
@@ -94,7 +94,7 @@ def run(data: ugen.CmdData) -> int:
     # NOTE: This is useless as of now, because a condition added above returns
     # immediately if there are no flags
     if not (get_sz or rm_dupls):
-        f = ld_hist_fl(mode="r")
+        f = ld_hist_fl(data.cmd_nm, mode="r")
         if isinstance(f, int):
             return f
         ugen.write(f.read())

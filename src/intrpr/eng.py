@@ -23,7 +23,7 @@ import src.parser.ast_nodes as past
 import src.utils.gen as ugen
 import src.utils.consts as uconst
 import utils.debug as udeb
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 
 if ty.TYPE_CHECKING:
     import src.parser.internals as pint

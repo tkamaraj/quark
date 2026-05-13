@@ -4,7 +4,7 @@ import typing as ty
 
 import src.utils.gen as ugen
 import src.utils.consts as uconst
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 
 CMD_NM = __name__.split(".")[-1]
 
@@ -79,7 +79,7 @@ def run(data: ugen.CmdData) -> int:
             )
         except ugen.UnkVarErr:
             err_code = err_code or uerr.ERR_ENV_UNK_VAR
-            ugen.err(f"Unknown variable: '{arg}'")
+            ugen.err(f"Unknown variable: '{arg}'", nm=data.cmd_nm)
 
     return err_code
 

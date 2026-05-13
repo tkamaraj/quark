@@ -15,7 +15,7 @@ import typing as ty
 import src.intrpr.eng as ieng
 import src.intrpr.cfg_mgr as cmgr
 import src.utils.consts as uconst
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 import src.utils.gen as ugen
 import src.utils.loggers as ulog
 import src.logger.eng as leng
@@ -179,7 +179,7 @@ def main() -> None:
             log_lvl=parsed_params.log_lvl
         )
         inp_hdlr = ugen.InpHdlr()
-        ugen.info_Q(f"Running from \"{uconst.RUN_PTH}\"")
+        ugen.info_Q(f"running from \"{uconst.RUN_PTH}\"")
     except Exception as e:
         tb.print_exc()
         ugen.fatal_Q(

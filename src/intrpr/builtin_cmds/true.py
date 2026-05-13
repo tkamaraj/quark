@@ -1,4 +1,4 @@
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 import src.utils.gen as ugen
 
 CMD_NM = __name__.split(".")[-1]
@@ -19,4 +19,3 @@ CMD_SPEC = ugen.CmdSpec(
 
 def run(data: ugen.CmdData) -> int:
     return uerr.ERR_ALL_GOOD
-

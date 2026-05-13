@@ -1,7 +1,7 @@
 import math
 import random
 
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 import src.utils.gen as ugen
 
 CMD_NM = __name__.split(".")[-1]
@@ -74,7 +74,10 @@ def run(data: ugen.CmdData) -> int:
             try:
                 round_to = int(val)
             except ValueError:
-                ugen.err(f"Cannot cast to int for option '{opt}': '{val}'")
+                ugen.err(
+                    f"Cannot cast to int for option '{opt}': '{val}'",
+                    nm=data.cmd_nm
+                )
                 return uerr.ERR_CANT_CAST_VAL
 
         # Range specifier option
@@ -82,11 +85,15 @@ def run(data: ugen.CmdData) -> int:
             rng = hdl_rng_diff_typs(opt, val, valid_rng_typs)
             if isinstance(rng, int):
                 if rng == uerr.ERR_INV_OPT_FMT:
-                    ugen.err(f"Invalid value for option '{opt}': '{val}'")
+                    ugen.err(
+                        f"Invalid value for option '{opt}': '{val}'",
+                        nm=data.cmd_nm
+                    )
                     return rng
                 elif rng == uerr.ERR_CANT_CAST_VAL:
                     ugen.err(
-                        f"Expected parts of {' or '.join(i.__name__ for i in valid_rng_typs)} for '{opt}'"
+                        f"Expected parts of {' or '.join(i.__name__ for i in valid_rng_typs)} for '{opt}'",
+                        nm=data.cmd_nm
                     )
                     return rng
             use_defa_rng = False
@@ -98,10 +105,13 @@ def run(data: ugen.CmdData) -> int:
             rand_int = True
 
     if not (math.isinf(round_to)) and rand_int:
-        ugen.err("Cannot round integer random numbers")
+        ugen.err("Cannot round integer random numbers", nm=data.cmd_nm)
         return ERR_ROUND_INT
     if rand_int and not type(min_num) == type(max_num) == int:
-        ugen.err("Integer random numbers require integer ranges")
+        ugen.err(
+            "Integer random numbers require integer ranges",
+            nm=data.cmd_nm
+        )
         return ERR_FLOAT_FOR_INT
 
     if rand_int:

@@ -1,6 +1,6 @@
 import os
 
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 import src.utils.gen as ugen
 
 CMD_NM = __name__.split(".")[-1]
@@ -34,7 +34,7 @@ def run(data: ugen.CmdData) -> int:
     # Don't know if this is possible... but just in case
     except PermissionError:
         err_code = uerr.ERR_PERM_DENIED
-        ugen.err("Access denied")
+        ugen.err("Access denied", nm=data.cmd_nm)
 
     return err_code
 

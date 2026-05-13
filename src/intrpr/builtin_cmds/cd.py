@@ -4,7 +4,7 @@ import typing as ty
 
 import src.utils.gen as ugen
 import src.utils.consts as uconst
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 
 if ty.TYPE_CHECKING:
     import src.intrpr.internals as iint
@@ -39,10 +39,11 @@ ERR_CANT_ALLOT_TMP_DIR = 1000
 
 
 def actually_chg_dir(
-        pth: pl.Path,
-        prn_dir: bool,
-        env_vars: "iint.Env"
-    ) -> int:
+    cmd_nm: str,
+    pth: pl.Path,
+    prn_dir: bool,
+    env_vars: "iint.Env"
+) -> int:
     """
     The actual directory changing component of the cd command.
 
@@ -62,17 +63,17 @@ def actually_chg_dir(
             ugen.write(str(pth) + "\n")
     except FileNotFoundError:
         err_code = uerr.ERR_DIR_404
-        ugen.err(f"No such directory: \"{pth}\"")
+        ugen.err(f"No such directory: \"{pth}\"", nm=cmd_nm)
     except NotADirectoryError:
         err_code = uerr.ERR_NOT_A_DIR
-        ugen.err(f"Not a directory: \"{pth}\"")
+        ugen.err(f"Not a directory: \"{pth}\"", nm=cmd_nm)
     except PermissionError:
         err_code = uerr.ERR_PERM_DENIED
-        ugen.err(f"Access denied: \"{pth}\"")
+        ugen.err(f"Access denied: \"{pth}\"", nm=cmd_nm)
     # Don't think this is reachable, but let's be on the safer side
     except OSError as e:
         err_code = uerr.ERR_OS_ERR
-        ugen.err(f"OS error; {e.strerror}")
+        ugen.err(f"OS error; {e.strerror}", nm=cmd_nm)
 
     return err_code
 
@@ -98,13 +99,15 @@ def run(data: ugen.CmdData) -> int:
 
     if chg_to_prev_cwd and data.args:
         ugen.err(
-            "Cannot change to previous and specified directory at the same time"
+            "Cannot change to previous and specified directory simultaneously",
+            nm=data.cmd_nm
         )
         return uerr.ERR_INV_USAGE
 
     if chg_to_prev_cwd and tmp_dir:
         ugen.err(
-            "Cannot change to previous and temporary directory at the same time"
+            "Cannot change to previous and temporary directory simultaneously",
+            nm=data.cmd_nm
         )
         return uerr.ERR_INV_USAGE
 
@@ -123,7 +126,10 @@ def run(data: ugen.CmdData) -> int:
             chg_to = dir_pth
             break
         else:
-            ugen.err("Too unlucky... cannot allot temporary directory")
+            ugen.err(
+                "Too unlucky... cannot allot temporary directory",
+                nm=data.cmd_nm
+            )
             return ERR_CANT_ALLOT_TMP_DIR
 
     elif data.args:
@@ -137,13 +143,19 @@ def run(data: ugen.CmdData) -> int:
         try:
             os.makedirs(chg_to, exist_ok=True)
         except FileExistsError:
-            ugen.err(f"Cannot make directory; File exists: \"{chg_to}\"")
+            ugen.err(
+                f"Cannot make directory; File exists: \"{chg_to}\"",
+                nm=data.cmd_nm
+            )
             return uerr.ERR_FL_EXISTS
         except PermissionError:
-            ugen.err(f"Cannot make directory; Access denied: \"{chg_to}\"")
+            ugen.err(
+                f"Cannot make directory; Access denied: \"{chg_to}\"",
+                nm=data.cmd_nm
+            )
             return uerr.ERR_PERM_DENIED
         except OSError as e:
-            ugen.err(f"OS error; {e.strerror}")
+            ugen.err(f"OS error; {e.strerror}", nm=data.cmd_nm)
             return uerr.ERR_OS_ERR
 
     err_code = actually_chg_dir(chg_to, prn_dir, data.env_vars)

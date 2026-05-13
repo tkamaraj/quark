@@ -3,7 +3,7 @@ import os
 import typing as ty
 
 import src.utils.consts as uconst
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 import src.utils.gen as ugen
 
 if ty.TYPE_CHECKING:
@@ -170,10 +170,16 @@ def run(data: ugen.CmdData) -> int:
             ext_cmds = True
 
     if (all_cmds or ext_cmds) and data.args:
-        ugen.err("Cannot use all or external command flags for detailed help")
+        ugen.err(
+            "Cannot use all or external command flags for detailed help",
+            nm=data.cmd_nm
+        )
         return uerr.ERR_INV_USAGE
     if all_cmds and ext_cmds:
-        ugen.err("Cannot use all and external command flags simultaneously")
+        ugen.err(
+            "Cannot use all and external command flags simultaneously",
+            nm=data.cmd_nm
+        )
         return uerr.ERR_INV_USAGE
 
     op_buf = []
@@ -256,7 +262,7 @@ def run(data: ugen.CmdData) -> int:
     for i in op_buf:
         if isinstance(i, Err):
             err_code = err_code or i.code
-            ugen.err(i.msg)
+            ugen.err(i.msg, nm=data.cmd_nm)
             continue
 
         cmd_nm = i.cmd

@@ -2,7 +2,7 @@ import os
 import shutil as sh
 import typing as ty
 
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 import src.utils.gen as ugen
 
 
@@ -45,6 +45,7 @@ ERR_DIR_NOT_RECUR = 1002
 
 
 def cp_fl(
+    cmd_nm: str,
     src: str,
     dst: str,
     cp_fn: ty.Callable[[ty.Any, ...], ty.Any],
@@ -57,16 +58,19 @@ def cp_fl(
         dst = os.path.join(dst, os.path.basename(os.path.abspath(src)))
     # If the destination is a file, but overwrite flag isn't given...
     if os.path.isfile(dst) and not overwrite:
-        ugen.err(f"File exists: \"{dst}\"")
+        ugen.err(f"File exists: \"{dst}\"", nm=cmd_nm)
         return uerr.ERR_FL_EXISTS
 
     try:
         cp_fn(src, dst, follow_symlinks=follow_symlnks)
     except PermissionError:
-        ugen.err(f"Access denied: cannot copy \"{src}\" => \"{dst}\"")
+        ugen.err(
+            f"Access denied: cannot copy \"{src}\" => \"{dst}\"",
+            nm=cmd_nm
+        )
         return uerr.ERR_PERM_DENIED
     except OSError as e:
-        ugen.err(f"OS error; {e.strerror}")
+        ugen.err(f"OS error; {e.strerror}", nm=cmd_nm)
         return uerr.ERR_OS_ERR
 
     return uerr.ERR_ALL_GOOD
@@ -82,7 +86,7 @@ def cp_dir(
     crt_interm_dirs: bool
 ) -> int:
     if not recursive:
-        ugen.err(f"Omitting \"{src}\"; '-r' not specified")
+        ugen.err(f"Omitting \"{src}\"; '-r' not specified", nm=cmd_nm)
         return ERR_DIR_NOT_RECUR
 
     src_base = os.path.basename(os.path.abspath(src))
@@ -99,7 +103,10 @@ def cp_dir(
         try:
             os.makedirs(dst) if crt_interm_dirs else os.mkdir(dst)
         except FileNotFoundError:
-            ugen.err(f"Cannot find parents to destination: \"{dst}\"")
+            ugen.err(
+                f"Cannot find parents to destination: \"{dst}\"",
+                nm=cmd_nm
+            )
             return uerr.ERR_DIR_404
 
         try:
@@ -113,7 +120,7 @@ def cp_dir(
             )
         except sh.Error as e:
             for i in e:
-                ugen.err(f"{i[0]} -> {i[1]}: {i[2]}")
+                ugen.err(f"{i[0]} -> {i[1]}: {i[2]}", nm=cmd_nm)
             return uerr.ERR_PLACEHOLDER
 
     # If the destination directory exists, then create a new directory
@@ -130,18 +137,20 @@ def cp_dir(
             )
         except FileExistsError:
             ugen.err(
-                f"Directory exists: \"{os.path.join(dst, src_base)}\""
+                f"Directory exists: \"{os.path.join(dst, src_base)}\"",
+                nm=cmd_nm
             )
             return uerr.ERR_DIR_EXISTS
         except sh.Error as e:
             for i in e:
-                ugen.err(f"{i[0]} -> {i[1]}: {i[2]}")
+                ugen.err(f"{i[0]} -> {i[1]}: {i[2]}", nm=cmd_nm)
             return uerr.ERR_PLACEHOLDER
 
     return uerr.ERR_ALL_GOOD
 
 
 def cp_src_to_dst(
+    cmd_nm: str,
     src: str,
     dst: str,
     metadata: str,
@@ -159,7 +168,7 @@ def cp_src_to_dst(
         cp_fn = sh.copy2
 
     if os.path.isfile(src):
-        return cp_fl(src, dst, cp_fn, follow_symlnks, overwrite)
+        return cp_fl(cmd_nm, src, dst, cp_fn, follow_symlnks, overwrite)
     elif os.path.isdir(src):
         return cp_dir(
             src,
@@ -171,13 +180,12 @@ def cp_src_to_dst(
             crt_interm_dirs
         )
     else:
-        ugen.err(f"No such file/directory: \"{src}\"")
+        ugen.err(f"No such file/directory: \"{src}\"", nm=cmd_nm)
         return uerr.ERR_FL_DIR_404
 
 
 def run(data: ugen.CmdData) -> int:
     err_code = uerr.ERR_ALL_GOOD
-    ugen.debug("cp executing")
 
     metadata = "limited"
     recursive = False
@@ -209,7 +217,10 @@ def run(data: ugen.CmdData) -> int:
             elif val in ("a", "all"):
                 metadata = "all"
             else:
-                ugen.err(f"Invalid value for option '{opt}': '{val}'")
+                ugen.err(
+                    f"Invalid value for option '{opt}': '{val}'",
+                    nm=cmd_nm
+                )
                 return uerr.ERR_INV_VAL_OPT
 
     srcs = data.args[: -1]
@@ -218,6 +229,7 @@ def run(data: ugen.CmdData) -> int:
     if len(srcs) == 1:
         src = srcs[0]
         tmp_code = cp_src_to_dst(
+            data.cmd_nm,
             src,
             dst,
             metadata=metadata,
@@ -232,11 +244,12 @@ def run(data: ugen.CmdData) -> int:
     else:
         # Multiple sources, but no directory to copy to
         if not os.path.isdir(dst):
-            ugen.err(f"No such directory: \"{dst}\"")
+            ugen.err(f"No such directory: \"{dst}\"", nm=data.cmd_nm)
             return uerr.ERR_DIR_404
 
         for i in srcs:
             tmp_code = cp_src_to_dst(
+                data.cmd_nm,
                 i,
                 dst,
                 metadata=metadata,

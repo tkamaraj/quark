@@ -6,7 +6,7 @@ import typing as ty
 
 import src.utils.consts as uconst
 import src.utils.gen as ugen
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 
 CMD_NM = __name__.split(".")[-1]
 
@@ -125,7 +125,7 @@ def run(data: ugen.CmdData) -> int:
     for i in op_buf:
         if isinstance(i, Err):
             err_code = i.code
-            ugen.err(i.msg)
+            ugen.err(i.msg, nm=data.cmd_nm)
             continue
 
         cmd_nm_w_spices = ugen.S.fmt(i.cmd, data.is_tty, ugen.S.green_4) + ':'

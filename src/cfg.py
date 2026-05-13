@@ -14,5 +14,5 @@ _ANSI_BLUE = "\x1b[34m"
 ALIASES = {
     "dir": "ls",
     "copy": "cp",
-    "wc": "cnt"
+    "wc": "cnt",
 }

@@ -2,7 +2,7 @@ import math
 import pathlib as pl
 import re
 
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 import src.utils.gen as ugen
 
 CMD_NM = __name__.split(".")[-1]
@@ -34,20 +34,20 @@ def run(data: ugen.CmdData) -> int:
             with open(fl) as f:
                 fl_cntnt = f.read()
         except FileNotFoundError:
-            ugen.err(f"No such file: \"{arg}\"")
             err_code = err_code or uerr.ERR_FL_404
+            ugen.err(f"No such file: \"{arg}\"", nm=data.cmd_nm)
             continue
         except PermissionError:
-            ugen.err(f"Access denied: \"{arg}\"")
             err_code = err_code or uerr.ERR_PERM_DENIED
+            ugen.err(f"Access denied: \"{arg}\"", nm=data.cmd_nm)
             continue
         except IsADirectoryError:
-            ugen.err(f"Is a directory: \"{arg}\"")
             err_code = err_code or uerr.ERR_IS_A_DIR
+            ugen.err(f"Is a directory: \"{arg}\"", nm=data.cmd_nm)
             continue
         except OSError as e:
             err_code = err_code or uerr.ERR_OS_ERR
-            ugen.err(f"OS error; {e.strerror}")
+            ugen.err(f"OS error; {e.strerror}", nm=data.cmd_nm)
             continue
 
         if not ln_nums:

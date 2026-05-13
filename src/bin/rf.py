@@ -1,6 +1,6 @@
 import math
 
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 import src.utils.gen as ugen
 
 CMD_NM = __name__.split(".")[-1]
@@ -34,16 +34,16 @@ def run(data: ugen.CmdData) -> int:
             with open(arg) as f:
                 fl_cntnt = f.read()
         except FileNotFoundError:
-            ugen.err(f"No such file/directory: \"{arg}\"")
+            ugen.err(f"No such file/directory: \"{arg}\"", nm=data.cmd_nm)
             return uerr.ERR_FL_404
         except PermissionError:
-            ugen.err(f"Access denied: \"{arg}\"")
+            ugen.err(f"Access denied: \"{arg}\"", nm=data.cmd_nm)
             return uerr.ERR_PERM_DENIED
         except IsADirectoryError:
-            ugen.err(f"Is a directory: \"{arg}\"")
+            ugen.err(f"Is a directory: \"{arg}\"", nm=data.cmd_nm)
             return uerr.ERR_IS_A_DIR
         except OSError as e:
-            ugen.err(f"OS error; {e.strerror}")
+            ugen.err(f"OS error; {e.strerror}", nm=data.cmd_nm)
             return uerr.ERR_OS_ERR
 
     err = uerr.ERR_ALL_GOOD

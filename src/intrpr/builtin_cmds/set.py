@@ -5,7 +5,7 @@ import typing as ty
 
 import src.utils.gen as ugen
 import src.utils.consts as uconst
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 if ty.TYPE_CHECKING:
     import src.intrpr.internals as iint
 
@@ -53,6 +53,7 @@ class NoTypSpecified:
 
 
 def set_vars_helper(
+    cmd_nm: str,
     var_nm: str,
     var_typ: str,
     var_val: str,
@@ -65,7 +66,10 @@ def set_vars_helper(
     # 3rd argument passed; type was specified as "None"
     if var_typ == "None":
         if var_val != "None":
-            ugen.err(f"Invalid value for '{var_typ}': '{var_val}'")
+            ugen.err(
+                f"Invalid value for '{var_typ}': '{var_val}'",
+                nm=cmd_nm
+            )
         var_val = None
     # 3rd argument passed; type was specified
     elif var_typ != None:
@@ -75,12 +79,15 @@ def set_vars_helper(
                 found = True
                 break
         else:
-            ugen.err(f"No such type in scope: '{var_typ}'")
+            ugen.err(f"No such type in scope: '{var_typ}'", nm=cmd_nm)
             return ERR_NO_SUCH_BUILTIN_TYP
         try:
             var_val = var_obj(ast.literal_eval(var_val))
         except ValueError:
-            ugen.err(f"Illegal value for type '{var_typ}': '{var_val}'")
+            ugen.err(
+                f"Illegal value for type '{var_typ}': '{var_val}'",
+                nm=cmd_nm
+            )
             return ERR_INV_VAL_FOR_TYP
         except SyntaxError:
             ugen.err("Syntax error: invalid text")
@@ -88,21 +95,22 @@ def set_vars_helper(
 
     try:
         if complain and var_nm in env_vars:
-            ugen.err("Variable exists: '{var_nm}'")
+            ugen.err("Variable exists: '{var_nm}'", nm=cmd_nm)
             err_code = ERR_VAR_EXISTS
         else:
             env_vars.set(var_nm, var_val)
     except ugen.InvVarTypErr:
         err_code = uerr.ERR_ENV_VAR_INV_TYP
         ugen.err(
-            f"Invalid type for '{var_nm}': '{var_val.__class__.__name__}'"
+            f"Invalid type for '{var_nm}': '{var_val.__class__.__name__}'",
+            nm=cmd_nm
         )
     except ugen.InvVarNmErr:
         err_code = uerr.ERR_ENV_VAR_INV_NM
-        ugen.err(f"Invalid variable name: '{var_nm}'")
+        ugen.err(f"Invalid variable name: '{var_nm}'", nm=cmd_nm)
     except ugen.UnkVarErr:
         err_code = uerr.ERR_ENV_UNK_VAR
-        ugen.err(f"Unknown variable: '{var_nm}'")
+        ugen.err(f"Unknown variable: '{var_nm}'", nm=cmd_nm)
 
     return err_code
 
@@ -122,19 +130,23 @@ def run(data: ugen.CmdData) -> int:
         for arg in data.args:
             if complain and arg not in data.env_vars:
                 err_code = err_code or ERR_NO_SUCH_VAR
-                ugen.err(f"No such variable: '{arg}'")
+                ugen.err(f"No such variable: '{arg}'", nm=data.cmd_nm)
                 continue
             data.env_vars.rm(arg)
 
     else:
         if len(data.args) not in (2, 3):
-            ugen.err("Expected 2 or 3 arguments to set variable")
+            ugen.err(
+                "Expected 2 or 3 arguments to set variable",
+                nm=data.cmd_nm
+            )
             return ERR_EXPD_ARGS
 
         var_nm = data.args[0]
         var_val = data.args[1]
         var_typ = data.args[2] if len(data.args) == 3 else None
         tmp_err_code = set_vars_helper(
+            data.cmd_nm,
             var_nm,
             var_typ,
             var_val,

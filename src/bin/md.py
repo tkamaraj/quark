@@ -1,7 +1,7 @@
 import os
 import sys
 
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 import src.utils.gen as ugen
 
 CMD_NM = __name__.split(".")[-1]
@@ -45,15 +45,15 @@ def run(data: ugen.CmdData) -> int:
         except FileExistsError:
             if not exist_ok:
                 err_code = err_code or uerr.ERR_FL_DIR_EXISTS
-                ugen.err(f"Already exists: \"{arg}\"")
+                ugen.err(f"Already exists: \"{arg}\"", nm=data.cmd_nm)
         except FileNotFoundError:
             err_code = err_code or ERR_NO_PARENT
-            ugen.err(f"No parent: \"{arg}\"")
+            ugen.err(f"No parent: \"{arg}\"", nm=data.cmd_nm)
         except PermissionError:
             err_code = err_code or uerr.ERR_PERM_DENIED
-            ugen.err(f"Access denied: cannot create \"{arg}\"")
+            ugen.err(f"Access denied: cannot create \"{arg}\"", nm=data.cmd_nm)
         except OSError as e:
             err_code = err_code or uerr.ERR_OS_ERR
-            ugen.err(f"OS error; {e.strerror}")
+            ugen.err(f"OS error; {e.strerror}", nm=data.cmd_nm)
 
     return err_code

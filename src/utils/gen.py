@@ -202,23 +202,21 @@ def crit_Q(msg: str, exc_txt: str | None = None) -> None:
         sys.stderr.flush()
 
 
-def err(msg: str) -> None:
-    _lgrs.lgr_c.err(msg)
-    _lgrs.fl_lgr.err(msg)
+def err(msg: str, nm: str | None = None) -> None:
+    src = f"{nm}: " if nm is not None else ""
+    _lgrs.lgr_c.err(src + msg)
+    _lgrs.fl_lgr.err(src + msg)
 
 
-def err_Q(msg: str) -> None:
+def err_Q(msg: str, nm: str | None = None) -> None:
+    src = f"{nm}: " if nm is not None else ""
     # To output to STDERR before initialisation of loggers
     if _lgrs is not None:
-        _lgrs.lgr_q.err(msg)
-        _lgrs.fl_lgr.err(msg)
+        _lgrs.lgr_q.err(src + msg)
+        _lgrs.fl_lgr.err(src + msg)
     else:
         sys.stderr.write(
-            uconst.ANSI_BOLD_RED_4
-            + "EQ:"
-            + uconst.ANSI_RESET
-            + " "
-            + msg
+            f"{uconst.ANSI_BOLD_RED_4}EQ:{uconst.ANSI_RESET} {src}{msg}"
         )
         sys.stderr.flush()
 
@@ -424,12 +422,13 @@ def inp(inp_hdlr: InpHdlr, hist: str, tab_spaces: int = 4) -> str:
 
         # ^w - kill word before cursor
         elif full_key == "\x17":
+            buf_len = len(buf)
             # Delete whitespace just before cursor before deleting word
-            while buf and buf[cur_col - init_col - 1].isspace():
+            while cur_col - init_col > 0 and buf[cur_col - init_col - 1].isspace():
                 cur_col -= 1
                 buf.pop(cur_col - init_col)
-            # Delete the word (i.e. till we hit whitespace again)
-            while buf and not buf[cur_col - init_col - 1].isspace():
+            # Delete the actual word (i.e. till we hit whitespace again)
+            while cur_col - init_col > 0 and not buf[cur_col - init_col - 1].isspace():
                 cur_col -= 1
                 buf.pop(cur_col - init_col)
 

@@ -1,7 +1,7 @@
 import math
 import traceback as tb
 
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 import src.utils.gen as ugen
 
 CMD_NM = __name__.split(".")[-1]
@@ -34,6 +34,9 @@ def run(data: ugen.CmdData) -> int:
         except Exception as e:
             exc = tb.format_exception(e)
             err_code = err_code or ERR_EXEC_ERR
-            ugen.err(f"{e.__class__.__name__}: {e}\n{''.join(exc)}")
+            ugen.err(
+                f"{e.__class__.__name__}: {e}\n{''.join(exc)}",
+                nm=data.cmd_nm
+            )
 
     return err_code

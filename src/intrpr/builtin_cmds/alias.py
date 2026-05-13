@@ -1,4 +1,4 @@
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 import src.utils.gen as ugen
 
 CMD_NM = __name__.split(".")[-1]
@@ -39,7 +39,10 @@ def run(data: ugen.CmdData) -> int:
             alias_val = alias_dict[alias]
             if not isinstance(alias, str) or not isinstance(alias_val, str):
                 err_code = err_code or ERR_INV_ALIAS
-                ugen.err(f"Invalid alias at pos {i} in _ALIASES_")
+                ugen.err(
+                    f"Invalid alias at pos {i} in _ALIASES_",
+                    nm=data.cmd_nm
+                )
                 continue
             escd_alias = ugen.esc_chrs(alias, extra=("=",))
             max_len = max(max_len, len(escd_alias))
@@ -52,12 +55,12 @@ def run(data: ugen.CmdData) -> int:
         for arg in data.args:
             if arg not in alias_dict:
                 err_code = err_code or ERR_UNK_ALIAS
-                ugen.err(f"Unknown alias: '{arg}'")
+                ugen.err(f"Unknown alias: '{arg}'", nm=data.cmd_nm)
                 continue
             alias_val = alias_dict[arg]
             if not isinstance(alias_val, str):
                 err_code = err_code or ERR_INV_ALIAS
-                ugen.err(f"Invalid alias '{arg}'")
+                ugen.err(f"Invalid alias '{arg}'", nm=data.cmd_nm)
                 continue
             escd_arg = ugen.esc_chrs(arg, extra=("=",))
             max_len = max(max_len, len(escd_arg))

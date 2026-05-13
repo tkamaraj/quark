@@ -1,6 +1,6 @@
 import os
 
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 import src.utils.gen as ugen
 
 HELP = ugen.HelpObj(

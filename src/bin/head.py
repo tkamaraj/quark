@@ -4,7 +4,7 @@ import pathlib as pl
 import re
 import sys
 
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 import src.utils.gen as ugen
 
 CMD_NM = __name__.split(".")[-1]
@@ -45,7 +45,10 @@ def run(data: ugen.CmdData) -> int:
             try:
                 num_of_lns = int(val)
             except ValueError:
-                ugen.err(f"Cannot cast to int for '{opt}': '{val}'")
+                ugen.err(
+                    f"Cannot cast to int for '{opt}': '{val}'",
+                    nm=data.cmd_nm
+                )
                 return uerr.ERR_CANT_CAST_VAL
 
     for arg in data.args:
@@ -54,15 +57,15 @@ def run(data: ugen.CmdData) -> int:
                 cntnt = [ln for _ in range(num_of_lns) if (ln := f.readline())]
         except FileNotFoundError:
             err_code = err_code or uerr.ERR_FL_404
-            ugen.err(f"No such file: \"{arg}\"")
+            ugen.err(f"No such file: \"{arg}\"", nm=data.cmd_nm)
             continue
         except PermissionError:
             err_code = err_code or uerr.ERR_PERM_DENIED
-            ugen.err(f"Access denied: \"{arg}\"")
+            ugen.err(f"Access denied: \"{arg}\"", nm=data.cmd_nm)
             continue
         except OSError as e:
             err_code = err_code or uerr.ERR_OS_ERR
-            ugen.err(f"OS error; {e.strerror}")
+            ugen.err(f"OS error; {e.strerror}", nm=data.cmd_nm)
             continue
 
         len_num_lns_avail = len(str(len(cntnt)))

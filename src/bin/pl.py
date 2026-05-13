@@ -2,7 +2,7 @@ import re
 import subprocess as sp
 import typing as ty
 
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 import src.utils.gen as ugen
 
 CMD_NM = __name__.split(".")[-1]
@@ -67,7 +67,7 @@ def run(data: ugen.CmdData) -> int:
     rn_cmd = ["ps", "-eo", ps_fmt_str, "--no-headers"]
     compd_proc = sp.run(rn_cmd, capture_output=True, text=True)
     if compd_proc.returncode != 0:
-        ugen.err("Could not get process list")
+        ugen.err("Could not get process list", nm=data.cmd_nm)
         return ERR_CANT_GET_PROC_LIST
     stdout = compd_proc.stdout.splitlines()
 

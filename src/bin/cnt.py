@@ -3,7 +3,7 @@ import pathlib as pl
 import re
 import sys
 
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 import src.utils.gen as ugen
 
 CMD_NM = __name__.split(".")[-1]
@@ -139,7 +139,7 @@ def run(data: ugen.CmdData) -> int:
             show_lns = True
 
     if not data.args and not data.stdin:
-        ugen.err("Expected arguments or STDIN")
+        ugen.err("Expected arguments or STDIN", nm=data.cmd_nm)
         return uerr.ERR_EXPD_STDIN_OR_ARGS
 
     # No filtering option given, thus show all
@@ -194,7 +194,7 @@ def run(data: ugen.CmdData) -> int:
     for i in op_buf:
         if isinstance(i, Err):
             err_code = err_code or i.code
-            ugen.err(i.msg)
+            ugen.err(i.msg, nm=data.cmd_nm)
             continue
 
         fl_sz_fmted = ugen.ljust(i.fl_sz, max_fl_sz_len)

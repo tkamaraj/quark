@@ -2,7 +2,7 @@ import typing as ty
 
 import src.parser.ast_nodes as past
 import src.parser.internals as pint
-import utils.err_codes as uerr
+import src.utils.err_codes as uerr
 import src.utils.consts as uconst
 import src.utils.gen as ugen
 import utils.debug as udeb

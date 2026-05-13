@@ -47,9 +47,8 @@ cwd = f"{ANSI_GREEN_4}!P{ANSI_RESET}"
 
 
 class Defaults:
-    PTH = (os.path.join(RUN_PTH, "bin"),)
     # TODO: Uncomment on final release and remove previous line
-    # PTH = (USR_BIN_PTH, *SYS_BIN_PTHS, os.path.join(RUN_PTH, "bin"))
+    PTH = (USR_BIN_PTH, *SYS_BIN_PTHS, os.path.join(RUN_PTH, "bin"))
 
     # PROMPT = f"┌ !? {ANSI_BLUE_4}!u{ANSI_RESET}@{ANSI_YELLOW_4}!h{ANSI_RESET} {ANSI_GREEN_4}!P{ANSI_RESET}\n└─❯ "
     def PROMPT(env_vars: "iint.Env") -> str:
