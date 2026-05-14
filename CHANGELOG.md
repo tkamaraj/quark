@@ -2,6 +2,15 @@
 
 ## Latest commit
 
+docs: fixed typo and sentence structure, restructured doc pages, added content
+
+- `docs/archi.md`: Moved some sections from README, added content, updated
+content
+- `README.md`: Corrected typo, and moved some sections to other doc pages,
+- `docs/cmd_mod.md`: Changed a few sentences
+
+## Commit 6184abdcd35df1ce049c86cea9e8e4c7e2e5d1fb
+
 build: added option to Nuitka call
 
 - `dev/pc.py`: Added an option in the Nuitka call to stop Nuitka from stopping

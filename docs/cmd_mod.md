@@ -1,25 +1,25 @@
 # WRITING A COMMAND MODULE
 
-## Requirements for being considered a command module
+## Requirements for a command module
 
-Valid command modules for Quark require two compulsory variables, `HELP` and
-`CMD_SPEC`, and one compulsory function, `run`, in the module scope. The
-command module is rejected if these attributes are not present in the module.
+Valid command modules for Quark require two compulsory variables `HELP` and
+`CMD_SPEC`, and one compulsory function `run` in the module scope. The command
+module is rejected if these attributes are not present in the module.
 
-## Types of required attributes in the command module
+## Types of required attributes
 
-Variable `HELP` must be an object of type `utils.HelpObj` or a subclass of it.
-Variable `CMD_SPEC` must be an object of type `utils.CmdSpec` or a subclass of
-it. Function `run` must accept only one parameter of type `utils.gen.CmdData`,
-and return an `int`, which will be the exit code of the command. All these
-types are enforced by the command resolver, which will reject the command
-module if a discrepancy is encountered.
+Variable `HELP` must be an instance of `utils.HelpObj` or a subclass of it.
+Variable `CMD_SPEC` must be an instance of `utils.CmdSpec` or a subclass of it.
+Function `run` must accept only one parameter of type `utils.gen.CmdData`, and
+return an `int`, which will be the exit code of the command. The type
+requirements are enforced by the command resolver, which will reject the
+command module in case of any discrepancies.
 
 ## API
 
-The command API is provided by `utils.gen`. Command authors are encouraged not
-to access core modules of the interpreter. The documentation for the API is not
-available right now.
+The command API is provided by `src.utils.gen`. Command authors are encouraged
+not to access core modules of the interpreter. The documentation for the API is
+not available right now.
 
 Common error codes are provided in `src.utils.err_codes`. Command authors are
 encouraged to use the error codes listed in this file if their use case is
