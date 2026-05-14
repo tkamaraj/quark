@@ -2,6 +2,13 @@
 
 ## Latest commit
 
+fix: command module alias order of output and error messages
+
+- `src/intrpr/builtin_cmds/alias.py`: Fixed output and error messages not
+respecting argument order
+
+## Commit e777b4e3d33d69118ba977c41c5b33e17246bb65
+
 fix: logging function NameError bugs
 
 - `src/utils/gen.py`: Fixed NameError bugs in logging functions

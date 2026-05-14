@@ -8,10 +8,6 @@ import src.utils.consts as uconst
 import src.utils.gen as ugen
 
 
-class InvAttrModi(Exception):
-    pass
-
-
 def set_log_lvl(lvl: int) -> None | ty.NoReturn:
     if lvl not in LogLvls:
         raise ValueError(f"Invalid log level: {lvl}")
@@ -63,22 +59,22 @@ class Lgr:
         )
 
     def debug(self, msg: str) -> None:
-        self._log(msg, LogLvls.DEBUG, fmting=uconst.ANSI_BOLD)
+        self._log(msg, LogLvls.DEBUG, fmting=ugen.S.bold)
 
     def info(self, msg: str) -> None:
-        self._log(msg, LogLvls.INFO, fmting=uconst.ANSI_BOLD)
+        self._log(msg, LogLvls.INFO, fmting=ugen.S.bold)
 
     def warn(self, msg: str) -> None:
-        self._log(msg, LogLvls.WARN, fmting=uconst.ANSI_BOLD + uconst.ANSI_YELLOW_4)
+        self._log(msg, LogLvls.WARN, fmting=ugen.S.bold + ugen.S.yellow_4)
 
     def err(self, msg: str) -> None:
-        self._log(msg, LogLvls.ERR, fmting=uconst.ANSI_BOLD + uconst.ANSI_RED_4)
+        self._log(msg, LogLvls.ERR, fmting=ugen.S.bold + ugen.S.red_4)
 
     def crit(self, msg: str) -> None:
-        self._log(msg, LogLvls.CRIT, fmting=uconst.ANSI_BOLD + uconst.ANSI_RED_4)
+        self._log(msg, LogLvls.CRIT, fmting=ugen.S.bold + ugen.S.red_4)
 
     def fatal(self, msg: str) -> None:
-        self._log(msg, LogLvls.FATAL, fmting=uconst.ANSI_BOLD + uconst.ANSI_RED_4)
+        self._log(msg, LogLvls.FATAL, fmting=ugen.S.bold + ugen.S.red_4)
 
 
 class LgrVessel(ty.NamedTuple):
@@ -95,5 +91,5 @@ ERR_HEADER_MAP = {
     LogLvls.WARN: "W",
     LogLvls.ERR: "E",
     LogLvls.CRIT: "C",
-    LogLvls.FATAL: "F",
+    LogLvls.FATAL: "F"
 }
