@@ -15,4 +15,5 @@ ALIASES = {
     "dir": "ls",
     "copy": "cp",
     "wc": "cnt",
+    "cat": "prn"
 }

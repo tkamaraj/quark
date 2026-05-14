@@ -119,7 +119,7 @@ class CmdReslvr:
                 ugen.crit_Q(
                     f"(resolver) Syntax error in command module '{cmd}'"
                 )
-                ugen.lg_to_fl(
+                ugen.log_to_fl(
                     "c",
                     f"(resolver) Syntax error in command module '{cmd}':\n{tb.format_exc()}"
                 )
@@ -128,7 +128,7 @@ class CmdReslvr:
                 ugen.crit_Q(
                     f"(resolver) Loading '{cmd}' raised {e.__class__.__name__}"
                 )
-                ugen.lg_to_fl(
+                ugen.log_to_fl(
                     "c",
                     f"(resolver) Loading '{cmd}' raised:\n{tb.format_exc()}"
                 )

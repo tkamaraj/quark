@@ -2,6 +2,12 @@
 
 ## Latest commit
 
+fix: general utils file logging
+
+- `src/utils/gen.py`: Incomplete file logging improvements
+
+## Commit 22527e04a3fe331556d9184cd966d15ba8f3964a
+
 fix: command module alias order of output and error messages
 
 - `src/intrpr/builtin_cmds/alias.py`: Fixed output and error messages not

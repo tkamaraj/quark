@@ -1028,7 +1028,7 @@ class Intrpr:
             ugen.crit_Q(
                 f"Uncaught exception in command '{data.cmd_nm}': {e.__class__.__name__}"
             )
-            ugen.lg_to_fl("c", tb.format_exc())
+            ugen.log_to_fl("c", tb.format_exc())
 
         # DEBUG: Run command function time end
         ugen.debug(

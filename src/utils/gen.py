@@ -1,4 +1,5 @@
 import atexit
+import datetime as dt
 import os
 import pathlib as pl
 import re
@@ -13,6 +14,7 @@ import typing as ty
 import src.parser.internals as pint
 import src.utils.consts as uconst
 import src.utils.loggers as ulog
+import src.logger.eng as leng
 
 if ty.TYPE_CHECKING:
     import src.intrpr.cmd_reslvr as icrsr
@@ -155,11 +157,21 @@ def write(s: str, flush: bool = True) -> None:
     sys.stdout.flush() if flush else None
 
 
-def lg_to_fl(lvl: str, txt: str) -> None:
-    if lvl == "c":
-        _lgrs.fl_lgr.crit(txt)
-    elif lvl == "f":
-        _lgrs.fl_lgr.fatal(txt)
+def log_to_fl(src: str, lvl: int, txt: str) -> None:
+    if src == "c":
+        C_LOG_LVL_FN_MAP[lvl](
+            dt.datetime.now(dt.timezone.utc).astimezone().strftime(
+                r"%d-%m-%Y %H:%M.%S.%f [%z]"
+            )
+            + txt
+        )
+    elif src == "q":
+        Q_LOG_LVL_FN_MAP[lvl](
+            dt.datetime.now(dt.timezone.utc).astimezone().strftime(
+                r"%d-%m-%Y %H:%M.%S.%f [%z]"
+            )
+            + txt
+        )
 
 
 def fatal(
@@ -252,6 +264,7 @@ def err_Q(msg: str, nm: str | None = None) -> None:
 
 
 def warn(msg: str, nm: str | None = None) -> None:
+    src = f"{nm}: " if nm is not None else ""
     _lgrs.lgr_c.warn(src + msg)
     _lgrs.fl_lgr.warn(src + msg)
 
@@ -264,11 +277,7 @@ def warn_Q(msg: str, nm: str | None = None) -> None:
         _lgrs.fl_lgr.warn(src + msg)
     else:
         sys.stderr.write(
-            uconst.ANSI_BOLD_YELLOW_4
-            + "WQ:"
-            + uconst.ANSI_RESET
-            + " "
-            + msg
+            f"{uconst.ANSI_BOLD_YELLOW_4}WQ:{uconst.ANSI_RESET} {src}{msg}"
         )
         sys.stderr.flush()
 
@@ -573,12 +582,27 @@ def inp(inp_hdlr: InpHdlr, hist: str, tab_spaces: int = 4) -> str:
 rm_ansi = re.compile(r"""\x1b\[[;\d]*[A-Za-z]""", re.VERBOSE).sub
 _lgrs = None
 S = StyleObj()
-
 # For inp()
 get_pos_regex = re.compile(r"^\x1b\[(\d*);(\d*)R")
 str_join = "".join
 mv_cur = lambda ln, col: f"\x1b[{ln};{col}H"
 mv_cur_col = lambda col: f"\x1b[{col}G"
+# C_LOG_LVL_FN_MAP = {
+#     leng.LogLvls.DEBUG: _lgrs.fl_lgr.debug,
+#     leng.LogLvls.INFO:  _lgrs.fl_lgr.info,
+#     leng.LogLvls.WARN:  _lgrs.fl_lgr.warn,
+#     leng.LogLvls.ERR:   _lgrs.fl_lgr.err,
+#     leng.LogLvls.CRIT:  _lgrs.fl_lgr.crit,
+#     leng.LogLvls.FATAL: _lgrs.fl_lgr.fatal
+# }
+# Q_LOG_LVL_FN_MAP = {
+#     leng.LogLvls.DEBUG: _lgrs.fl_lgr.debug_Q,
+#     leng.LogLvls.INFO:  _lgrs.fl_lgr.info_Q,
+#     leng.LogLvls.WARN:  _lgrs.fl_lgr.warn_Q,
+#     leng.LogLvls.ERR:   _lgrs.fl_lgr.err_Q,
+#     leng.LogLvls.CRIT:  _lgrs.fl_lgr.crit_Q,
+#     leng.LogLvls.FATAL: _lgrs.fl_lgr.fatal_Q
+# }
 
 
 def test():
