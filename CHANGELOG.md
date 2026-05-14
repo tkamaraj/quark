@@ -2,6 +2,14 @@
 
 ## Latest commit
 
+fix: child process interrupt bug
+
+- `src/intrpr/eng.py`: Fixed bug where interrupt in child process would raise
+AttributeError due to None being passed to the parent to be killed in place of
+the child's PID
+
+## Commit 52aba7ee53b00e36ead03ae7ee98e8e8e10b30c8
+
 fix: general utils file logging
 
 - `src/utils/gen.py`: Incomplete file logging improvements

@@ -55,6 +55,7 @@ FLAGS
 
 
 class MainProgParsed(ty.NamedTuple):
+    cust_inp: bool
     pre_ld_ext_cmds: bool
     stdout_ansi: bool
     stderr_ansi: bool
@@ -66,6 +67,7 @@ def parse_argv(passed_params: list[str]) -> MainProgParsed:
     len_passed_params = len(passed_params)
     skip = 0
 
+    cust_inp = False
     pre_ld_ext_cmds = False
     stdout_ansi = False
     stderr_ansi = False
@@ -85,7 +87,9 @@ def parse_argv(passed_params: list[str]) -> MainProgParsed:
             continue
 
         # Flag: preload external commands
-        if param in ("-e", "--load-external"):
+        if param in ("-c", "--custom-input"):
+            cust_inp = True
+        elif param in ("-e", "--load-external"):
             pre_ld_ext_cmds = True
         # Flag: Show debug
         elif param in ("-d", "--debug"):
@@ -129,6 +133,7 @@ def parse_argv(passed_params: list[str]) -> MainProgParsed:
             sys.exit(uerr.ERR_MP_UNK_TOK)
 
     return MainProgParsed(
+        cust_inp=cust_inp,
         pre_ld_ext_cmds=pre_ld_ext_cmds,
         stdout_ansi=stdout_ansi,
         stderr_ansi=stderr_ansi,
@@ -195,7 +200,10 @@ def main() -> None:
             hist_fl.seek(0)
             hist = hist_fl.read().splitlines()
             try:
-                raw_ln = ugen.inp(inp_hdlr, hist=list(dict.fromkeys(hist)))
+                if parsed_params.cust_inp:
+                    raw_ln = ugen.inp(inp_hdlr, hist=list(dict.fromkeys(hist)))
+                else:
+                    raw_ln = input()
             finally:
                 inp_hdlr.reset_sett()
             if raw_ln and hist_fl is not None:

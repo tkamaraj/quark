@@ -656,7 +656,7 @@ class Intrpr:
     ) -> iint.CmdCompdObj:
         err_code = uerr.ERR_ALL_GOOD
 
-        pid = None
+        pid = 0
         try:
             if cmd_src == "external":
                 ugen.debug("resolved to external command")
@@ -722,6 +722,7 @@ class Intrpr:
 
         except KeyboardInterrupt as e:
             if pid != 0:
+                print(pid)
                 raise ugen.KeyboardInterruptWPrevileges(str(e), child_pid=pid)
             else:
                 raise e
