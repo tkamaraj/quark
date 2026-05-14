@@ -157,6 +157,7 @@ def main() -> None:
         f"--output-folder-name={build_dir}",
         f"--output-dir={proj_root_dir}",
         f"--output-filename={out_fl_nm}",
+        "--no-deployment-flag=self-execution",
         cfg.args[0]
     ]
 

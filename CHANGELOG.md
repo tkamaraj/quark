@@ -2,6 +2,14 @@
 
 ## Latest commit
 
+build: added option to Nuitka call
+
+- `dev/pc.py`: Added an option in the Nuitka call to stop Nuitka from stopping
+the program with the `-c` option. No idea why, but it says that the program
+tried to call itself, and suggested this option
+
+## Commit 57f47291c284f7617ddb7e967eb8655b13ddb484
+
 fix: child process interrupt bug
 
 - `src/intrpr/eng.py`: Fixed bug where interrupt in child process would raise
