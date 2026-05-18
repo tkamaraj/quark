@@ -25,12 +25,12 @@ command to a built-in command does not work.
 1. [DONE] inp(...): The way some codes are handled are incorrect. The "multiple
 getch()" codes. Like, the ones for arrow keys. Without kbhit(), it's almost
 impossible to guarantee that a keypress means a particular key.
-2. inp(...): Sometimes raises an IndexError. I'm not sure of what I need to do
+2. [DONE] inp(...): Sometimes raises an IndexError. I'm not sure of what I need to do
 in order to reproduce it, but it's has happened twice or three times now, so
 need to look out for that.
-3. inp(...): alt+d does not seem to work properly. Something broke during the
-getch() re-design and kbhit() implementation.
-4. inp(...): ^w raises IndexError.
+3. [DONE] inp(...): alt+d does not seem to work properly. Something broke
+during the getch() re-design and kbhit() implementation.
+4. [DONE] inp(...): ^w raises IndexError.
 
 ### Help command (src/intrpr/builtin_cmds/help.py)
 

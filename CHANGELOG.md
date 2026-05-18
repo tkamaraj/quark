@@ -2,6 +2,14 @@
 
 ## Latest commit
 
+docs: changelog and issues update
+
+## Commit f68f7cb39e67b20f4e34352fdcfb928666be3141
+
+add .gitignore to tracked files
+
+## Commit 64abdf16a4a9216bd2ec022a94b496032def8f03
+
 docs: fixed typo and sentence structure, restructured doc pages, added content
 
 - `docs/archi.md`: Moved some sections from README, added content, updated
