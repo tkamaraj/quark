@@ -45,6 +45,10 @@ def run(data: ugen.CmdData) -> int:
             err_code = err_code or uerr.ERR_IS_A_DIR
             ugen.err(f"Is a directory: \"{arg}\"", nm=data.cmd_nm)
             continue
+        except UnicodeDecodeError:
+            err_code = err_code or uerr.ERR_DECODE_ERR
+            ugen.err(f"Cannot decode file: \"{arg}\"", nm=data.cmd_nm)
+            continue
         except OSError as e:
             err_code = err_code or uerr.ERR_OS_ERR
             ugen.err(f"OS error; {e.strerror}", nm=data.cmd_nm)

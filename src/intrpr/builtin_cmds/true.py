@@ -6,7 +6,14 @@ CMD_NM = __name__.split(".")[-1]
 HELP = ugen.HelpObj(
     usage=CMD_NM,
     summary=f"Just returns {uerr.ERR_ALL_GOOD}",
-    details=()
+    details=(
+        "ARGUMENTS",
+        ("none", ""),
+        "OPTIONS",
+        ("none", ""),
+        "FLAGS",
+        ("none", "")
+    )
 )
 
 CMD_SPEC = ugen.CmdSpec(

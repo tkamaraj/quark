@@ -63,7 +63,8 @@ def run(data: ugen.CmdData) -> int:
     get_sz = "-s" in data.flags or "--size" in data.flags
 
     if not data.flags:
-        ugen.err("Cannot work without flags", nm=data.cmd_nm)
+        # ugen.err("Cannot work without flags", nm=data.cmd_nm)
+        ugen.err("Expected flags", nm=data.cmd_nm)
         return ERR_NO_FLAGS
 
     if clear_hist:

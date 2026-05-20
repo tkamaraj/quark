@@ -82,7 +82,7 @@ class Parser:
                 break
             prev_chr = char
         else:
-            ugen.err_Q(f"No closing quote at position {idx}\n")
+            ugen.err_Q(f"No closing quote at position {idx}")
             return uerr.ERR_NO_CLOSING_QUOTE
 
         return past.Quoted(
