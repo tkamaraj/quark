@@ -7,6 +7,7 @@ _ANSI_GREEN = "\x1b[32m"
 _ANSI_YELLOW = "\x1b[33m"
 _ANSI_BLUE = "\x1b[34m"
 
+# LN_MODE = "emacs"
 # PTH = ("@bin",)
 ALIASES = {
     "dir": "ls",

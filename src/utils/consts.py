@@ -49,6 +49,8 @@ cwd = f"{ANSI_GREEN_4}!P{ANSI_RESET}"
 class Defaults:
     # TODO: Uncomment on final release and remove previous line
     PTH = (USR_BIN_PTH, *SYS_BIN_PTHS, os.path.join(RUN_PTH, "bin"))
+    ALIASES = {}
+    LN_MODE = "emacs"
 
     # PROMPT = f"┌ !? {ANSI_BLUE_4}!u{ANSI_RESET}@{ANSI_YELLOW_4}!h{ANSI_RESET} {ANSI_GREEN_4}!P{ANSI_RESET}\n└─❯ "
     def PROMPT(env_vars: "iint.Env") -> str:
@@ -58,3 +60,7 @@ class Defaults:
             err = f"{ANSI_GREEN_4}•{ANSI_RESET}"
 
         return f"┌ {err} {usr}@{host} {cwd}\n└─❯ "
+
+
+class ValidVals:
+    LN_MODE = {"emacs", "vi", "raw"}

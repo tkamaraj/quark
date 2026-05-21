@@ -2,6 +2,13 @@
 
 ## Latest commit
 
+feat, refactor: line modes
+
+- `src/main.py`: Changed the input and line mode handler to `readline` from
+Python's standard library; added modes "emacs", "vi" and "raw"
+
+## Commit 5f5a8efe930ded1238fb52bf54193e71a4d03a6a
+
 chore: miscellaneous changes to several files
 
 ## Commit 90ae12e291b863966e048f70b23dc885495bffe6
