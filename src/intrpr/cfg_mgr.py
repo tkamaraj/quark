@@ -11,6 +11,7 @@ class Cfg(ty.NamedTuple):
     prompt: str
     pth: tuple[str]
     aliases: dict[str, str]
+    ln_mode: str
 
 
 def sandbox_runpy(fl: str) -> dict[str, ty.Any] | None:
@@ -50,6 +51,7 @@ def get_cfg() -> Cfg:
               else default values.
     :rtype: Cfg
     """
+    ln_mode = uconst.Defaults.LN_MODE
     prompt = uconst.Defaults.PROMPT
     pth = uconst.Defaults.PTH
     aliases = {}
@@ -98,4 +100,13 @@ def get_cfg() -> Cfg:
                 continue
             aliases = val
 
-    return Cfg(prompt=prompt, pth=pth, aliases=aliases)
+        elif key == "LN_MODE":
+            if not isinstance(val, str):
+                err_typ_repo(key, expd_typs=(str,), got_typ=type(val))
+                continue
+            if val not in uconst.ValidVals.LN_MODE:
+                ugen.err_Q(f"Invalid line mode: '{val}'")
+                break
+            ln_mode = val
+
+    return Cfg(ln_mode=ln_mode, prompt=prompt, pth=pth, aliases=aliases)

@@ -4,6 +4,7 @@ import collections as collns
 import logging as lg
 import os
 import re
+# import readline as rl
 import select as sel
 import signal as sig
 import sys
@@ -55,7 +56,7 @@ FLAGS
 
 
 class MainProgParsed(ty.NamedTuple):
-    cust_inp: bool
+    ln_mode: str
     pre_ld_ext_cmds: bool
     stdout_ansi: bool
     stderr_ansi: bool
@@ -67,7 +68,7 @@ def parse_argv(passed_params: list[str]) -> MainProgParsed:
     len_passed_params = len(passed_params)
     skip = 0
 
-    cust_inp = False
+    ln_mode = "default"
     pre_ld_ext_cmds = False
     stdout_ansi = False
     stderr_ansi = False
@@ -87,9 +88,7 @@ def parse_argv(passed_params: list[str]) -> MainProgParsed:
             continue
 
         # Flag: preload external commands
-        if param in ("-c", "--custom-input"):
-            cust_inp = True
-        elif param in ("-e", "--load-external"):
+        if param in ("-e", "--load-external"):
             pre_ld_ext_cmds = True
         # Flag: Show debug
         elif param in ("-d", "--debug"):
@@ -109,11 +108,21 @@ def parse_argv(passed_params: list[str]) -> MainProgParsed:
         elif param in ("-h", "--help"):
             ugen.write(HELP_TXT)
             sys.exit(uerr.ERR_ALL_GOOD)
+        elif param == "--line-mode":
+            # No value for option
+            if i == len_passed_params - 1:
+                ugen.err_Q("Expected value for '{param}'")
+                sys.exit(uerr.ERR_MP_EXPD_VAL_OPT)
+            val = passed_params[i + 1]
+            if val not in ("emacs", "vi", "raw"):
+                ugen.err_Q(f"Invalid value for '{param}': '{val}'")
+                sys.exit(uerr.ERR_MP_INV_VAL)
+            ln_mode = val
         # Option: Debug time unit conversion exponent
         elif param in ("-t", "--debug-time-unit"):
             # No value for the option found...
             if i == len_passed_params - 1:
-                ugen.err_Q(f"Expected value for '{param}'\n")
+                ugen.err_Q(f"Expected value for '{param}'")
                 sys.exit(uerr.ERR_MP_EXPD_VAL_OPT)
             val = passed_params[i + 1]
             if val == "ms":
@@ -125,15 +134,15 @@ def parse_argv(passed_params: list[str]) -> MainProgParsed:
             elif val == "s":
                 debug_time_expo = 9
             else:
-                ugen.err_Q(f"Invalid value for '{param}': '{val}'\n")
+                ugen.err_Q(f"Invalid value for '{param}': '{val}'")
                 sys.exit(uerr.ERR_MP_INV_VAL)
             skip += 1
         else:
-            ugen.err_Q(f"Unknown parameter: '{param}'\n")
+            ugen.err_Q(f"Unknown parameter: '{param}'")
             sys.exit(uerr.ERR_MP_UNK_TOK)
 
     return MainProgParsed(
-        cust_inp=cust_inp,
+        ln_mode=ln_mode,
         pre_ld_ext_cmds=pre_ld_ext_cmds,
         stdout_ansi=stdout_ansi,
         stderr_ansi=stderr_ansi,
@@ -185,6 +194,20 @@ def main() -> None:
         )
         inp_hdlr = ugen.InpHdlr()
         ugen.info_Q(f"running from \"{uconst.RUN_PTH}\"")
+        # No line mode option passed from command line
+        if parsed_params.ln_mode == "default":
+            if cfg.ln_mode != "raw":
+                import readline as rl
+                rl.parse_and_bind("tab: complete")
+                if cfg.ln_mode == "vi":
+                    rl.parse_and_bind("set editing-mode vi")
+        # Line mode option passed from command line
+        elif parsed_params.ln_mode != "raw":
+            import readline as rl
+            rl.parse_and_bind("tab: complete")
+            if parsed_params.ln_mode == "vi":
+                rl.parse_and_bind("set editing-mode vi")
+
     except Exception as e:
         tb.print_exc()
         ugen.fatal_Q(
@@ -196,19 +219,7 @@ def main() -> None:
     while True:
         try:
             prompt = intrpr.env_vars.get("_PROMPT_")
-            ugen.write(intrpr.reslv_prompt(prompt))
-            hist_fl.seek(0)
-            hist = hist_fl.read().splitlines()
-            try:
-                if parsed_params.cust_inp:
-                    raw_ln = ugen.inp(inp_hdlr, hist=list(dict.fromkeys(hist)))
-                else:
-                    raw_ln = input()
-            finally:
-                inp_hdlr.reset_sett()
-            if raw_ln and hist_fl is not None:
-                hist_fl.write(raw_ln + "\n")
-                hist_fl.flush()
+            raw_ln = input(intrpr.reslv_prompt(prompt))
             cmd_ret = intrpr.exec(raw_ln)
             intrpr.env_vars.set("_LAST_RET_", cmd_ret)
 
