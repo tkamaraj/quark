@@ -15,15 +15,14 @@ import src.parser.internals as pint
 import src.utils.consts as uconst
 import src.utils.loggers as ulog
 import src.logger.eng as leng
-
 if ty.TYPE_CHECKING:
     import src.intrpr.cmd_reslvr as icrsr
     import src.intrpr.internals as iint
 
 
-###############################################################################
-# CUSTOM EXCEPTIONS
-###############################################################################
+#########################
+### CUSTOM EXCEPTIONS ###
+#########################
 
 class LogicalErr(Exception):
     pass
@@ -357,9 +356,9 @@ def get_pos() -> tuple[int, int] | None:
     return (int(groups[0]), int(groups[1]))
 
 
-###############################################################################
-# INPUT
-###############################################################################
+#############
+### INPUT ###
+#############
 class InpHdlr:
     def __init__(self) -> None:
         self.fd = sys.stdin.fileno()
@@ -460,11 +459,17 @@ def inp(inp_hdlr: InpHdlr, hist: str, tab_spaces: int = 4) -> str:
         elif full_key == "\x17":
             buf_len = len(buf)
             # Delete whitespace just before cursor before deleting word
-            while cur_col - init_col > 0 and buf[cur_col - init_col - 1].isspace():
+            while (
+                cur_col - init_col > 0
+                and buf[cur_col - init_col - 1].isspace()
+            ):
                 cur_col -= 1
                 buf.pop(cur_col - init_col)
             # Delete the actual word (i.e. till we hit whitespace again)
-            while cur_col - init_col > 0 and not buf[cur_col - init_col - 1].isspace():
+            while (
+                cur_col - init_col > 0
+                and not buf[cur_col - init_col - 1].isspace()
+            ):
                 cur_col -= 1
                 buf.pop(cur_col - init_col)
 
@@ -576,9 +581,9 @@ def inp(inp_hdlr: InpHdlr, hist: str, tab_spaces: int = 4) -> str:
     return str_join(buf)
 
 
-###############################################################################
-# GLOBAL SCOPE
-###############################################################################
+####################
+### GLOBAL SCOPE ###
+####################
 rm_ansi = re.compile(r"""\x1b\[[;\d]*[A-Za-z]""", re.VERBOSE).sub
 _lgrs = None
 S = StyleObj()

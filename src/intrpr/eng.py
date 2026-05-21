@@ -343,7 +343,7 @@ class Intrpr:
 
         for pth in self.cfg.pth:
             if pth.startswith("@bin"):
-                pth = re.sub("^@bin", uconst.USR_BIN_PTH, pth)
+                pth = re.sub("^@bin", uconst.BIN_PTH, pth)
             elif pth.startswith("@prog"):
                 pth = re.sub("^@prog", uconst.RUN_PTH, pth)
             pths.append(str(pl.Path(pth).expanduser().absolute()))

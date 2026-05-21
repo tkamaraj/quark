@@ -7,6 +7,7 @@ VER = "0.1"
 TAB_SZ = 2
 
 RUN_PTH = os.path.dirname(os.path.abspath(sys.argv[0]))
+BIN_PTH = os.path.join(RUN_PTH, "bin")
 USR_BIN_PTH = os.path.join(os.path.expanduser("~"), "bin")
 SYS_BIN_PTHS = (
     "/usr/bin",

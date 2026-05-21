@@ -19,6 +19,7 @@ lg.basicConfig(
 
 
 class Cfg(ty.NamedTuple):
+    compiler: str | None
     no_docstrs: bool
     lto: bool
     keep_tmp: bool
@@ -33,6 +34,7 @@ class Cfg(ty.NamedTuple):
 
 
 def parse_args() -> Cfg:
+    compiler = None
     no_docstrs = True
     lto = False
     keep_tmp = True
@@ -91,6 +93,8 @@ def parse_args() -> Cfg:
             mode = "standalone"
         elif tok in ("-of", "--onefile"):
             mode = "onefile"
+        elif tok in "--clang":
+            compiler = "clang"
         elif tok == "--":
             parse_opts_flags = False
         else:
@@ -110,6 +114,7 @@ def parse_args() -> Cfg:
         sys.exit(2)
 
     return Cfg(
+        compiler=compiler,
         no_docstrs=no_docstrs,
         lto=lto,
         keep_tmp=keep_tmp,
@@ -149,6 +154,7 @@ def main() -> None:
         "--python-flag=no_docstrings" if cfg.no_docstrs else "",
         "--lto=yes" if cfg.lto else "--lto=no",
         # "--run" if cfg.run else "",
+        f"--{cfg.compiler}" if cfg.compiler is not None else "",
         "--remove-output" if not cfg.keep_tmp else "",
         "--no-pyi-file" if cfg.rm_pyi else "",
         "--quiet" if cfg.quiet else "",
