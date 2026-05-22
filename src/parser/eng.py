@@ -119,6 +119,9 @@ class Parser:
             return param
 
         escd_param = self._reslv_esc_chrs(param)
+        if isinstance(escd_param, int):
+            return escd_param
+
         param_len = len(escd_param.val)
         param_recons = []   # WHAT?!?
         skip = 0
@@ -155,7 +158,7 @@ class Parser:
                 reslvd_val.append(char)
                 continue
             if i == param_len - 1:
-                ugen.err_Q(f"Lone backslash at position {param.start + i}\n")
+                ugen.err_Q(f"Lone backslash at position {param.start + i}")
                 return uerr.ERR_LONE_B_SLASH
 
             tmp = pint.ESC_CHR_MAP.get("\\" + param.val[i + 1])

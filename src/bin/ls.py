@@ -1,4 +1,5 @@
 import datetime as dt
+import errno
 import itertools as it
 import math
 import os
@@ -182,13 +183,22 @@ def get_items(cmd_nm: str, pth: str, ctx: LsCtx) \
             items.append((curr, curr.lstat()))
 
         for i in iterator:
-            # Hidden option filtering
-            if (
-                ctx.item_visibility not in ("all", "almost-all")
-                and i.name.startswith(".")
-            ):
-                continue
-            items.append((i, i.stat(follow_symlinks=False)))
+            try:
+                # Hidden option filtering
+                if (
+                    ctx.item_visibility not in ("all", "almost-all")
+                    and i.name.startswith(".")
+                ):
+                    continue
+                items.append((i, i.stat(follow_symlinks=False)))
+            except OSError as e:
+                if e.errno == errno.ENOTCONN:
+                    ugen.err(
+                        f"Transport endpoint not connected: \"{i.name}\"",
+                        nm=cmd_nm
+                    )
+                    continue
+                raise e
 
 
     # Doesn't exist
@@ -516,6 +526,7 @@ def run(data: ugen.CmdData) -> int:
     # Yes arguments
     else:
         for arg in data.args:
+            tmp_err_code = uerr.ERR_ALL_GOOD
             try:
                 items, tmp_err_code = get_items(
                     data.cmd_nm,
@@ -526,10 +537,10 @@ def run(data: ugen.CmdData) -> int:
             # FileNotFoundError, PermissionError will be due to race conditions
             except FileNotFoundError:
                 err_code = err_code or uerr.ERR_FL_DIR_404
-                ugen.err(f"No such file/directory: \"{pth}\"", nm=data.cmd_nm)
+                ugen.err(f"No such file/directory: \"{arg}\"", nm=data.cmd_nm)
             except PermissionError:
                 err_code = err_code or uerr.ERR_PERM_DENIED
-                ugen.err(f"Access denied: \"{pth}\"", nm=data.cmd_nm)
+                ugen.err(f"Access denied: \"{arg}\"", nm=data.cmd_nm)
             except OSError as e:
                 err_code = err_code or uerr.ERR_OS_ERR
                 ugen.err(f"OS error; {e.strerror}", nm=data.cmd_nm)
@@ -538,15 +549,16 @@ def run(data: ugen.CmdData) -> int:
             if tmp_err_code:
                 continue
 
-            ugen.write(ugen.S.fmt(arg, data.is_tty, ugen.S.green_4) + "\n")
-            if long_list:
-                long_list_prn(items, is_tty=data.is_tty, ctx=ctx)
-            else:
-                short_list_prn(
-                    items,
-                    is_tty=data.is_tty,
-                    term_sz=data.term_sz,
-                    ctx=ctx
-                )
+            if not err_code:
+                ugen.write(ugen.S.fmt(arg, data.is_tty, ugen.S.green_4) + "\n")
+                if long_list:
+                    long_list_prn(items, is_tty=data.is_tty, ctx=ctx)
+                else:
+                    short_list_prn(
+                        items,
+                        is_tty=data.is_tty,
+                        term_sz=data.term_sz,
+                        ctx=ctx
+                    )
 
     return err_code

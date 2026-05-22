@@ -2,6 +2,25 @@
 
 ## Latest commit
 
+fix: transport endpoint bug in command module ls
+
+- `src/bin/ls.py`: Fixed several undefined and unbound variable bugs; Fixed
+an OSError problem of other items in a directory not getting listed for an
+transport endpoint not being connected
+- `src/parser/eng.py`: Fixed a TypeError bug due to no type checks
+
+## Commit fffe490a6c9a48d293f4afbf12dba05abf55fa0e
+
+merge: branch input to branch master
+
+## Commit 5205691c16a0fe944005f076f938776b1c1ccae1
+
+feat: add compiler to build script; fix: search paths
+
+- `dev/pc.py`: Added flag to use clang
+
+## Commit fbee4ff1450af28266384b02eb4c747a5c577997
+
 feat, refactor: line modes
 
 - `src/main.py`: Changed the input and line mode handler to `readline` from
