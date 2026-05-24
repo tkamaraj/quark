@@ -2,6 +2,15 @@
 
 ## Latest commit
 
+fix: logic errors in prompt resolution and redirection
+
+- `src/main.py`: Renamed a variable
+- `src/intrpr/eng.py`: Resolved a NameError bug in redirection logic; Fixed
+logical errors in prompt resolution and added an error message for invalid type
+of prompt variable
+
+## Commit 19ce7770c4112beb940e9544b78af57d95f52010
+
 fix: transport endpoint bug in command module ls
 
 - `src/bin/ls.py`: Fixed several undefined and unbound variable bugs; Fixed

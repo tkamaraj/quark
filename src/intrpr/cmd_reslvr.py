@@ -92,6 +92,9 @@ class CmdReslvr:
                 fl_stat = fl.stat(follow_symlinks=False)
             except FileNotFoundError as e:
                 continue
+            # This fucking thing is raised when something like `./ls/` is input
+            except NotADirectoryError:
+                continue
 
             if (
                 cache_entry is not None

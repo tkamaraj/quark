@@ -13,8 +13,8 @@ import traceback as tb
 import tty
 import typing as ty
 
-import src.intrpr.eng as ieng
 import src.intrpr.cfg_mgr as cmgr
+import src.intrpr.eng as ieng
 import src.utils.consts as uconst
 import src.utils.err_codes as uerr
 import src.utils.gen as ugen
@@ -216,9 +216,17 @@ def main() -> None:
             exc_txt=tb.format_exc(),
         )
 
+    prompt_404_warned = False
     while True:
         try:
-            prompt = intrpr.env_vars.get("_PROMPT_")
+            try:
+                prompt = intrpr.env_vars.get("_PROMPT_")
+                prompt_404_warned = False
+            except ugen.UnkVarErr:
+                if not prompt_404_warned:
+                    ugen.warn_Q("_PROMPT_ not found; using default")
+                prompt = uconst.Defaults.PROMPT
+                prompt_404_warned = True
             raw_ln = input(intrpr.reslv_prompt(prompt))
             cmd_ret = intrpr.exec(raw_ln)
             intrpr.env_vars.set("_LAST_RET_", cmd_ret)

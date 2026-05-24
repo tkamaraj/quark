@@ -163,8 +163,11 @@ class Intrpr:
         _t_intrpr_init = time.perf_counter_ns() - _t_intrpr_init
 
         ugen.debug_Q(
-            ugen.fmt_d_stmt("time", "tot_init_intrpr",
-                            fmt_t_ns(self.debug_time_expo, _t_intrpr_init))
+            ugen.fmt_d_stmt(
+                "time",
+                "tot_init_intrpr",
+                fmt_t_ns(self.debug_time_expo, _t_intrpr_init)
+            )
         )
 
     def reslv_prompt_var(
@@ -191,13 +194,19 @@ class Intrpr:
                 ugen.crit_Q(
                     f"Errant prompt function; raised {e.__class__.__name__} ({e})"
                 )
-                prompt_str = uconst.Defaults.PROMPT
+                prompt_str = uconst.Defaults.PROMPT(self.env_vars)
 
             if not isinstance(prompt_str, str):
                 ugen.crit_Q(
                     f"Expected return of type 'str' from prompt function; got '{type(prompt_str).__name__}'"
                 )
-                prompt_str = uconst.Defaults.PROMPT
+                prompt_str = uconst.Defaults.PROMPT(self.env_vars)
+
+        else:
+            ugen.err_Q(
+                f"Invalid type for prompt variable: '{type(prompt).__name__}'"
+            )
+            prompt_str = uconst.Defaults.PROMPT(self.env_vars)
 
         return prompt_str
 
@@ -971,13 +980,13 @@ class Intrpr:
             # Too many parameters on the right of STDOUT redirect operator
             if isinstance(op, past.RedirSTDOUT) and len(r_simp_cmd) > 1:
                 ugen.err_Q(
-                    f"Unexpected parameter for STDOUT redirection at pos {cmd_expr.r_opr.params[1].start}"
+                    f"Unexpected parameter for STDOUT redirection at pos {r_simp_cmd.params[1].start}"
                 )
                 return uerr.ERR_UNEXPD_PARAM_STDOUT_REDIRN
             # Too many parameters on the right of STDERR redirect operator
             elif isinstance(op, past.RedirSTDERR) and len(r_simp_cmd) > 1:
                 ugen.err_Q(
-                    f"Unexpected parameter for STDERR redirection at pos {cmd_expr.r_opr.params[1].start}"
+                    f"Unexpected parameter for STDERR redirection at pos {r_simp_cmd.params[1].start}"
                 )
                 return uerr.ERR_UNEXPD_PARAM_STDOUT_REDIRN
 
