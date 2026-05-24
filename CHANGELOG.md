@@ -2,6 +2,10 @@
 
 ## Latest commit
 
+chore: remove .gitignore from tracked files
+
+## Commit 162c6e8b30a56e2cec7188ebd3a5a11c25dce1cc
+
 fix: logic errors in prompt resolution and redirection
 
 - `src/main.py`: Renamed a variable
