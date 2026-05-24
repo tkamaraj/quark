@@ -28,6 +28,12 @@ class LogicalErr(Exception):
     pass
 
 
+class ExcepWPrevileges(Exception):
+    def __init__(self, err: Exception, child_pid: int) -> None:
+        self.err = err
+        self.child_pid = child_pid
+
+
 class KeyboardInterruptWPrevileges(Exception):
     def __init__(self, msg: str, child_pid: int) -> None:
         super().__init__(msg)

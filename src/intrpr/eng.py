@@ -33,24 +33,11 @@ TH_CmdFn = ty.Callable[[ugen.CmdData], int]
 TH_GetCmdRes = tuple[TH_CmdFn, ugen.CmdSpec]
 
 
-def fmt_t_ns(time_expo: int, ns: int) -> str | ty.NoReturn:
-    """
-    Format time in nanoseconds to required format.
-
-    :param time_expo: Exponent to raise 10 to for dividing the time in
-                      nanoseconds.
-    :type time_expo: int
-
-    :param ns: Time in nanoseconds.
-    :type ns: int
-
-    :returns: Formatted string.
-    :rtype: str
-    """
-    if time_expo == 3:
-        unit = "us"
-    elif time_expo == 6:
+def fmt_t_ns(time_expo: int, ns: int) -> str:
+    if time_expo == 6:
         unit = "ms"
+    elif time_expo == 3:
+        unit = "us"
     elif time_expo == 0:
         unit = "ns"
     elif time_expo == 9:
@@ -69,28 +56,6 @@ class Intrpr:
         debug_time_expo: int,
         log_lvl: int
     ) -> None:
-        """
-        Initialise the interpreter.
-
-        :param cfg: Object containing configuration data.
-        :type cfg: src.intrpr.cfg_mgr.Cfg
-
-        :param pre_ld_ext_cmds: Load all external commands on interpreter
-                                startup?
-        :type pre_ld_ext_cmds: bool
-
-        :param stdout_ansi: Keep ANSI escape codes in STDOUT redirects?
-        :type stdout_ansi: bool
-
-        :param stderr_ansi: Keep ANSI escape codes in STDERR redirects?
-        :type stderr_ansi: bool
-
-        :param debug_time_expo: Debug time division exponent
-        :type debug_time_expo: int
-
-        :param log_lvl: Log level for loggers
-        :type log_lvl: int
-        """
         self.ext_cached_cmds: dict[str, iint.CmdCacheEntry]
 
         # Interpreter initialisation time start
@@ -174,16 +139,6 @@ class Intrpr:
         self,
         prompt: ty.Callable[[iint.Env], ty.Any] | str
     ) -> str:
-        """
-        "Resolve" the prompt variable. It can be function returning a string or
-        a string.
-
-        :param prompt: Prompt variable to "resolve."
-        :type prompt: typing.Callable[[src.intrpr.internals.Env], typing.Any] | str
-
-        :returns: Raw prompt string without prompt substitutions.
-        :rtype: str
-        """
         if isinstance(prompt, str):
             prompt_str = prompt
 
@@ -214,17 +169,6 @@ class Intrpr:
         self,
         prompt_obj: ty.Callable[[iint.Env], ty.Any] | str | None
     ) -> str:
-        """
-        "Resolve" the prompt, i.e. do all prompt substitutions.
-
-        :param prompt_obj: Prompt string.
-        :type prompt_obj: str
-                          | typing.Callable[[src.intrpr.internals.Env], typing.Any]
-                          | None
-
-        :returns: Prompt string after prompt substitutions are performed.
-        :rtype: str
-        """
         # Pretty bad design, I guess, handling the None case for variable
         # prompt in this method, but I don't want to clutter up the main file
         if prompt_obj is None:
@@ -341,10 +285,6 @@ class Intrpr:
         return final_prompt
 
     def use_cfg(self) -> None:
-        """
-        Use user-provided config values, i.e. set interpreter attributes as per
-        config given.
-        """
         self.env_vars.set("_PROMPT_", self.cfg.prompt)
         self.env_vars.set("_ALIASES_", self.cfg.aliases)
         # expansions = {"@bin": uconst.USR_BIN_PTH, "@prog": uconst.RUN_PTH}
@@ -360,10 +300,6 @@ class Intrpr:
         self.env_vars.set("_PTH_", tuple(pths))
 
     def ld_all_ext_mods(self) -> None:
-        """
-        Load all external modules into cache. Intended to be used at
-        interpreter startup.
-        """
         pths = self.env_vars.get("_PTH_")
         for pth in pths:
             pth = pl.Path(pth).expanduser().resolve()
@@ -403,33 +339,6 @@ class Intrpr:
         ugen.CmdSpec,
         str
     ] | int:
-        """
-        Get the command function, command spec and command source using the
-        command resolver.
-
-        :param cmd_nm: Command name
-        :type cmd_nm: str
-
-        :param ext_cached_cmds: Cached external commands
-        :type ext_cached_cmds: dict[str, src.intrpr.internals.CmdCacheEntry]
-
-        :param cmd_reslvr: Command resolver object
-        :type cmd_reslvr: src.intrpr.cmd_reslvr.CmdReslvr
-
-        :param env_vars: Environment variables
-        :type env_vars: src.intrpr.internals.Env
-
-        :returns: If successful in fetching the command function and spec, a
-                  tuple containing:
-                      - the command function and
-                      - the command spec.
-                  Else, an integer error code.
-        :rtype: tuple[
-                    typing.Callable[[src.utils.gen.CmdData], int],
-                    src.utils.gen.CmdSpec,
-                    str
-                ] | int
-        """
         builtin_cmd = self.cmd_reslvr.get_builtin_cmd(cmd_nm)
         if isinstance(builtin_cmd, tuple):
             return (*builtin_cmd, "built-in")
@@ -448,23 +357,6 @@ class Intrpr:
         params: "list[past.Param]",
         cmd_spec: ugen.CmdSpec
     ) -> tuple[tuple[str, ...], dict[str, str], tuple[str, ...]] | int:
-        """
-        Helper function to classify parser output into arguments, flags and
-        options.
-
-        :param tok_grp: Token group yielded from parser.
-        :type tok_grp: list[src.parser.internals.Tok]
-
-        :param cmd_spec: Command spec from command file.
-        :type cmd_spec: src.utils.gen.CmdSpec
-
-        :returns: If no errors occured, a tuple containing:
-                      - a tuple of strings (argument array),
-                      - a dictionary of string keys and string values (option
-                        array) and
-                      - a tuple of strings (flag array).
-                  Otherwise, an integer error code.
-        """
         args = []
         opts = {}
         flags = []
@@ -543,18 +435,6 @@ class Intrpr:
         return (tuple(args), opts, tuple(flags))
 
     def rd_from_fd(self, fd: io.IOBase, n: int) -> bytes:
-        """
-        Read data from stream.
-
-        :param fd: Stream to read data from.
-        :type fd: io.IOBase
-
-        :param n: Number of bytes to read.
-        :type n: int
-
-        :returns: Bytes object read.
-        :rtype: bytes
-        """
         chunks = []
         total = 0
 
@@ -572,15 +452,6 @@ class Intrpr:
         chk_if: io.TextIOBase,
         set_to: io.TextIOBase
     ) -> None:
-        """
-        Loop through and set logger streams.
-
-        :param chk_if: Object to check if streams against
-        :type chk_if: io.TextIOBase
-
-        :param set_to: Object to set streams to
-        :type set_to: io.TextIOBase
-        """
         for lgr in lg.Logger.manager.loggerDict.values():
             if isinstance(lgr, lg.PlaceHolder):
                 continue
@@ -641,11 +512,16 @@ class Intrpr:
     ) -> ty.NoReturn:
         os.dup2(w1, 1)
         os.close(w1)
-        cmd_ret = self.rn_cmd_fn(cmd_fn, data)
+        try:
+            cmd_ret = self.rn_cmd_fn(cmd_fn, data)
+        except Exception as e:
+            raise ugen.ExcepWPrevileges(e, child_pid=os.getpid())
+
         if not isinstance(cmd_ret, int):
             ugen.crit("Last command returned non-integer")
             cmd_ret = uerr.ERR_CMD_RETD_NON_INT
-        elif not (-2 ** 31 <= cmd_ret < 2 ** 31):
+        # 2 ** 31 = 2147483648
+        elif not -2147483648 <= cmd_ret < 2147483648:
             ugen.crit_Q(
                 f"Command return value exceeds 32-bit signed integer limit: {cmd_ret}"
             )
@@ -731,7 +607,6 @@ class Intrpr:
 
         except KeyboardInterrupt as e:
             if pid != 0:
-                print(pid)
                 raise ugen.KeyboardInterruptWPrevileges(str(e), child_pid=pid)
             else:
                 raise e
@@ -994,11 +869,7 @@ class Intrpr:
 
         return uerr.ERR_ALL_GOOD
 
-    def rn_cmd_fn(
-        self,
-        cmd_fn: TH_CmdFn,
-        data: ugen.CmdData
-    ) -> int:
+    def rn_cmd_fn(self, cmd_fn: TH_CmdFn, data: ugen.CmdData) -> int:
         """
         Run a command function.
 
@@ -1039,6 +910,15 @@ class Intrpr:
                 f"Uncaught exception in command '{data.cmd_nm}': {e.__class__.__name__}"
             )
             ugen.log_to_fl("c", tb.format_exc())
+
+        except ugen.ExcepWPrevileges as e:
+            cmd_ret = cmd_ret or uerr.ERR_CMD_RNTIME_ERR
+            ugen.crit_Q(
+                f"Uncaught exception in command '{data.cmd_nm}': {e.__class__.__name__}"
+            )
+            ugen.log_to_fl("c", tb.format_exc())
+            if isinstance(e, ugen.ExcepWPrevileges):
+                os.kill(e.child_pid, sig.SIGKILL)
 
         # DEBUG: Run command function time end
         ugen.debug(
