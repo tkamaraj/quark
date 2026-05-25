@@ -162,23 +162,6 @@ def write(s: str, flush: bool = True) -> None:
     sys.stdout.flush() if flush else None
 
 
-def log_to_fl(src: str, lvl: int, txt: str) -> None:
-    if src == "c":
-        C_LOG_LVL_FN_MAP[lvl](
-            dt.datetime.now(dt.timezone.utc).astimezone().strftime(
-                r"%d-%m-%Y %H:%M.%S.%f [%z]"
-            )
-            + txt
-        )
-    elif src == "q":
-        Q_LOG_LVL_FN_MAP[lvl](
-            dt.datetime.now(dt.timezone.utc).astimezone().strftime(
-                r"%d-%m-%Y %H:%M.%S.%f [%z]"
-            )
-            + txt
-        )
-
-
 def fatal(
     msg: str,
     ret: int,

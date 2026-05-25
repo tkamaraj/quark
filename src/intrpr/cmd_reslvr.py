@@ -120,20 +120,16 @@ class CmdReslvr:
                 continue
             except SyntaxError:
                 ugen.crit_Q(
-                    f"(resolver) Syntax error in command module '{cmd}'"
-                )
-                ugen.log_to_fl(
-                    "c",
-                    f"(resolver) Syntax error in command module '{cmd}':\n{tb.format_exc()}"
+                    f"Syntax error in command module '{cmd}'",
+                    exc_txt=(f"(resolver) Syntax error in command module '{cmd}':\n"
+                             f"{tb.format_exc()}")
                 )
                 return uerr.ERR_CMD_SYN_ERR
             except Exception as e:
                 ugen.crit_Q(
-                    f"(resolver) Loading '{cmd}' raised {e.__class__.__name__}"
-                )
-                ugen.log_to_fl(
-                    "c",
-                    f"(resolver) Loading '{cmd}' raised:\n{tb.format_exc()}"
+                    f"Loading '{cmd}' raised {e.__class__.__name__}",
+                    exc_txt=(f"(resolver) Loading '{cmd}' raised:\n"
+                             f"{tb.format_exc()}")
                 )
                 return uerr.ERR_CANT_LD_CMD_MOD
             # except RecursionError:

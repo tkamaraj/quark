@@ -548,17 +548,15 @@ def run(data: ugen.CmdData) -> int:
             # Errors encountered when "getting" items for current argument
             if tmp_err_code:
                 continue
-
-            if not err_code:
-                ugen.write(ugen.S.fmt(arg, data.is_tty, ugen.S.green_4) + "\n")
-                if long_list:
-                    long_list_prn(items, is_tty=data.is_tty, ctx=ctx)
-                else:
-                    short_list_prn(
-                        items,
-                        is_tty=data.is_tty,
-                        term_sz=data.term_sz,
-                        ctx=ctx
-                    )
+            ugen.write(ugen.S.fmt(arg, data.is_tty, ugen.S.green_4) + "\n")
+            if long_list:
+                long_list_prn(items, is_tty=data.is_tty, ctx=ctx)
+            else:
+                short_list_prn(
+                    items,
+                    is_tty=data.is_tty,
+                    term_sz=data.term_sz,
+                    ctx=ctx
+                )
 
     return err_code

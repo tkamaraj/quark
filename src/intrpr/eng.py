@@ -9,6 +9,7 @@ import platform as pf
 import pwd
 import re
 import select as sel
+import signal as sig
 import struct as st
 import sys
 import time
@@ -437,15 +438,19 @@ class Intrpr:
     def rd_from_fd(self, fd: io.IOBase, n: int) -> bytes:
         chunks = []
         total = 0
-
         while total < n:
             chunk = os.read(fd, n - total)
             if not chunk:
                 break
             chunks.append(chunk)
             total += len(chunk)
-
         return b"".join(chunks)
+
+    def write_to_fd(self, fd: int, data: str) -> None:
+        len_data = len(data)
+        written = 0
+        while written < len_data:
+            total += os.write(fd, data[written :])
 
     def loop_set_lgr_streams(
         self,
@@ -507,18 +512,32 @@ class Intrpr:
         self,
         cmd_fn: TH_CmdFn,
         data: ugen.CmdData,
-        w1: int,
-        w2: int
+        wout: int,
+        werr: int,
+        wother: int
     ) -> ty.NoReturn:
-        os.dup2(w1, 1)
-        os.close(w1)
+        os.dup2(wout, 1)  # Redirect STDOUT to write end of pipe wout
+        os.dup2(werr, 2)  # Redirect STDERR to write end of pipe werr
+        os.close(wout)
+        os.close(werr)
+        exceps_raised = True
+        tb_msg = ""
         try:
             cmd_ret = self.rn_cmd_fn(cmd_fn, data)
+            exceps_raised = False
+        except RecursionError:
+            tb_msg = tb.format_exc()
+            cmd_ret = uerr.ERR_RECUR_ERR
+            ugen.crit_Q(
+                f"Recursion depth exceeded",
+                exc_txt=("Recursion depth exceeded\n"
+                         f"{tb_msg}")
+            )
         except Exception as e:
-            raise ugen.ExcepWPrevileges(e, child_pid=os.getpid())
-
+            tb_msg = tb.format_exc()
+            cmd_ret = uerr.ERR_CMD_RNTIME_ERR
         if not isinstance(cmd_ret, int):
-            ugen.crit("Last command returned non-integer")
+            ugen.crit_Q("Last command returned non-integer")
             cmd_ret = uerr.ERR_CMD_RETD_NON_INT
         # 2 ** 31 = 2147483648
         elif not -2147483648 <= cmd_ret < 2147483648:
@@ -526,10 +545,60 @@ class Intrpr:
                 f"Command return value exceeds 32-bit signed integer limit: {cmd_ret}"
             )
             cmd_ret = uerr.ERR_RET_INT_TOO_LARGE
-        # Pass output size and output through the pipe to parent process
-        os.write(w2, st.pack("!i", cmd_ret))
-        os.close(w2)
-        os._exit(cmd_ret)
+        # Pass data:
+        # 1. Command return code
+        # 2. If any exceptions were raised
+        # Case: If any exceptions were raised:
+        #       3. Length of the traceback string
+        #       4. The traceback string
+        os.write(wother, st.pack("!i", cmd_ret))
+        os.write(wother, st.pack("!?", exceps_raised))
+        if exceps_raised:
+            os.write(wother, st.pack("!Q", len(tb_msg)))
+            self.write_to_fd(wother, tb_msg.encode())
+        os.close(wother)
+        os._exit(0)
+
+    def rd_and_unpack(self, fd: int, fmt_str: str, expd_bytes: int) -> ty.Any:
+        packed_obj = self.rd_from_fd(fd, expd_bytes)
+        try:
+            return st.unpack(fmt_str, packed_obj)[0]
+        except st.error as e:
+            ugen.crit_Q(f"Expected {expd_bytes}-byte unpack ({fmt_str})")
+            return
+
+    def retrieve_err_str(self, fd: int) -> str | None:
+        err_str_len = self.rd_and_unpack(fd, "!Q", 8)
+        if not isinstance(err_str_len, int):
+            return
+        err_str = self.rd_from_fd(fd, err_str_len)
+        return err_str
+
+    def stream_data(
+        self,
+        fds_w_disp_objs: dict[int, io.TextIOBase],
+        chunk_sz: int
+    ) -> None:
+        poller = sel.poll()
+        open_fds = set(fds_w_disp_objs.keys())
+        for fd in fds_w_disp_objs:
+            poller.register(fd, sel.POLLHUP | sel.POLLIN)
+        while open_fds:
+            evts = poller.poll()
+            for fd, evt in evts:
+                # Event when pipe has data
+                if evt & sel.POLLIN:
+                    chunk = os.read(fd, chunk_sz)
+                    if not chunk:
+                        continue
+                    fds_w_disp_objs[fd].write(chunk.decode())
+                # Pipe close event
+                if evt & sel.POLLHUP:
+                    # I've seen KeyError at this place once... don't know why,
+                    # but I'm adding in checks to make sure the program doesn't
+                    # crash
+                    poller.unregister(fd)
+                    open_fds.remove(fd) if fd in open_fds else None
 
     def exec_cmd_fn(
         self,
@@ -540,76 +609,78 @@ class Intrpr:
         stderr_obj: io.TextIOBase
     ) -> iint.CmdCompdObj:
         err_code = uerr.ERR_ALL_GOOD
-
         pid = 0
-        try:
-            if cmd_src == "external":
-                ugen.debug("resolved to external command")
-                # Two pipes, 1 and 2, for command output and return code
-                r1, w1 = os.pipe()
-                r2, w2 = os.pipe()
-                pid = os.fork()
 
-                # Child process, run in a forked process
-                if pid == 0:
-                    os.close(r1)
-                    os.close(r2)
-                    self.child_proc(cmd_fn, data, w1, w2)
-                # Some issue, can't fork
-                elif pid < 0:
+        # It's assumed that cmd_src can only be one of two values, "external"
+        # and "built-in"
+        if cmd_src == "external":
+            ugen.debug("resolved to external command")
+            # Two pipes 1 and 2 for output and return code
+            rout, wout = os.pipe()
+            rerr, werr = os.pipe()
+            rother, wother = os.pipe()
+            pid = os.fork()
+            # Child process; run in forked process
+            if pid == 0:
+                os.close(rout)
+                os.close(rother)
+                self.child_proc(cmd_fn, data, wout, werr, wother)
+            # Some issue, can't fork
+            elif pid < 0:
+                ugen.crit_Q(
+                    "Failed to fork process; try re-running the command"
+                )
+                err_code = uerr.ERR_CANT_FORK_PROC
+            # Parent process
+            else:
+                # Do NOT rely on child process exit codes, because Linux only
+                # supports 8-bit uints; child process always has an exit code 0
+                os.close(wout)
+                os.close(werr)
+                os.close(wother)
+                # Stream STDOUT and STDERR of child from pipe
+                self.stream_data({rout: stdout_obj, rerr: stderr_obj}, 4096)
+                os.close(rout)
+                os.close(rerr)
+                # 4 bytes for command return code
+                ret_code = self.rd_and_unpack(rother, "!i", 4)
+                if ret_code is None:
+                    ret_code = uerr.ERR_UNPACK_FAIL
+                # 1 byte for data on if any exceptions were raised
+                exceps_raised = self.rd_and_unpack(rother, "!?", 1)
+                if exceps_raised is None:
+                    ret_code = uerr.ERR_UNPACK_FAIL
+                elif exceps_raised:
+                    exc_str = self.retrieve_err_str(rother)
+                    os.kill(pid, sig.SIGKILL)
                     ugen.crit_Q(
-                        "Failed to fork current process; try re-running the command"
+                        f"Uncaught exception in external command '{data.cmd_nm}': {e.__class__.__name__}",
+                        exc_txt=(f"Uncaught exception in external command '{data.cmd_nm}'\n"
+                                 f"{exc_str}")
                     )
-                    err_code = err_code or uerr.ERR_CANT_FORK_PROC
-                # Parent process
-                else:
-                    # Do NOT rely on child process exit codes, because OS only
-                    # supports 8-bit unsigned integers
-                    os.close(w1)
-                    os.close(w2)
-                    # For obtaining output as it's pushed through pipe 1 from the
-                    # child process
-                    poller = sel.poll()
-                    poller.register(r1)
-                    done = False
-                    while not done:
-                        evts = poller.poll()
-                        for fd, evt in evts:
-                            # Event when pipe closes
-                            if evt & sel.POLLHUP:
-                                done = True
-                            # Event when pipe has data
-                            if evt & sel.POLLIN:
-                                chunk = os.read(r1, 4096)
-                                if not chunk:
-                                    break
-                                stdout_obj.write(chunk.decode())
-                    # 4 bytes for command return code in pipe 2
-                    ret_packed = self.rd_from_fd(r2, 4)
-                    try:
-                        ret_code = st.unpack("!i", ret_packed)[0]
-                    except st.error:
-                        ret_code = uerr.ERR_EXPD_4_BYTE_UNPACK
-                    os.close(r2)
-                    # To prevent zombie (defunct) processes
-                    _, status = os.wait()
-                    exit_status = os.WEXITSTATUS(status)
-                    err_code = err_code or ret_code
+                os.close(rother)
+                # To prevent zombie (defunct) processes
+                os.wait()
+                # _, status = os.wait()
+                # exit_status = os.WEXITSTATUS(status)
+                err_code = err_code or ret_code
 
-            # Built-in command, run in same process as the interpreter
-            elif cmd_src == "built-in":
-                ugen.debug("resolved to built-in command")
+        # Built-in command; run in same process as interpreter
+        elif cmd_src == "built-in":
+            ugen.debug("resolved to built-in command")
+            try:
                 cmd_ret = self.rn_cmd_fn(cmd_fn, data)
-                err_code = err_code or cmd_ret
-
-            else:
-                raise LogicalErr(f"Invalid command source string: '{cmd_src}'")
-
-        except KeyboardInterrupt as e:
-            if pid != 0:
-                raise ugen.KeyboardInterruptWPrevileges(str(e), child_pid=pid)
-            else:
-                raise e
+            except RecursionError:
+                err_code = uerr.ERR_RECUR_ERR
+                ugen.crit_Q("Recursion depth exceeded")
+            except Exception as e:
+                err_code = uerr.ERR_CMD_RNTIME_ERR
+                ugen.crit_Q(
+                    f"Uncaught exception in built-in command '{data.cmd_nm}': {e.__class__.__name__}",
+                    exc_txt=(f"Uncaught exception in built-in command '{data.cmd_nm}'\n"
+                             f"{tb.format_exc()}")
+                )
+            err_code = err_code or cmd_ret
 
         return iint.CmdCompdObj(err_code=err_code)
 
@@ -903,22 +974,6 @@ class Intrpr:
         except ugen.UnkVarErr as e:
             cmd_ret = cmd_ret or uerr.ERR_ENV_UNK_VAR
             ugen.err_Q(f"Unknown variable: '{e.var_nm}'")
-        # Other exceptions raised
-        except Exception as e:
-            cmd_ret = cmd_ret or uerr.ERR_CMD_RNTIME_ERR
-            ugen.crit_Q(
-                f"Uncaught exception in command '{data.cmd_nm}': {e.__class__.__name__}"
-            )
-            ugen.log_to_fl("c", tb.format_exc())
-
-        except ugen.ExcepWPrevileges as e:
-            cmd_ret = cmd_ret or uerr.ERR_CMD_RNTIME_ERR
-            ugen.crit_Q(
-                f"Uncaught exception in command '{data.cmd_nm}': {e.__class__.__name__}"
-            )
-            ugen.log_to_fl("c", tb.format_exc())
-            if isinstance(e, ugen.ExcepWPrevileges):
-                os.kill(e.child_pid, sig.SIGKILL)
 
         # DEBUG: Run command function time end
         ugen.debug(

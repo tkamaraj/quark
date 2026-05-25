@@ -2,6 +2,20 @@
 
 ## Latest commit
 
+refactor: interpreter engine; fix: no output bug in command module ls
+
+- `src/intrpr/eng.py`: Major rewrite; Refactors for external command execution;
+Changed data streaming processes; Made STDERR to be transferred through a pipe,
+too, similar to STDOUT from the child process; Streaming both STDOUT and STDERR
+at the same time
+- `src/bin/ls.py`: Fixed the command not producing output following an error
+with a previous argument
+- `src/utils/err_codes.py`: Changed an error code's name
+- `src/utils/gen.py`: Removed unnecessarry function log_to_fl(...)
+- `src/intrpr/cmd_reslvr.py`: Removed calls to src.utils.gen.log_to_fl(...)
+
+## Commit c0f99742554f805b39ed7969a73d3576fc3835bd
+
 attempt fix: shell engine failure due to recursive command invokation (FAILED)
 
 ## Commit e9c676b84c08f3709b82f02c02c8ba2ec76bd9ba

@@ -19,18 +19,34 @@ places after the refactor. The architecture feels and is more robust, but the
 implementation is really shaky. It's crazy.
 2. [DONE BUT NEEDS MORE WORK] (Implemented a workaround) Pipe from an external
 command to a built-in command does not work.
+3. Recursion errors are weird. Like, when the command calls itself repeatedly.
+I have no idea what is happening. But design, as of the commit on 25-05-2026,
+the return code should be src.utils.err_codes.ERR_RNTIME_ERR. But the child
+fails to send the error code through the pipe.
 
-### General utils and command API (src/utils/gen.py)
+### Command resolver (src/intrpr/cmd_reslvr.py)
+
+1. The command resolver successfully resolves lines like "./ls" to "ls". This
+shouldn't happen. It happens because the paths are resolved with Path.resolve()
+and hence "./ls" gets converted to "ls", which invokes the ls command. Make the
+command resolver not resolve the path when searching for a command, as
+resolution of the path is not needed for searching.
+
+## Utilities
+
+### General utilities and command API (src/utils/gen.py)
 
 1. [DONE] inp(...): The way some codes are handled are incorrect. The "multiple
 getch()" codes. Like, the ones for arrow keys. Without kbhit(), it's almost
 impossible to guarantee that a keypress means a particular key.
-2. [DONE] inp(...): Sometimes raises an IndexError. I'm not sure of what I need to do
-in order to reproduce it, but it's has happened twice or three times now, so
-need to look out for that.
+2. [DONE] inp(...): Sometimes raises an IndexError. I'm not sure of what I need
+to do in order to reproduce it, but it's has happened twice or three times now,
+so need to look out for that.
 3. [DONE] inp(...): alt+d does not seem to work properly. Something broke
 during the getch() re-design and kbhit() implementation.
 4. [DONE] inp(...): ^w raises IndexError.
+
+## Command modules
 
 ### Help command (src/intrpr/builtin_cmds/help.py)
 
