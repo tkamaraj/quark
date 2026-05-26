@@ -54,12 +54,12 @@ during the getch() re-design and kbhit() implementation.
 
 ### Run in forked process command (src/bin/rf.py)
 
-1. Debug statements get mixed up in the output while executing the commands in
-the file. For example, try running a file with the text "help\n" inside it as
-`rf ./scr.qrk`. Won't happen every time, but often, because it seems to be a
-race between the output text and the debug messages. I suspect it's due to the
-output being slow to reach the parent process from the child process through
-the pipe.
+1. [IRRELEVANT (STDERR is sent through pipe to parent now)] Debug statements
+get mixed up in the output while executing the commands in the file. For
+example, try running a file with the text "help\n" inside it as `rf ./scr.qrk`.
+Won't happen every time, but often, because it seems to be a race between the
+output text and the debug messages. I suspect it's due to the output being slow
+to reach the parent process from the child process through the pipe.
 
 ### Process list command (src/bin/pl.py)
 
@@ -73,3 +73,8 @@ so that entries that are included the output only get their lengths calculated.
 not be.
 2. Try to put in a space before the names without surrounding quotes if its
 column contains a name with surrounding quotes.
+
+### System command module (src/intrpr/builtin_cmds/cmd.py)
+
+1. [DONE] UnicodeDecodeError when reading a non-text file (you know what I
+mean).

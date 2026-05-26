@@ -2,6 +2,18 @@
 
 ## Latest commit
 
+fix: minor command module bugfixes
+
+- `src/intrpr/builtin_cmds/cmd.py`: Handled overlooked UnicodeDecodeError case
+- `src/intrpr/builtin_cmds/rs.py`: Handled overlooked UnicodeDecodeError case
+- `src/bin/rf.py`: Handled overlooked UnicodeDecodeError case
+
+## Commit 01ecffc4c7cfe79454dae1005a9e212e9afb7923
+
+- `dev/pc.py`: Changed Python invoke name from "python" to "python3"
+
+## Commit 01ecffc4c7cfe79454dae1005a9e212e9afb7923
+
 refactor: interpreter engine; fix: no output bug in command module ls
 
 - `src/intrpr/eng.py`: Major rewrite; Refactors for external command execution;

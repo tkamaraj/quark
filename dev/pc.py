@@ -146,7 +146,7 @@ def main() -> None:
     cfg_fl_pth = os.path.join(proj_root_dir, "src", "cfg.py")
 
     cmd = [
-        "python",
+        "python3",
         "-m",
         "nuitka",
         f"--mode={cfg.mode}",

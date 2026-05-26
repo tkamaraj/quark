@@ -31,7 +31,11 @@ ERR_CMD_NOT_SUCCESS = 1000
 def run(data: ugen.CmdData) -> int:
     err_code = uerr.ERR_ALL_GOOD
 
-    compd_proc = sp.run(data.args, shell=True, capture_output=True, text=True)
+    try:
+        compd_proc = sp.run(data.args, shell=True, capture_output=True, text=True)
+    except UnicodeDecodeError:
+        ugen.err("Cannot decode output", nm=data.cmd_nm)
+        return ERR_DECODE_ERR
     if compd_proc.returncode != 0:
         err_code = ERR_CMD_NOT_SUCCESS
 
