@@ -132,9 +132,9 @@ def parse_args() -> Cfg:
 def main() -> None:
     cfg = parse_args()
 
-    usr_dir = os.path.expanduser('~')
-    usr_dir = re.sub(f"^{usr_dir}", "~", sys.executable)
-    lgr.info(f"Using binary {usr_dir}")
+    usr_dir = os.path.expanduser("~")
+    exec_pth = re.sub(f"^{usr_dir}", "~", sys.executable)
+    lgr.info(f"Using binary {exec_pth}")
     fl = cfg.args[0]
     base_nm = os.path.splitext(os.path.basename(fl))[0]
     proj_root_dir = os.path.dirname(os.path.dirname(fl))
@@ -168,9 +168,11 @@ def main() -> None:
     ]
 
     sh.rmtree(build_dir_pth, ignore_errors=True)
-    lgr.info(f"Removed build directory")
+    build_dir_prn = re.sub(f"^{usr_dir}", "~", os.path.abspath(build_dir_pth))
+    lgr.info(f"Removed dir {build_dir_prn}")
+    tmp_dir_prn = re.sub(f"^{usr_dir}", "~", os.path.abspath(tmp_dir_pth))
     sh.rmtree(tmp_dir_pth, ignore_errors=True)
-    lgr.info(f"Removed tmp directory")
+    lgr.info(f"Removed dir {tmp_dir_prn}")
     compld_proc = sp.run(
         [i for i in cmd if i],
         text=True,
@@ -179,16 +181,25 @@ def main() -> None:
 
     if compld_proc.returncode == 0:
         if cfg.keep_tmp:
-            sh.move(
-                os.path.join(proj_root_dir, "build.build"),
-                tmp_dir_pth
+            build_dot_build = os.path.join(proj_root_dir, "build.build")
+            build_dot_build_prn = re.sub(
+                f"^{usr_dir}",
+                "~",
+                os.path.abspath(build_dot_build)
             )
-            lgr.info(f"Moved build.build to tmp")
+            sh.move(build_dot_build, tmp_dir_pth)
+            lgr.info(f"Moved {build_dot_build_prn} to tmp")
         sh.move(
             os.path.join(proj_root_dir, build_dir + ".dist"),
             build_dir_pth
         )
-        lgr.info(f"Moved {build_dir}.dist to {build_dir}")
+        build_dot_dist = os.path.join(proj_root_dir, f"{build_dir}.dist")
+        build_dot_dist_prn = re.sub(
+            f"^{usr_dir}",
+            "~",
+            os.path.abspath(build_dot_dist)
+        )
+        lgr.info(f"Moved {build_dot_dist_prn} to {build_dir}")
         sh.copytree(bin_dir_pth, os.path.join(build_dir_pth, "bin"))
         lgr.info(f"Copied bin to build directory")
         sh.copy2(cfg_fl_pth, build_dir_pth)

@@ -2,6 +2,12 @@
 
 ## Latest commit
 
+build: change display paths
+
+- `dev/pc.py`: Changed display paths a bit
+
+## Commit dac4d793a52f88fe96bc6f016fe9b869f485c8e6
+
 fix: minor command module bugfixes
 
 - `src/intrpr/builtin_cmds/cmd.py`: Handled overlooked UnicodeDecodeError case

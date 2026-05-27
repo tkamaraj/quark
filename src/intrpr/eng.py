@@ -448,9 +448,9 @@ class Intrpr:
 
     def write_to_fd(self, fd: int, data: str) -> None:
         len_data = len(data)
-        written = 0
-        while written < len_data:
-            total += os.write(fd, data[written :])
+        total = 0
+        while total < len_data:
+            total += os.write(fd, data[total :])
 
     def loop_set_lgr_streams(
         self,
@@ -521,21 +521,21 @@ class Intrpr:
         os.close(wout)
         os.close(werr)
         exceps_raised = True
+        excep_nm = ""
+        excep_str = ""
         tb_msg = ""
         try:
             cmd_ret = self.rn_cmd_fn(cmd_fn, data)
             exceps_raised = False
-        except RecursionError:
-            tb_msg = tb.format_exc()
-            cmd_ret = uerr.ERR_RECUR_ERR
-            ugen.crit_Q(
-                f"Recursion depth exceeded",
-                exc_txt=("Recursion depth exceeded\n"
-                         f"{tb_msg}")
-            )
         except Exception as e:
+            excep_nm = e.__class__.__name__
+            excep_msg = str(e)
             tb_msg = tb.format_exc()
-            cmd_ret = uerr.ERR_CMD_RNTIME_ERR
+            if isinstance(e, RecursionError):
+                cmd_ret = uerr.ERR_RECUR_ERR
+            else:
+                cmd_ret = uerr.ERR_CMD_RNTIME_ERR
+
         if not isinstance(cmd_ret, int):
             ugen.crit_Q("Last command returned non-integer")
             cmd_ret = uerr.ERR_CMD_RETD_NON_INT
@@ -554,8 +554,9 @@ class Intrpr:
         os.write(wother, st.pack("!i", cmd_ret))
         os.write(wother, st.pack("!?", exceps_raised))
         if exceps_raised:
-            os.write(wother, st.pack("!Q", len(tb_msg)))
-            self.write_to_fd(wother, tb_msg.encode())
+            to_send = f"{excep_nm}\n{excep_str}\n{tb_msg}"
+            os.write(wother, st.pack("!Q", len(to_send)))
+            self.write_to_fd(wother, to_send.encode())
         os.close(wother)
         os._exit(0)
 
@@ -651,10 +652,10 @@ class Intrpr:
                 if exceps_raised is None:
                     ret_code = uerr.ERR_UNPACK_FAIL
                 elif exceps_raised:
-                    exc_str = self.retrieve_err_str(rother)
+                    exc_str = self.retrieve_err_str(rother).decode()
                     os.kill(pid, sig.SIGKILL)
                     ugen.crit_Q(
-                        f"Uncaught exception in external command '{data.cmd_nm}': {e.__class__.__name__}",
+                        f"Uncaught exception in external command '{data.cmd_nm}': {exc_str.splitlines()[0]}",
                         exc_txt=(f"Uncaught exception in external command '{data.cmd_nm}'\n"
                                  f"{exc_str}")
                     )
