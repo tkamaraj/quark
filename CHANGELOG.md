@@ -2,6 +2,19 @@
 
 ## Latest commit
 
+fix: handling of uncontrolled recursive calls, module cmd; docs: issues update
+
+- `src/intrpr/eng.py`: Used the traceback message sent for uncaught exceptions
+in external commands; Improved handling and error message display of
+commands doing uncontrolled interpreter invokations (don't know what else to
+call it); Handled too many files open when compiled (when opening pipes)
+- `src/intrpr/builtin_cmds/cmd.py`: Fixed STDERR from system interpreter being
+displayed through this interpreter's logging system (like, with headers and
+everything)
+- `src/utils/err_codes.py`: Added an interpreter error code
+
+## Commit 2168e8b54e111b073ad381186b2196128ba51082
+
 build: change display paths
 
 - `dev/pc.py`: Changed display paths a bit

@@ -1,4 +1,5 @@
 import subprocess as sp
+import sys
 
 import src.utils.gen as ugen
 import src.utils.err_codes as uerr
@@ -40,6 +41,6 @@ def run(data: ugen.CmdData) -> int:
         err_code = ERR_CMD_NOT_SUCCESS
 
     if compd_proc.stderr:
-        ugen.err(compd_proc.stderr, nm=data.cmd_nm)
+        sys.stderr.write(compd_proc.stderr)
     ugen.write(compd_proc.stdout)
     return err_code

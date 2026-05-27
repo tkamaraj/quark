@@ -1,3 +1,4 @@
+import errno
 import importlib.util as ilu
 import inspect as ins
 import io
@@ -616,11 +617,22 @@ class Intrpr:
         # and "built-in"
         if cmd_src == "external":
             ugen.debug("resolved to external command")
-            # Two pipes 1 and 2 for output and return code
-            rout, wout = os.pipe()
-            rerr, werr = os.pipe()
-            rother, wother = os.pipe()
-            pid = os.fork()
+            try:
+                # Two pipes 1 and 2 for output and return code
+                rout, wout = os.pipe()
+                rerr, werr = os.pipe()
+                rother, wother = os.pipe()
+                pid = os.fork()
+            except OSError as e:
+                if e.errno == errno.EMFILE:
+                    ugen.crit_Q(
+                        f"Too many open files; command '{data.cmd_nm}'",
+                        exc_txt=tb.format_exc()
+                    )
+                    err_code = uerr.ERR_TOO_MANY_OPEN_FLS
+                    return iint.CmdCompdObj(err_code=err_code)
+                else:
+                    raise e
             # Child process; run in forked process
             if pid == 0:
                 os.close(rout)
@@ -652,13 +664,24 @@ class Intrpr:
                 if exceps_raised is None:
                     ret_code = uerr.ERR_UNPACK_FAIL
                 elif exceps_raised:
-                    exc_str = self.retrieve_err_str(rother).decode()
+                    exc_txt = self.retrieve_err_str(rother).decode()
+                    exc_txt_split = exc_txt.splitlines()
+                    exc_nm = exc_txt_split[0]
+                    exc_str = exc_txt_split[1]
+                    tb_msg = exc_txt_split[2 :]
                     os.kill(pid, sig.SIGKILL)
-                    ugen.crit_Q(
-                        f"Uncaught exception in external command '{data.cmd_nm}': {exc_str.splitlines()[0]}",
-                        exc_txt=(f"Uncaught exception in external command '{data.cmd_nm}'\n"
-                                 f"{exc_str}")
-                    )
+                    if exc_nm == "RecursionError":
+                        ugen.crit_Q(
+                            f"Recursion depth exceeded; command '{data.cmd_nm}'",
+                            exc_txt=(f"Recursion depth exceeded; command '{data.cmd_nm}'\n"
+                                     f"{'\n'.join(tb_msg)}")
+                        )
+                    else:
+                        ugen.crit_Q(
+                            f"Uncaught exception in external command '{data.cmd_nm}': {exc_nm}",
+                            exc_txt=(f"Uncaught exception in external command '{data.cmd_nm}'\n"
+                                     f"{'\n'.join(tb_msg)}")
+                        )
                 os.close(rother)
                 # To prevent zombie (defunct) processes
                 os.wait()
@@ -673,7 +696,11 @@ class Intrpr:
                 cmd_ret = self.rn_cmd_fn(cmd_fn, data)
             except RecursionError:
                 err_code = uerr.ERR_RECUR_ERR
-                ugen.crit_Q("Recursion depth exceeded")
+                ugen.crit_Q(
+                    f"Recursion depth exceeded; command '{data.cmd_nm}'",
+                    exc_txt=(f"Recursion depth exceeded; command '{data.cmd_nm}'\n"
+                             f"{tb.format_exc()}")
+                )
             except Exception as e:
                 err_code = uerr.ERR_CMD_RNTIME_ERR
                 ugen.crit_Q(

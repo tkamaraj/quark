@@ -4,7 +4,8 @@
 
 ### Main entry point (src/main.py)
 
-1. [DONE] inp() in still remains largely broken and missing core features.
+1. [IRRELEVANT] [DONE] inp() in still remains largely broken and missing core
+features.
 
 ### [IRRELEVANT] Old interpreter engine (OLD ARCHITECTURE) (src/old_vers/intrpr_eng_old_archi.py)
 
@@ -14,7 +15,7 @@ after the first 4 bytes in the pipe between the forked and original process.
 
 ### Interpreter engine (src/intrpr/eng.py)
 
-1. [MOSTLY DONE] The whole damn engine is fucking broken. It broke in so many
+1. [DONE] The whole damn engine is fucking broken. It broke in so many
 places after the refactor. The architecture feels and is more robust, but the
 implementation is really shaky. It's crazy.
 2. [DONE BUT NEEDS MORE WORK] (Implemented a workaround) Pipe from an external
