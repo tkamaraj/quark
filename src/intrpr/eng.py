@@ -6,6 +6,7 @@ import logging as lg
 import multiprocessing as mp
 import os
 import pathlib as pl
+import pickle as pi
 import platform as pf
 import pwd
 import re
@@ -521,17 +522,13 @@ class Intrpr:
         os.dup2(werr, 2)  # Redirect STDERR to write end of pipe werr
         os.close(wout)
         os.close(werr)
-        exceps_raised = True
-        excep_nm = ""
-        excep_str = ""
-        tb_msg = ""
+        excep = None
         try:
             cmd_ret = self.rn_cmd_fn(cmd_fn, data)
             exceps_raised = False
         except Exception as e:
-            excep_nm = e.__class__.__name__
-            excep_msg = str(e)
-            tb_msg = tb.format_exc()
+            excep = e
+            exceps_raised = True
             if isinstance(e, RecursionError):
                 cmd_ret = uerr.ERR_RECUR_ERR
             else:
@@ -555,9 +552,9 @@ class Intrpr:
         os.write(wother, st.pack("!i", cmd_ret))
         os.write(wother, st.pack("!?", exceps_raised))
         if exceps_raised:
-            to_send = f"{excep_nm}\n{excep_str}\n{tb_msg}"
-            os.write(wother, st.pack("!Q", len(to_send)))
-            self.write_to_fd(wother, to_send.encode())
+            pickled_excep = pi.dumps(iint.ExcepWNoLoss(excep))
+            os.write(wother, st.pack("!Q", len(pickled_excep)))
+            self.write_to_fd(wother, pickled_excep)
         os.close(wother)
         os._exit(0)
 
@@ -569,12 +566,14 @@ class Intrpr:
             ugen.crit_Q(f"Expected {expd_bytes}-byte unpack ({fmt_str})")
             return
 
-    def retrieve_err_str(self, fd: int) -> str | None:
-        err_str_len = self.rd_and_unpack(fd, "!Q", 8)
-        if not isinstance(err_str_len, int):
+    def retrieve_excep(self, fd: int) -> str | None:
+        pickled_excep_len = self.rd_and_unpack(fd, "!Q", 8)
+        if not isinstance(pickled_excep_len, int):
             return
-        err_str = self.rd_from_fd(fd, err_str_len)
-        return err_str
+        pickled_excep = self.rd_from_fd(fd, pickled_excep_len)
+        if isinstance(pickled_excep, bytes):
+            return pi.loads(pickled_excep)
+        return None
 
     def stream_data(
         self,
@@ -664,23 +663,24 @@ class Intrpr:
                 if exceps_raised is None:
                     ret_code = uerr.ERR_UNPACK_FAIL
                 elif exceps_raised:
-                    exc_txt = self.retrieve_err_str(rother).decode()
-                    exc_txt_split = exc_txt.splitlines()
-                    exc_nm = exc_txt_split[0]
-                    exc_str = exc_txt_split[1]
-                    tb_msg = exc_txt_split[2 :]
+                    excep_wrap = self.retrieve_excep(rother)
+                    excep_nm = excep_wrap.e.__class__.__name__
+                    excep_str = str(excep_wrap.e)
+                    tb_msg = "".join(excep_wrap.exc_txt)
                     os.kill(pid, sig.SIGKILL)
-                    if exc_nm == "RecursionError":
+                    if isinstance(excep_wrap.e, RecursionError):
                         ugen.crit_Q(
                             f"Recursion depth exceeded; command '{data.cmd_nm}'",
                             exc_txt=(f"Recursion depth exceeded; command '{data.cmd_nm}'\n"
-                                     f"{'\n'.join(tb_msg)}")
+                                     f"{tb_msg}"  # There's already a newline at the end
+                                     f"{excep_nm}: {excep_str}")
                         )
                     else:
                         ugen.crit_Q(
-                            f"Uncaught exception in external command '{data.cmd_nm}': {exc_nm}",
+                            f"Uncaught exception in external command '{data.cmd_nm}': {excep_nm}",
                             exc_txt=(f"Uncaught exception in external command '{data.cmd_nm}'\n"
-                                     f"{'\n'.join(tb_msg)}")
+                                     f"{tb_msg}"  # There's already a newline at the end
+                                     f"{excep_nm}: {excep_str}")
                         )
                 os.close(rother)
                 # To prevent zombie (defunct) processes

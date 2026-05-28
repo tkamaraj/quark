@@ -2,6 +2,15 @@
 
 ## Latest commit
 
+refactor: exception info flow
+
+- `src/intrpr/eng.py`: Changed how the exception info flows from the child to
+the parent. Now, the whole exception object is transferred through the pipe by
+pickling, with a thin wrapper to compensate for a few fields dropped during
+the pickling process; Minor name bugfix
+
+## Commit bb2db99cd4f522fb28aec6c394ac5298c8c3945f
+
 fix: handling of uncontrolled recursive calls, module cmd; docs: issues update
 
 - `src/intrpr/eng.py`: Used the traceback message sent for uncaught exceptions

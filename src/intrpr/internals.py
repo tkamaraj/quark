@@ -9,6 +9,15 @@ if ty.TYPE_CHECKING:
     import src.intrpr.cmd_reslvr as icrsr
 
 
+# To not lose the traceback string (note that I said string) during the
+# pickling process; stores the traceback as a string in an attribute, as the
+# __traceback__ attribute of the exceptions gets dropped during pickling
+class ExcepWNoLoss:
+    def __init__(self, e: Exception) -> None:
+        self.e = e
+        self.exc_txt = tb.format_tb(self.e.__traceback__)
+
+
 class CmdCompdObj(ty.NamedTuple):
     err_code: int
 
