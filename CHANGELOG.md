@@ -2,6 +2,12 @@
 
 ## Latest commit
 
+fix: unresolved import in interpreter internals
+
+- `src/intrpr/internals.py`: Fixed NameError due to unresolved import
+
+## Commit f8cd4c3c91e33b96d1da9fa9605d19845d28b273
+
 refactor: exception info flow
 
 - `src/intrpr/eng.py`: Changed how the exception info flows from the child to

@@ -6,7 +6,7 @@ import src.utils.gen as ugen
 CMD_NM = __name__.split(".")[-1]
 
 HELP = ugen.HelpObj(
-    usage=f"{CMD_NM} -E [name ...]",
+    usage=f"{CMD_NM} [name ...]",
     summary="Inspect aliases",
     details=(
         "ARGUMENTS",
