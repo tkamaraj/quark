@@ -2,7 +2,11 @@
 
 ## Latest commit
 
-feat: input command module read
+- `src/intrpr/cfg_mgr.py`: Resolved missing argument to configuration object
+
+## Commit 81094e414774b3af77f1e91af8893b07615105bc
+
+feat: input command module read; fix: unnecessary call in command module set
 
 - `src/intrpr/builtin_cmds/read.py`: Created and finished the input command
 module read

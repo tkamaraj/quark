@@ -5,6 +5,7 @@
 # Project root
 build/
 old_builds/
+releases/
 tmp/
 venv/
 

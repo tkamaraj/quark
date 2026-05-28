@@ -58,7 +58,7 @@ def get_cfg() -> Cfg:
 
     cfg = sandbox_runpy(uconst.CFG_FL)
     if cfg is None:
-        return Cfg(prompt=prompt, pth=pth, aliases=aliases)
+        return Cfg(ln_mode=ln_mode, prompt=prompt, pth=pth, aliases=aliases)
 
     for key in cfg:
         val = cfg[key]
