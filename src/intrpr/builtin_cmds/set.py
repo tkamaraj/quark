@@ -1,4 +1,3 @@
-import ast
 import builtins
 import os
 import typing as ty
@@ -82,16 +81,16 @@ def set_vars_helper(
             ugen.err(f"No such type in scope: '{var_typ}'", nm=cmd_nm)
             return ERR_NO_SUCH_BUILTIN_TYP
         try:
-            var_val = var_obj(ast.literal_eval(var_val))
+            var_val = var_obj(var_val)
         except ValueError:
             ugen.err(
                 f"Illegal value for type '{var_typ}': '{var_val}'",
                 nm=cmd_nm
             )
             return ERR_INV_VAL_FOR_TYP
-        except SyntaxError:
-            ugen.err("Syntax error: invalid text")
-            return ERR_TXT_SYN_ERR
+        # except SyntaxError:
+        #     ugen.err("Syntax error: invalid text")
+        #     return ERR_TXT_SYN_ERR
 
     try:
         if complain and var_nm in env_vars:

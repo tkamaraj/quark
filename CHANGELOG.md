@@ -2,6 +2,15 @@
 
 ## Latest commit
 
+feat: input command module read
+
+- `src/intrpr/builtin_cmds/read.py`: Created and finished the input command
+module read
+- `src/intrpr/builtin_cmds/set.py`: Removed unnecessary ast.literal_eval(...)
+call and removed import of module ast from stdlib
+
+## Commit 85c04f96138da53853d57f1a3872fe186073ed46
+
 fix: unresolved import in interpreter internals
 
 - `src/intrpr/internals.py`: Fixed NameError due to unresolved import
