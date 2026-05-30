@@ -24,6 +24,8 @@ command to a built-in command does not work.
 I have no idea what is happening. But design, as of the commit on 25-05-2026,
 the return code should be src.utils.err_codes.ERR_RNTIME_ERR. But the child
 fails to send the error code through the pipe.
+4. Redirects do not work (think it's because of changing the outputs to pipes
+to the parent process).
 
 ### Command resolver (src/intrpr/cmd_reslvr.py)
 

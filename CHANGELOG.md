@@ -2,6 +2,12 @@
 
 ## Latest commit
 
+feat: implement command module time
+
+- `src/intrpr/builtin_cmds/time.py`: Implemented command module time
+
+## Commit 
+
 fix: unhandled IsADirectoryError command module head
 
 - `src/bin/head.py`: Fixed unhandled IsADirectoryError
