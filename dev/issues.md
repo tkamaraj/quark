@@ -70,10 +70,10 @@ so that entries that are included the output only get their lengths calculated.
 
 ### List directory command (src/bin/ls.py)
 
-1. Quotes surrounding names with special characters get coloured. They should
-not be.
-2. Try to put in a space before the names without surrounding quotes if its
-column contains a name with surrounding quotes.
+1. [DONE] Quotes surrounding names with special characters get coloured. They
+should not be.
+2. [DONE] Try to put in a space before the names without surrounding quotes if
+its column contains a name with surrounding quotes.
 
 ### System command module (src/intrpr/builtin_cmds/cmd.py)
 

@@ -2,6 +2,12 @@
 
 ## Latest commit
 
+docs: update command module ls section
+
+- `dev/issues.md`: Update command module ls section
+
+## Commit 4a21321d50b83decdd0ef08242912e0f230b202a
+
 refactor, fix: command module ls
 
 - `src/bin/ls.py`: Major refactor; Fixed formatting bugs; Added option for
