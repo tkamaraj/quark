@@ -16,14 +16,14 @@ import src.utils.gen as ugen
 CMD_NM = __name__.split(".")[-1]
 
 HELP = ugen.HelpObj(
-    usage=f"{CMD_NM} [flag ...] [dir ...]",
+    usage=f"{CMD_NM} [flag ...] [opt] [dir ...]",
     summary="List files and directories",
     details=(
         "ARGUMENTS",
         ("none", "List current directory"),
         ("dir", "Directory to list"),
         "OPTIONS",
-        ("none", ""),
+        ("-p, --padding spaces", "Padding to apply to short listing"),
         "FLAGS",
         ("-a, --all", "Display all (including hidden files)"),
         ("-c, --ctime", "Display CTIME instead of MTIME"),
@@ -45,7 +45,7 @@ HELP = ugen.HelpObj(
 CMD_SPEC = ugen.CmdSpec(
     min_args=0,
     max_args=float("inf"),
-    opts=(),
+    opts=("-p", "--padding"),
     flags=(
         "-a", "--all",
         "-c", "--ctime",
@@ -97,6 +97,7 @@ class LsCtx(ty.NamedTuple):
     case_sensi: bool
     unsorted: bool
     fmt_no_tty: bool
+    padding: int
 
 
 class ItemEntry:
@@ -116,12 +117,40 @@ class SplDirEntry(ItemEntry):
     pass
 
 
+class ShortListEntry(ty.NamedTuple):
+    nm: str
+    quote: bool
+    colour: str
+    syms: list[str]
+
+
+class LongListEntry(ty.NamedTuple):
+    nm: str
+    typ: str
+    owner_perms: str
+    grp_perms: str
+    others_perms: str
+    ctime: str
+    mtime: str
+    sz: int
+    sz_ch: str
+    owner_id: int
+    owner_nm: str
+    inode: int
+    num_inode_lnk: int
+    syms: list[str]
+    quote: bool
+    colour: str
+
+
 class EscWhichObj(ty.NamedTuple):
     quotes: bool = True
     sp_chrs: bool = True
     ws: bool = True
     bslash: bool = True
     other: bool = True
+
+ItemType = FlEntry | SplDirEntry | os.DirEntry
 
 
 def esc_item_nm(nm: str, esc_which: EscWhichObj = EscWhichObj()) -> str:
@@ -154,7 +183,7 @@ def esc_item_nm(nm: str, esc_which: EscWhichObj = EscWhichObj()) -> str:
 
 
 def get_items(cmd_nm: str, pth: str, ctx: LsCtx) \
-        -> tuple[list[tuple[pl.Path, os.stat_result]], int]:
+        -> tuple[list[tuple[ItemEntry, os.stat_result]], int]:
     err_code = uerr.ERR_ALL_GOOD
     typ = ""
     items = []
@@ -199,7 +228,6 @@ def get_items(cmd_nm: str, pth: str, ctx: LsCtx) \
                     )
                     continue
                 raise e
-
 
     # Doesn't exist
     else:
@@ -260,24 +288,24 @@ def long_list_prn(
 
         # Size
         sz = item_stat.st_size
-        sz_char = ""
+        sz_ch = ""
         if ctx.human_rdble:
             sz_len = len(str(sz))
             if 0 <= sz_len <= 3:
-                sz_char = "B"
+                sz_ch = "B"
             elif 4 <= sz_len <= 6:
                 sz //= 10 ** 3
-                sz_char = "kB"
+                sz_ch = "kB"
             elif 7 <= sz_len <= 9:
                 sz //= 10 ** 6
-                sz_char = "MB"
+                sz_ch = "MB"
             elif 10 <= sz_len <= 12:
                 sz //= 10 ** 9
-                sz_char = "GB"
+                sz_ch = "GB"
             else:
                 sz //= 10 ** 12
-                sz_char = "TB"
-        max_sz_len = max(max_sz_len, len(str(sz) + sz_char))
+                sz_ch = "TB"
+        max_sz_len = max(max_sz_len, len(str(sz) + sz_ch))
 
         # Owner ID
         owner_id = item_stat.st_uid
@@ -299,58 +327,72 @@ def long_list_prn(
         )
 
         nm = item.name
+        colour = ""
+        syms = []
+        quote = False
         if is_tty:
             # Quote names with special characters
             if [ch for ch in nm if ch in QUOTE_STR]:
                 nm = esc_item_nm(nm, esc_which=EscWhichObj(sp_chrs=False))
-                nm = "\"" + nm + "\""
+                quote = True
             # Colours
             if typ == "d":
-                nm = ugen.S.fmt(nm, is_tty, ugen.S.green_4)
+                colour = ugen.S.green_4
             else:
-                nm = ugen.S.fmt(nm, is_tty, ugen.S.blue_4)
+                colour = ugen.S.blue_4
             # Item type symbols
             if ctx.slashes and typ == "d":
-                nm += os.sep
+                syms.append(os.sep)
             elif ctx.symlnk_syms and typ == "l":
-                nm += ugen.S.fmt("@", is_tty, ugen.S.magenta_4)
+                syms.append(ugen.S.fmt("@", is_tty, ugen.S.magenta_4))
             if ctx.xble_syms and typ != "d" and os.access(item.path, os.X_OK):
-                nm += ugen.S.fmt("*", is_tty, ugen.S.cyan_4)
+                syms.append(ugen.S.fmt("*", is_tty, ugen.S.cyan_4))
 
-        entry["mode"] = mode
-        entry["typ"] = typ
-        entry["owner_perms"] = owner_perms
-        entry["grp_perms"] = grp_perms
-        entry["others_perms"] = others_perms
-        entry["ctime"] = ctime
-        entry["mtime"] = mtime
-        entry["sz"] = sz
-        entry["sz_char"] = sz_char
-        entry["owner_id"] = owner_id
-        entry["owner_nm"] = owner_nm
-        entry["inode"] = inode
-        entry["num_inode_lnk"] = num_inode_lnk
-        entry["name"] = nm
+        entry = LongListEntry(
+            nm=nm,
+            typ=typ,
+            owner_perms=owner_perms,
+            grp_perms=grp_perms,
+            others_perms=others_perms,
+            ctime=ctime,
+            mtime=mtime,
+            sz=sz,
+            sz_ch=sz_ch,
+            owner_id=owner_id,
+            owner_nm=owner_nm,
+            inode=inode,
+            num_inode_lnk=num_inode_lnk,
+            syms=syms,
+            quote=quote,
+            colour=colour
+        )
         to_prn.append(entry)
 
-    # Actually print data obtained
+    # Print data obtained
     for i in to_prn:
-        sz_w_chr = str(i["sz"]) + i["sz_char"]
-        item_perms = i["owner_perms"] + i["grp_perms"] + i["others_perms"]
-        c_or_mtime = str(i["ctime"]) if ctx.disp_ctime else str(i["mtime"])
-        padded_inode = str(i["inode"]).rjust(max_inode_len)
+        sz_w_ch = str(i.sz) + i.sz_ch
+        item_perms = i.owner_perms + i.grp_perms + i.others_perms
+        c_or_mtime = str(i.ctime) if ctx.disp_ctime else str(i.mtime)
+        padded_inode = str(i.inode).rjust(max_inode_len)
         padded_num_inode_lnk = (
-            str(i["num_inode_lnk"]).rjust(max_num_inode_lnk_len)
+            str(i.num_inode_lnk).rjust(max_num_inode_lnk_len)
         )
+        coloured_nm = ugen.S.fmt(i.nm, is_tty, i.colour)
+        nm_fmted = ("\"" if i.quote else " ") + coloured_nm + ("\"" if i.quote else "")
         ugen.write(
-            i["typ"]
+            i.typ
             + " " + item_perms
             + (("  " + padded_inode) if ctx.inodes else "")
             + (("  " + padded_num_inode_lnk) if ctx.num_inode_lnks else "")
-            + "  " + i["owner_nm"].ljust(max_owner_nm_len)
+            + "  " + i.owner_nm.ljust(max_owner_nm_len)
             + "  " + c_or_mtime
-            + "  " + sz_w_chr.rjust(max_sz_len)
-            + "  " + i["name"]
+            + "  " + sz_w_ch.rjust(max_sz_len)
+            + "  " + (
+                ("\"" if i.quote else " ")
+                + coloured_nm
+                + ("\"" if i.quote else "")
+            )
+            + "".join(i.syms)
             + "\n"
         )
 
@@ -365,37 +407,42 @@ def short_list_prn(
     fmted_items = []
     fmted_items_app = fmted_items.append
     max_len = 0
-    padding = 2
+    padding = ctx.padding
 
     for (item, item_stat) in items:
         nm = item.name
         mode = item_stat.st_mode
-
-        quotes = False
-        if [ch for ch in item.name if ch in QUOTE_STR]:
-            quotes = True
+        quote = False
+        syms = []
+        colour = ""
 
         if is_tty:
+            if [ch for ch in item.name if ch in QUOTE_STR]:
+                quote = True
             # Quote item if contains special chars
-            if quotes:
+            if quote:
                 nm = esc_item_nm(nm, esc_which=EscWhichObj(sp_chrs=False))
-                nm = "\"" + nm + "\""
             is_dir = stat.S_ISDIR(mode)
             # Colours
             if is_dir:
-                nm = ugen.S.fmt(nm, is_tty, ugen.S.green_4)
+                colour = ugen.S.green_4
             else:
-                nm = ugen.S.fmt(nm, is_tty, ugen.S.blue_4)
+                colour = ugen.S.blue_4
             # Item type symbols
             if ctx.slashes and is_dir:
-                nm += os.sep
+                syms.append(os.sep)
             if ctx.symlnk_syms and stat.S_ISLNK(mode):
-                nm += ugen.S.fmt("@", is_tty, ugen.S.magenta_4)
+                syms.append(ugen.S.fmt("@", is_tty, ugen.S.magenta_4))
             if ctx.xble_syms and not is_dir and os.access(item.path, os.X_OK):
-                nm += ugen.S.fmt("*", is_tty, ugen.S.cyan_4)
+                syms.append(ugen.S.fmt("*", is_tty, ugen.S.cyan_4))
 
-        fmted_items_app(nm)
-        max_len = max(max_len, len(ugen.rm_ansi("", nm)))
+        entry = ShortListEntry(nm=nm, quote=quote, colour=colour, syms=syms)
+        fmted_items_app(entry)
+        # This is not the most efficient for spacing... but I don't give a damn
+        # Length of name + length of quotes (if present) + length of symbols
+        # + length of spaces at the front and end of the entry (if any item
+        # of the entry's column contains quotes)
+        max_len = max(max_len, len(nm) + (2 if quote else 0) + len(syms) + 2)
 
     if is_tty or ctx.fmt_no_tty:
         # Assume 80-character terminal if errors are encountered when
@@ -406,23 +453,33 @@ def short_list_prn(
             max_cols = 1
 
         to_prn = []
-        # col_lens makes output look more structured, but inefficiencies in the
-        # algorithm make it not the best use of space, which looks enhanced
-        # when columns are tight-packed by use of col_lens. Removed it for now
-        col_lens = [0] * max_cols
+        col_props = [{"len": 0, "quote": False} for _ in range(max_cols)]
         num_lns = math.ceil(len(fmted_items) / max_cols)
         for i in range(num_lns):
             fmted_item_slice = fmted_items[i * max_cols : (i + 1) * max_cols]
             to_prn.append(fmted_item_slice)
             for idx, item in enumerate(fmted_item_slice):
-                col_lens[idx] = max(col_lens[idx], len(ugen.rm_ansi("", item)))
+                col_props[idx]["len"] = max(
+                    col_props[idx]["len"],
+                    # Length of item name + length of quotes (if present)
+                    # + length of symbols to be displayed
+                    len(item.nm) + (2 if item.quote else 0) + len(item.syms)
+                )
+                col_props[idx]["quote"] = col_props[idx]["quote"] or item.quote
 
         for items in to_prn:
             padded_items = []
             for j, item in enumerate(items):
-                # Uncomment to tighten padding according to column max lengths
-                # padded_items.append(ugen.ljust(item, col_lens[j]))
-                padded_items.append(ugen.ljust(item, max_len))
+                # NOTE: Uncomment to tighten padding according to col max lens
+                # padded_items.append(ugen.ljust(item, col_props[j]["len"]))
+                nm = (
+                    ("\"" if item.quote else (" " if col_props[j]["quote"] else ""))
+                    + ugen.S.fmt(item.nm, is_tty, item.colour)
+                    + ("\"" if item.quote else "")
+                    + "".join(item.syms)
+                    + (" " if col_props[j]["quote"] else "")
+                )
+                padded_items.append(ugen.ljust(nm, max_len))
             ugen.write((" " * padding).join(padded_items) + "\n")
 
     else:
@@ -445,6 +502,7 @@ def run(data: ugen.CmdData) -> int:
     symlnk_syms = True
     xble_syms = True
     slashes = True
+    padding = 2
 
     for flag in data.flags:
         if flag in ("-l", "--long-list"):
@@ -453,7 +511,7 @@ def run(data: ugen.CmdData) -> int:
             inodes = True
         elif flag in ("-m", "--number-inode-links"):
             num_inode_lnks = True
-        elif flag in ("-h", "--human-readble"):
+        elif flag in ("-h", "--human-readable"):
             human_rdble = True
         elif flag in ("-c", "--ctime"):
             disp_ctime = True
@@ -476,6 +534,18 @@ def run(data: ugen.CmdData) -> int:
         elif flag in ("-X", "--no-executable-symbols"):
             xble_syms = False
 
+    for opt, val in data.opts.items():
+        if opt in ("-p", "--padding"):
+            try:
+                int(val)
+            except ValueError:
+                ugen.err(
+                    f"Cannot cast to int (option {opt}): '{val}'",
+                    nm=data.cmd_nm
+                )
+                return uerr.ERR_CANT_CAST_VAL
+            padding = int(val)
+
     ctx = LsCtx(
         long_list=long_list,
         item_visibility=item_visibility,
@@ -489,15 +559,17 @@ def run(data: ugen.CmdData) -> int:
         iso=iso,
         case_sensi=case_sensi,
         unsorted=unsorted,
-        fmt_no_tty=fmt_no_tty
+        fmt_no_tty=fmt_no_tty,
+        padding=padding
     )
 
     # No arguments
     if not data.args:
+        pth = os.path.expanduser("./")
         try:
             items, err_code = get_items(
                 data.cmd_nm,
-                os.path.expanduser("./"),
+                pth,
                 ctx
             )
         # FileNotFoundError, PermissionError will be caused by race conditions

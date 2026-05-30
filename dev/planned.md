@@ -36,6 +36,10 @@ not commands and options or arguments or flags.
 file types, as well as colour the output consistently.
 2. [DONE] Number of inode links: Implement display of number of inode links.
 Use `stat.st_nlink`.
+3. Dynamically change the column lengths to maximise efficiency in using the
+avaiable space. Like, after calculating the number of columns, re-adjust the
+column lengths after individual column lengths are found. Or something of that
+sort.
 
 ### pl (src/bin/pl.py)
 

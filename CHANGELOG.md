@@ -2,6 +2,15 @@
 
 ## Latest commit
 
+refactor, fix: command module ls
+
+- `src/bin/ls.py`: Major refactor; Fixed formatting bugs; Added option for
+adjusting padding (-p, --padding)
+
+## Commit 2ae30ac00174b8208a97019dacef99f00008bea8
+
+fix: missing argument to config object
+
 - `src/intrpr/cfg_mgr.py`: Resolved missing argument to configuration object
 
 ## Commit 81094e414774b3af77f1e91af8893b07615105bc
