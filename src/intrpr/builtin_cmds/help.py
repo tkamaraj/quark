@@ -89,13 +89,18 @@ def cons_detailed_help_str(
         # Newline and same line mixed format detailed help strings
         clred_i0 = ugen.S.fmt(i[0], is_tty, ugen.S.blue_4)
         wrap_amt = term_sz.columns - len(2 * tab + max_param_len * " " + tab)
-        string = [i[1][j : j + wrap_amt] for j in range(0, len(i[1]), wrap_amt)]
         full_ln = (
             tab
             + (clred_i0 if nl else (ugen.ljust(clred_i0, max_param_len) + tab))
             + (("\n" + 2 * tab + max_param_len * " " + tab) if nl else "")
-            + ("\n" + 2 * tab + max_param_len * " " + tab).join(string)
         )
+        for idx, each_ln in enumerate(i[1].splitlines()):
+            string = [each_ln[j : j + wrap_amt] for j in range(0, len(each_ln), wrap_amt)]
+            full_ln += (
+                ("\n" if idx != 0 else "")
+                + ((2 * tab + max_param_len * " " + tab) if idx == 1 else "")
+                + (2 * tab + max_param_len * " " + tab).join(string)
+            )
         details_str.append(full_ln)
 
     return (

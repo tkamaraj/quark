@@ -2,11 +2,19 @@
 
 ## Latest commit
 
+fix: multiline descriptions in command module help
+
+- `src/intrpr/builtin_cmds/help.py`: Fixed multiline descriptions not getting
+padded properly
+- `src/intrpr/eng.py`: Minor changes
+
+## Commit 70f594e6da9d917f594a0bf6c39c2caaafa6234e
+
 feat: implement command module time
 
 - `src/intrpr/builtin_cmds/time.py`: Implemented command module time
 
-## Commit 
+## Commit ebbbb92ea172cefa92cc21a4d291f9d55e85f2fc
 
 fix: unhandled IsADirectoryError command module head
 

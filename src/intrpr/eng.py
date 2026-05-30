@@ -817,22 +817,22 @@ class Intrpr:
                 # parameter list of the SimpCmd objects
                 redir_param = cmd_expr.get_simp_cmd(i + 1).get_param(0)
                 redir_flnm = redir_param.val
-                err_msg_head = "redirect STDOUT failed;"
+                err_msg_head = "redirect STDOUT failed"
                 try:
                     stdout_fl = open(redir_flnm, "w")
                 except IsADirectoryError:
                     ugen.err_Q(
-                        f"{err_msg_head} is a directory: \"{redir_flnm}\" (pos {redir_param.start})"
+                        f"{err_msg_head}; is a directory: \"{redir_flnm}\" (pos {redir_param.start})"
                     )
                     return uerr.ERR_IS_A_DIR
                 except PermissionError:
                     ugen.err_Q(
-                        f"{err_msg_head} access denied: \"{redir_flnm}\""
+                        f"{err_msg_head}; access denied: \"{redir_flnm}\""
                     )
                     return uerr.ERR_PERM_DENIED
                 except OSError as e:
                     # TODO: Change the error code later
-                    ugen.err_Q(f"{err_msg_head} OS error; {e.strerror}")
+                    ugen.err_Q(f"{err_msg_head}; OS error; {e.strerror}")
                     return uerr.ERR_OS_ERR
                 stdout_obj = stdout_fl
                 skip += 1
@@ -840,20 +840,20 @@ class Intrpr:
             # Redirect STDERR
             elif is_redir_stderr:
                 redir_flnm = cmd_expr.get_simp_cmd(i + 1).get_param(0)
-                err_msg_head = "redirect STDERR failed;"
+                err_msg_head = "redirect STDERR failed"
                 try:
                     stderr_fl = open(redir_flnm.val, "w")
                 except IsADirectoryError:
-                    ugen.err_Q(f"{err_msg_head} is a directory: \"{redir_flnm}\"")
+                    ugen.err_Q(f"{err_msg_head}; is a directory: \"{redir_flnm}\"")
                     return uerr.ERR_IS_A_DIR
                 except PermissionError:
                     ugen.err_Q(
-                        f"{err_msg_head} access denied: \"{redir_flnm}\""
+                        f"{err_msg_head}; access denied: \"{redir_flnm}\""
                     )
                     return uerr.ERR_PERM_DENIED
                 except OSError as e:
                     ugen.err_Q(
-                        f"{err_msg_head} OS error; {e.strerror}"
+                        f"{err_msg_head}; OS error; {e.strerror}"
                     )
                     return uerr.ERR_OS_ERR
                 stderr_obj = stderr_fl
