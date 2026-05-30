@@ -2,6 +2,12 @@
 
 ## Latest commit
 
+fix: unhandled IsADirectoryError command module head
+
+- `src/bin/head.py`: Fixed unhandled IsADirectoryError
+
+## Commit d6621fc2a5b29927707446d9c48504e433148175
+
 docs: update command module ls section
 
 - `dev/issues.md`: Update command module ls section

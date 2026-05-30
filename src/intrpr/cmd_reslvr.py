@@ -337,4 +337,3 @@ class CmdReslvr:
             return uerr.ERR_INV_HELP_OBJ
 
         return (cmd_fn, cmd_spec)
-
