@@ -33,7 +33,7 @@ class CmdReslvr:
 
         self.debug_time_expo = debug_time_expo
         self.builtin_cmds = {}
-        self.gather_builtin_cmds(ext_cached_cmds)
+        self.gather_builtin_cmds()
 
     def fmt_t_ns(self, ns: int) -> str:
         if self.debug_time_expo == 3:
@@ -176,10 +176,7 @@ class CmdReslvr:
 
         return uerr.ERR_ALL_GOOD
 
-    def gather_builtin_cmds(
-        self,
-        ext_cached_cmds: dict[str, iint.CmdCacheEntry]
-    ) -> None:
+    def gather_builtin_cmds(self) -> None:
         # DEBUG: Load built-in commands time start
         _t_ld_bcmds = time.perf_counter_ns()
 
