@@ -50,34 +50,22 @@ class CmdReslvr:
         return str(round(ns / 10 ** self.debug_time_expo, 3)) + char + "s"
 
     def _is_new_ld_reqd(
-            self,
-            fl_stat: os.stat_result,
-            cache_entry: iint.CmdCacheEntry
-        ) -> bool:
+        self,
+        fl_stat: os.stat_result,
+        cache_entry: iint.CmdCacheEntry
+    ) -> bool:
+        # TODO: Check if hash is needed
         return (
             fl_stat.st_mtime != cache_entry.mtime
             or fl_stat.st_size != cache_entry.sz
         )
 
     def ld_mod(
-            self,
-            cmd: str,
-            ext_cached_cmds: dict[str, iint.CmdCacheEntry],
-            dir_pths: tuple[str],
-        ) -> types.ModuleType | int:
-        """
-        Load an external command file (module).
-
-        :param cmd: The command name.
-        :type cmd: str
-
-        :param dir_pths: A tuple of paths to check for the module
-        :type dir_pths: tuple[str]
-
-        :returns: The module object if successful, integer error code
-                  otherwise.
-        :rtype: types.ModuleType | int
-        """
+        self,
+        cmd: str,
+        ext_cached_cmds: dict[str, iint.CmdCacheEntry],
+        dir_pths: tuple[str],
+    ) -> types.ModuleType | int:
         fl: pl.Path
 
         # DEBUG: Module load time start
@@ -157,16 +145,41 @@ class CmdReslvr:
 
         return uerr.ERR_BAD_CMD
 
+    def validate_cmd_mod(self, cmd_mod: types.ModuleType) -> bool:
+        has_cmd_fn = hasattr(cmd_mod, "run")
+        has_cmd_spec = hasattr(cmd_mod, "CMD_SPEC")
+        has_help_obj = hasattr(cmd_mod, "HELP")
+        if not has_cmd_fn:
+            return uerr.ERR_NO_CMD_FN
+        if not has_cmd_spec:
+            return uerr.ERR_NO_CMD_SPEC
+        if not has_help_obj:
+            return uerr.ERR_NO_HELP_OBJ
+
+        # Get help object, command spec and function and validate
+        cmd_fn = getattr(cmd_mod, "run")
+        cmd_spec = getattr(cmd_mod, "CMD_SPEC")
+        help_obj = getattr(cmd_mod, "HELP")
+        is_fn_callable = callable(cmd_fn)
+        is_num_fn_params_ok = (is_fn_callable
+                               and cmd_fn.__code__.co_argcount == 1)
+        is_spec_ok = isinstance(cmd_spec, ugen.CmdSpec)
+        is_help_ok = isinstance(help_obj, ugen.HelpObj)
+        if not is_fn_callable:
+            return uerr.ERR_UNCALLABLE_CMD_FN
+        if not is_num_fn_params_ok:
+            return uerr.ERR_INV_NUM_PARAMS
+        if not is_spec_ok:
+            return uerr.ERR_INV_CMD_SPEC
+        if not is_help_ok:
+            return uerr.ERR_INV_HELP_OBJ
+
+        return uerr.ERR_ALL_GOOD
+
     def gather_builtin_cmds(
         self,
         ext_cached_cmds: dict[str, iint.CmdCacheEntry]
     ) -> None:
-        """
-        Gather the built-in command functions, specs and help objects from
-        individual modules.
-        Edits the object attribute self.builtin_cmds.
-        Intended to be used when this object is initialised.
-        """
         # DEBUG: Load built-in commands time start
         _t_ld_bcmds = time.perf_counter_ns()
 
@@ -198,142 +211,50 @@ class CmdReslvr:
         ugen.info_Q(f"built-ins loaded: {num_lded_builtin}")
 
     def get_builtin_help(self, cmd: str) -> ugen.HelpObj | int:
-        """
-        Get the help string for a built-in command.
-
-        :param cmd: The name of the command.
-        :type cmd: str
-
-        :returns: The help object if available, integer error code otherwise.
-        :rtype: src.utils.gen.HelpObj | int
-        """
-        # TODO: Decide a better name for variable tmp
         tmp = self.builtin_cmds.get(cmd)
         if tmp is None:
             return uerr.ERR_BAD_CMD
-        # Guaranteed to be available because it's fucking built-in
         help_obj = tmp[2]
         return help_obj
 
     def get_ext_help(
-            self,
-            cmd: str,
-            ext_cached_cmds: dict[str, iint.CmdCacheEntry],
-            pths: tuple[str, ...]
-        ) -> ugen.HelpObj | int:
-        """
-        Get the help string from an external command file.
-
-        :param cmd: The command name
-        :type cmd: str
-
-        :param pths: A tuple of paths to check for the command in
-        :type pths: tuple[str]
-
-        :returns: The help object, if it was found and valid, integer error
-                  code otherwise
-        :rtype: src.utils.gen.HelpObj | int
-        """
+        self,
+        cmd: str,
+        ext_cached_cmds: dict[str, iint.CmdCacheEntry],
+        pths: tuple[str, ...]
+    ) -> ugen.HelpObj | int:
         tmp_mod = self.ld_mod(cmd, ext_cached_cmds, pths)
         if isinstance(tmp_mod, int):
             return tmp_mod
         cmd_mod = tmp_mod
-
-        if not hasattr(cmd_mod, "HELP"):
-            return uerr.ERR_NO_HELP_OBJ
-
+        validate_res = self.validate_cmd_mod(cmd_mod)
+        if validate_res != uerr.ERR_ALL_GOOD:
+            return validate_res
         help_obj = getattr(cmd_mod, "HELP")
-        if not isinstance(help_obj, ugen.HelpObj):
-            return uerr.ERR_INV_HELP_OBJ
         return help_obj
 
     def get_builtin_cmd(self, cmd: str) -> \
             tuple[ty.Callable[[ugen.CmdData], int], ugen.CmdSpec] | int:
-        """
-        Get a built-in command function and spec.
-        You cannot live-reload (or whatever the fuck you call that) built-in
-        commands.
-
-        :param cmd: The command name.
-        :type cmd: str
-
-        :returns: If the built-in command and spec are valid, a tuple
-                  containing:
-            - the command run function, and
-            - the command spec.
-            Otherwise, an integer error code.
-        :rtype: tuple[ty.Callable[[ugen.CmdData], int], ugen.CmdSpec] | int
-        """
-        # Note that built-in command functions and specs aren't validated,
-        # because they are assumed valid. Because, well, they are built-in.
-        # Duh. If they are not, that's really not my problem
-
-        # TODO: Decide a better name for variable tmp
+        # Built-in help objects, command specs and functions are assumed valid
         tmp = self.builtin_cmds.get(cmd)
         if tmp is None:
             return uerr.ERR_BAD_CMD
-
         cmd_fn, cmd_spec, _ = tmp
         return cmd_fn, cmd_spec
 
     def get_ext_cmd(
-            self,
-            cmd: str,
-            pths: tuple[str],
-            ext_cached_cmds: dict[str, iint.CmdCacheEntry]
-        ) -> tuple[ty.Callable[[ugen.CmdData], int], ugen.CmdSpec] | int:
-        """
-        Get an external command function and spec.
-        A valid command file satisfies the following conditions:
-        - Has a function with the name of the command, which accepts a single
-          argument of type src.intrpr.internals.CmdData, and returns an int, and
-        - Has a global variable CMD_SPEC, which is an instance of CmdSpec
-
-        :param cmd: The command name.
-        :type cmd: str
-
-        :param pths: A tuple of paths to check for the command in.
-        :type cmd: tuple[str]
-
-        :returns: If a valid command file exists, a tuple containing:
-            - the command run function, and
-            - the command spec.
-            Otherwise, an integer error code.
-        :rtype: tuple[ty.Callable[[ugen.CmdData], int], ugen.CmdSpec] | int
-        """
-        # Load command file
+        self,
+        cmd: str,
+        pths: tuple[str],
+        ext_cached_cmds: dict[str, iint.CmdCacheEntry]
+    ) -> tuple[ty.Callable[[ugen.CmdData], int], ugen.CmdSpec] | int:
         tmp_mod = self.ld_mod(cmd, ext_cached_cmds, pths)
         if isinstance(tmp_mod, int):
             return tmp_mod
         cmd_mod = tmp_mod
-
-        # Check for command function and spec
-        has_cmd_fn = hasattr(cmd_mod, "run")
-        has_cmd_spec = hasattr(cmd_mod, "CMD_SPEC")
-        has_help_obj = hasattr(cmd_mod, "HELP")
-        if not has_cmd_fn:
-            return uerr.ERR_NO_CMD_FN
-        if not has_cmd_spec:
-            return uerr.ERR_NO_CMD_SPEC
-        if not has_help_obj:
-            return uerr.ERR_NO_HELP_OBJ
-
-        # Get command function and spec and validate both
-        cmd_fn = getattr(cmd_mod, "run")
+        validate_res = self.validate_cmd_mod(cmd_mod)
+        if validate_res != uerr.ERR_ALL_GOOD:
+            return validate_res
         cmd_spec = getattr(cmd_mod, "CMD_SPEC")
-        help_obj = getattr(cmd_mod, "HELP")
-        is_fn_callable = callable(cmd_fn)
-        is_num_fn_params_ok = (is_fn_callable
-                               and cmd_fn.__code__.co_argcount == 1)
-        is_spec_ok = isinstance(cmd_spec, ugen.CmdSpec)
-        is_help_ok = isinstance(help_obj, ugen.HelpObj)
-        if not is_fn_callable:
-            return uerr.ERR_UNCALLABLE_CMD_FN
-        if not is_num_fn_params_ok:
-            return uerr.ERR_INV_NUM_PARAMS
-        if not is_spec_ok:
-            return uerr.ERR_INV_CMD_SPEC
-        if not is_help_ok:
-            return uerr.ERR_INV_HELP_OBJ
-
+        cmd_fn = getattr(cmd_mod, "run")
         return (cmd_fn, cmd_spec)

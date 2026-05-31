@@ -2,6 +2,16 @@
 
 ## Latest commit
 
+feat: command validation for help
+
+- `src/intrpr/cmd_reslvr.py`: Added a command validation method and made help
+object to be provided only if a valid command module is found; minor formatting
+changes
+- `src/bin/ls.py`: Fixed minor NameError bug in no TTY branch
+- `src/intrpr/builtin_cmds/help.py`: Minor formatting changes
+
+## Commit 
+
 fix: multiline descriptions in command module help
 
 - `src/intrpr/builtin_cmds/help.py`: Fixed multiline descriptions not getting

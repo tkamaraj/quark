@@ -124,26 +124,23 @@ def get_detailed_help(
     op_buf = []
 
     for cmd_nm in args:
+        # Built-in command help
         help_obj = cmd_reslvr.get_builtin_help(cmd_nm)
         if isinstance(help_obj, ugen.HelpObj):
-            op_buf.append(
-                Out(
-                    ugen.S.fmt(cmd_nm, is_tty, ugen.S.green_4),
-                    cons_detailed_help_str(help_obj, term_sz, is_tty),
-                    nl_after_cmd=True
-                )
-            )
+            op_buf.append(Out(
+                ugen.S.fmt(cmd_nm, is_tty, ugen.S.green_4),
+                cons_detailed_help_str(help_obj, term_sz, is_tty),
+                nl_after_cmd=True
+            ))
             continue
-
+        # External command help
         help_obj = cmd_reslvr.get_ext_help(cmd_nm, ext_cached_cmds, pths)
         if isinstance(help_obj, ugen.HelpObj):
-            op_buf.append(
-                Out(
-                    ugen.S.fmt(cmd_nm, is_tty, ugen.S.green_4),
-                    cons_detailed_help_str(help_obj, term_sz, is_tty),
-                    nl_after_cmd=True
-                )
-            )
+            op_buf.append(Out(
+                ugen.S.fmt(cmd_nm, is_tty, ugen.S.green_4),
+                cons_detailed_help_str(help_obj, term_sz, is_tty),
+                nl_after_cmd=True
+            ))
             continue
 
         err_str = "Where's the error message?"

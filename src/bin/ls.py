@@ -484,7 +484,7 @@ def short_list_prn(
 
     else:
         for i in fmted_items:
-            ugen.write(i + "\n")
+            ugen.write(i.nm + "\n")
 
 
 def run(data: ugen.CmdData) -> int:
