@@ -54,10 +54,12 @@ class CmdReslvr:
         self,
         fl_pth: str,
         buf_sz: int = 65536     # 64KiB chunks
-    ) -> str:
-        sha256 = hl.sha256()
+    ) -> str | int:
         ugen.info(f"file provided: {fl_pth}")
+        # DEBUG: Hash time start
+        _t_hash = time.perf_counter_ns()
 
+        sha256 = hl.sha256()
         try:
             with open(fl_pth, "rb") as f:
                 while data := f.read(buf_sz):
@@ -72,8 +74,16 @@ class CmdReslvr:
             return uerr.ERR_OS_ERR
         except Exception as e:
             return uerr.ERR_UNK_ERR
-
         fl_hash = sha256.hexdigest()
+        # DEBUG: Hash time end
+        _t_hash = time.perf_counter_ns() - _t_hash
+        ugen.debug_Q(
+            ugen.fmt_d_stmt(
+                "time",
+                f"fl_hash {os.path.splitext(os.path.basename(fl_pth))[0]}",
+                self.fmt_t_ns(_t_hash)
+            )
+        )
         ugen.info(f"file hash: {fl_hash}")
         return fl_hash
 
@@ -83,7 +93,6 @@ class CmdReslvr:
         fl_pth: str,
         cache_entry: iint.CmdCacheEntry
     ) -> bool:
-        # TODO: Check if hash is needed
         return (
             fl_stat.st_mtime != cache_entry.mtime
             or fl_stat.st_size != cache_entry.sz

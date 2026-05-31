@@ -2,6 +2,13 @@
 
 ## Latest commit
 
+chore: add debug statements in command resolver
+
+- `src/intrpr/cmd_reslvr.py`: Added debug statements; Resolved improper return
+type hint for hash function
+
+## Commit 10c33bd5f8ab141901e61f9046cfa54e68c1c2df
+
 feat: hash checks for cache, module paths in cache
 
 - `src/intrpr/cmd_reslvr.py`: Included hash checks for command cache; added

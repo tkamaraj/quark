@@ -38,6 +38,16 @@ CMD_SPEC = ugen.CmdSpec(
 )
 
 ERR_NO_SUCH_CMD = 1000
+ERR_MSG_MAP = {
+    uerr.ERR_BAD_CMD: f"No such command",
+    uerr.ERR_NO_HELP_OBJ: f"No help object",
+    uerr.ERR_INV_HELP_OBJ: f"Invalid help object",
+    uerr.ERR_NO_CMD_FN: "No command function",
+    uerr.ERR_INV_NUM_PARAMS: "Invalid command function",
+    uerr.ERR_NO_CMD_SPEC: "No command spec",
+    uerr.ERR_INV_CMD_SPEC: "Invalid command spec",
+    uerr.ERR_CANT_LD_CMD_MOD: f"Could not load command module"
+}
 
 
 class Out:
@@ -143,16 +153,12 @@ def get_detailed_help(
             ))
             continue
 
-        err_str = "Where's the error message?"
-        if help_obj == uerr.ERR_BAD_CMD:
-            err_str = f"No such command: '{cmd_nm}'"
-        elif help_obj == uerr.ERR_NO_HELP_OBJ:
-            err_str = f"No help object: '{cmd_nm}'"
-        elif help_obj == uerr.ERR_INV_HELP_OBJ:
-            err_str = f"Invalid help object: '{cmd_nm}'"
-        elif help_obj == uerr.ERR_CANT_LD_CMD_MOD:
-            err_str = f"Could not load command module: '{cmd_nm}'"
-        op_buf.append(Err(err_str, help_obj))
+        err_ret = help_obj
+        to_disp = "Where's the error message?"
+        err_msg = ERR_MSG_MAP.get(err_ret)
+        if err_msg is not None:
+            to_disp = f"{err_msg}: '{cmd_nm}'"
+        op_buf.append(Err(to_disp, help_obj))
 
     return op_buf
 
