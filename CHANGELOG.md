@@ -2,6 +2,15 @@
 
 ## Latest commit
 
+feat: hash checks for cache, module paths in cache
+
+- `src/intrpr/cmd_reslvr.py`: Included hash checks for command cache; added
+module path to cache data
+- `src/utils/err_code.py`: Added a new error code, ERR_UNK_ERR, for unknown
+errors
+
+## Commit 61af21329b7850615c3b3e8fe0b0ad0e832eba40
+
 fix: removed unnecessary pass of cached external commands to builtin gatherer
 
 - `src/intrpr/cmd_reslvr.py`: Removed unnecessary passage of cached external

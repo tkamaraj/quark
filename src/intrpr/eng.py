@@ -94,8 +94,10 @@ class Intrpr:
         self.log_lvl = log_lvl
         self.env_vars = iint.Env()
         self.parser = peng.Parser()
-        self.cmd_reslvr = icrsr.CmdReslvr(self.ext_cached_cmds,
-                                          self.debug_time_expo)
+        self.cmd_reslvr = icrsr.CmdReslvr(
+            self.ext_cached_cmds,
+            self.debug_time_expo
+        )
         self._last_bad_prompt_obj = None
 
         self.env_vars.set("_USR_DIR_", str(self.usr_dir))

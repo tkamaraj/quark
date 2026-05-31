@@ -1,3 +1,4 @@
+import hashlib as hl
 import importlib as il
 import importlib.util as ilu
 import inspect as ins
@@ -49,15 +50,45 @@ class CmdReslvr:
 
         return str(round(ns / 10 ** self.debug_time_expo, 3)) + char + "s"
 
+    def _compu_fl_hash(
+        self,
+        fl_pth: str,
+        buf_sz: int = 65536     # 64KiB chunks
+    ) -> str:
+        sha256 = hl.sha256()
+        ugen.info(f"file provided: {fl_pth}")
+
+        try:
+            with open(fl_pth, "rb") as f:
+                while data := f.read(buf_sz):
+                    sha256.update(data)
+        except FileNotFoundError:
+            return uerr.ERR_FL_404
+        except PermissionError:
+            return uerr.ERR_PERM_DENIED
+        except IsADirectoryError:
+            return uerr.ERR_IS_A_DIR
+        except OSError:
+            return uerr.ERR_OS_ERR
+        except Exception as e:
+            return uerr.ERR_UNK_ERR
+
+        fl_hash = sha256.hexdigest()
+        ugen.info(f"file hash: {fl_hash}")
+        return fl_hash
+
     def _is_new_ld_reqd(
         self,
         fl_stat: os.stat_result,
+        fl_pth: str,
         cache_entry: iint.CmdCacheEntry
     ) -> bool:
         # TODO: Check if hash is needed
         return (
             fl_stat.st_mtime != cache_entry.mtime
             or fl_stat.st_size != cache_entry.sz
+            or fl_pth != cache_entry.pth
+            or self._compu_fl_hash(fl_pth) != cache_entry.fl_hash
         )
 
     def ld_mod(
@@ -73,7 +104,7 @@ class CmdReslvr:
 
         for dir_pth in dir_pths:
             fl_str = os.path.join(dir_pth, cmd + ".py")
-            fl = pl.Path(fl_str).expanduser().resolve()
+            fl = pl.Path(fl_str).expanduser().resolve().absolute()
             fl_stat = None
             cache_entry = ext_cached_cmds.get(cmd)
             try:
@@ -86,7 +117,7 @@ class CmdReslvr:
 
             if (
                 cache_entry is not None
-                and not self._is_new_ld_reqd(fl_stat, cache_entry)
+                and not self._is_new_ld_reqd(fl_stat, str(fl), cache_entry)
             ):
                 return cache_entry.mod
 
@@ -127,6 +158,8 @@ class CmdReslvr:
                 cmd,
                 mod_spec,
                 cmd_mod,
+                str(fl),
+                self._compu_fl_hash(str(fl)),
                 fl_stat.st_size,
                 fl_stat.st_mtime
             )

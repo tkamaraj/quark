@@ -27,6 +27,8 @@ class CmdCacheEntry(ty.NamedTuple):
     cmd: str
     spec: ilm.ModuleSpec
     mod: types.ModuleType
+    pth: str
+    fl_hash: int
     sz: int
     mtime: float
 
