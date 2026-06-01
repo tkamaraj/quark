@@ -163,6 +163,10 @@ class CmdReslvr:
             # except RecursionError:
             #     return uerr.ERR_RECUR_ERR
 
+            validate_res = self.validate_cmd_mod(cmd_mod)
+            if validate_res != uerr.ERR_ALL_GOOD:
+                return validate_res
+
             ext_cached_cmds[cmd] = iint.CmdCacheEntry(
                 cmd,
                 mod_spec,
@@ -266,9 +270,9 @@ class CmdReslvr:
         if isinstance(tmp_mod, int):
             return tmp_mod
         cmd_mod = tmp_mod
-        validate_res = self.validate_cmd_mod(cmd_mod)
-        if validate_res != uerr.ERR_ALL_GOOD:
-            return validate_res
+        # validate_res = self.validate_cmd_mod(cmd_mod)
+        # if validate_res != uerr.ERR_ALL_GOOD:
+        #     return validate_res
         help_obj = getattr(cmd_mod, "HELP")
         return help_obj
 
@@ -291,9 +295,9 @@ class CmdReslvr:
         if isinstance(tmp_mod, int):
             return tmp_mod
         cmd_mod = tmp_mod
-        validate_res = self.validate_cmd_mod(cmd_mod)
-        if validate_res != uerr.ERR_ALL_GOOD:
-            return validate_res
+        # validate_res = self.validate_cmd_mod(cmd_mod)
+        # if validate_res != uerr.ERR_ALL_GOOD:
+        #     return validate_res
         cmd_spec = getattr(cmd_mod, "CMD_SPEC")
         cmd_fn = getattr(cmd_mod, "run")
         return (cmd_fn, cmd_spec)

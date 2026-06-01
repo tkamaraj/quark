@@ -2,7 +2,15 @@
 
 ## Latest commit
 
+refactor: moved module validation to loader
+
+- `src/intrpr/cmd_reslvr.py`: Moved command module validation to module loader,
+hence keeping cache clean and removing code duplication
+
+## Commit d2ac7d7b1359f4be54df85ae114079772931c175
+
 fix: command module random help object
+
 - `src/bin/rand.py`: Help object fixes
 
 ## Commit 39a14dc8c0fe456ea7eaf1c53cd9794b602804b7
