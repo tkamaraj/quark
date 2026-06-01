@@ -105,7 +105,13 @@ def run(data: ugen.CmdData) -> int:
         if flag in ("-i", "--integer"):
             rand_int = True
 
-    if not (math.isinf(round_to)) and rand_int:
+    try:
+        round_to_is_inf = math.isinf(round_to)
+    except OverflowError:
+        ugen.err(f"Round off overflow: int too big", nm=data.cmd_nm)
+        return uerr.ERR_INT_OVERFLOW
+
+    if not round_to_is_inf and rand_int:
         ugen.err("Cannot round integer random numbers", nm=data.cmd_nm)
         return ERR_ROUND_INT
     if rand_int and not type(min_num) == type(max_num) == int:
@@ -124,7 +130,7 @@ def run(data: ugen.CmdData) -> int:
         ugen.write(str(rand_num) + "\n")
     else:
         rand_num = random.uniform(min_num, max_num)
-        if not math.isinf(round_to):
+        if not round_to_is_inf:
             rand_num = round(rand_num, round_to)
         ugen.write(str(rand_num) + "\n")
 

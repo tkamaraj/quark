@@ -2,6 +2,12 @@
 
 ## Latest commit
 
+fix: overflow bug in command module rand
+
+- `src/bin/rand.py`: Fixed overflow bug for round off integer
+
+## Commit de679eaf2c2ae540a391b59e7e1fdc9f5c7e6be4
+
 refactor: moved module validation to loader
 
 - `src/intrpr/cmd_reslvr.py`: Moved command module validation to module loader,
