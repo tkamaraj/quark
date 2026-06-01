@@ -35,6 +35,10 @@ and hence "./ls" gets converted to "ls", which invokes the ls command. Make the
 command resolver not resolve the path when searching for a command, as
 resolution of the path is not needed for searching.
 
+### Logger (src/logger/)
+
+1. Implement per-logger levels.
+
 ## Utilities
 
 ### General utilities and command API (src/utils/gen.py)

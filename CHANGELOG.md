@@ -2,6 +2,11 @@
 
 ## Latest commit
 
+fix: command module random help object
+- `src/bin/rand.py`: Help object fixes
+
+## Commit 39a14dc8c0fe456ea7eaf1c53cd9794b602804b7
+
 chore: add debug statements in command resolver
 
 - `src/intrpr/cmd_reslvr.py`: Added debug statements; Resolved improper return

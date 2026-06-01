@@ -8,16 +8,16 @@ import src.utils.gen as ugen
 CMD_NM = __name__.split(".")[-1]
 
 HELP = ugen.HelpObj(
-    usage=f"CMD_NM [opt ...] [flag]",
+    usage=f"{CMD_NM} [opt ...] [flag]",
     summary="Get a random number",
     details=(
         "ARGUMENTS",
         ("none", ""),
         "OPTIONS",
-        ("-r rng", "Range of the random number (int/float)"),
-        ("-o round", "Number of decimals to round off to"),
+        ("-o, --round round", "Number of decimals to round off to"),
+        ("-r, --range lower,upper", "Range of random number (int/float)"),
         "FLAGS",
-        ("-i", "Get a random integer")
+        ("-i, --integer", "Get a random integer")
     )
 )
 
@@ -129,4 +129,3 @@ def run(data: ugen.CmdData) -> int:
         ugen.write(str(rand_num) + "\n")
 
     return err_code
-
