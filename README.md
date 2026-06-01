@@ -22,7 +22,7 @@ ideas.
 To run the shell from source, go to the project root and run:
 
 ```bash
-python -BOO ./src/main.py
+python3 -BOO ./src/main.py
 ```
 
 Use the `-h` flag with the main program for the help text.  
@@ -45,10 +45,10 @@ Go to the project root, and build the project with the build script,
 ```bash
 git clone https://gitea.com/tkamaraj/quark.git/
 cd ./quark/
-python -m venv ./venv/
+python3 -m venv ./venv/
 source ./venv/bin/activate
-python -m pip install -r ./build_reqmts.txt
-python -BOO ./dev/pc.py ./src/main.py
+python3 -m pip install -r ./build_reqmts.txt
+python3 -BOO ./dev/pc.py ./src/main.py
 ```
 
 The help text is not available for the build script as of now, so please go
