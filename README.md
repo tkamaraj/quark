@@ -9,6 +9,7 @@ See [`docs/`](./docs/) for detailed documentation on modules and internals.
 See [`dev/`](./dev/) for development notes and plans.  
 See [`dev/planned.md`](./dev/planned.md) for future development plans and
 ideas.
+See [`dev/quark_demo.mp4`](./dev/quark_demo.mp4) for the demo.
 
 ## Features
 

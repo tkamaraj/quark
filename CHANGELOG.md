@@ -2,6 +2,16 @@
 
 ## Latest commit
 
+misc: add demo video
+
+## Commit 8f0749ec7d4bdcbfb04370c85ac82ceeb8a57d8e
+
+docs: update README
+
+- `README.md`: Updated Python's invokation names
+
+## Commit 3628f0eacd794e67aea15429ba240d5c460fc711
+
 fix: overflow bug in command module rand
 
 - `src/bin/rand.py`: Fixed overflow bug for round off integer
