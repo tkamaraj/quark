@@ -85,3 +85,7 @@ its column contains a name with surrounding quotes.
 
 1. [DONE] UnicodeDecodeError when reading a non-text file (you know what I
 mean).
+
+### Alias command module (src/intrpr/builtin_cmds/alias.py)
+
+1. Implement alias setting for session.

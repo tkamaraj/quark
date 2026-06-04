@@ -2,6 +2,11 @@
 
 ## Latest commit
 
+- `.gitignore`: Moved the demo video to a new directory and removed it from
+tracked files
+
+## Commit 20328181a2ed89acfa7ed26fe2617f698391dc13
+
 misc: add demo video
 
 ## Commit 8f0749ec7d4bdcbfb04370c85ac82ceeb8a57d8e

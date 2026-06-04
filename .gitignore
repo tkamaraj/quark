@@ -4,6 +4,7 @@
 
 # Project root
 build/
+misc/
 old_vers/
 releases/
 tmp/
