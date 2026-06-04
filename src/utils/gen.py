@@ -89,6 +89,8 @@ class CmdSpec(ty.NamedTuple):
     max_args: int | float
     opts: tuple[str, ...]
     flags: tuple[str, ...]
+    parse_sub_cmds: bool = False
+    sub_cmds: tuple[str] = ()
 
 
 class HelpObj(ty.NamedTuple):

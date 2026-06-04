@@ -2,6 +2,24 @@
 
 ## Latest commit
 
+feat: added support for parsing and not parsing subcommands
+
+- `src/intrpr/eng.py`, `src/utils/gen.py`: Fine-tuned subcommand support, added
+support for parsing and not parsing subcommands
+- `src/intrpr/builtin_cmds/alias.py`: Modified to accommodate new subcommand
+system
+- `src/utils/err_codes.py`: Added 2 errors codes relevant to subcommands
+
+## Commit 6a106dd7f3172e45fa1fbe3da2eb6101812af7a0
+
+fix: modified existing subcommand support in command module alias
+
+- `src/intrpr/builtin_cmds/alias.py`: Modified existing subcommand support
+
+## Commit 6a106dd7f3172e45fa1fbe3da2eb6101812af7a0
+
+feat: added subcommand support
+
 - `src/intrpr/eng.py`, `utils/gen.py`: Added support for subcommands (literally
 just popped the first item from the arguments list and named it subcommand)
 

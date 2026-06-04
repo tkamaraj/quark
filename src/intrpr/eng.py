@@ -442,7 +442,13 @@ class Intrpr:
             )
             return uerr.ERR_INSUFF_ARGS
 
-        sub_cmd = None if args == [] else args.pop(0)
+        sub_cmd = None
+        if cmd_spec.parse_sub_cmds:
+            sub_cmd = sub_cmd if args == [] else args.pop(0)
+            if sub_cmd not in cmd_spec.sub_cmds and sub_cmd is not None:
+                ugen.err(f"Invalid subcommand: '{sub_cmd}'")
+                return uerr.ERR_INV_SUB_CMD
+
         return (sub_cmd, tuple(args), opts, tuple(flags))
 
     def rd_from_fd(self, fd: io.IOBase, n: int) -> bytes:
