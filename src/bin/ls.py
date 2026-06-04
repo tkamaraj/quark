@@ -293,7 +293,7 @@ def long_list_prn(
         sz = item_stat.st_size
         if ctx.recur_dir_szs and typ == "d":
             tmp = pl.Path(item)
-            sz = sum(f.stat().st_size for f in tmp.glob('**/*') if f.is_file())
+            sz = sum(f.stat().st_size for f in tmp.glob("**/*") if f.is_file())
         sz_ch = ""
         if ctx.human_rdble:
             sz_len = len(str(sz))

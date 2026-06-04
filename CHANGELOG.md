@@ -2,6 +2,14 @@
 
 ## Latest commit
 
+fix: implement kill child on ^c again
+
+- `src/intrpr/eng.py`: Implemented kill child process on ^c on parent
+(interpreter process) again
+- `src/utils/gen.py`: Minor changes to KeyboardInterruptWPrevileges
+
+## Commit 77f2130ae3042fd4e001105b2539e352383f7b5e
+
 feat: option to recursively calculate directory sizes
 
 - `src/bin/ls.py`: Added a flag -r/--recursive to calculate directory sizes

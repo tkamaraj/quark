@@ -659,49 +659,55 @@ class Intrpr:
                 err_code = uerr.ERR_CANT_FORK_PROC
             # Parent process
             else:
-                # Do NOT rely on child process exit codes, because Linux only
-                # supports 8-bit uints; child process always has an exit code 0
-                os.close(wout)
-                os.close(werr)
-                os.close(wother)
-                # Stream STDOUT and STDERR of child from pipe
-                self.stream_data({rout: stdout_obj, rerr: stderr_obj}, 4096)
-                os.close(rout)
-                os.close(rerr)
-                # 4 bytes for command return code
-                ret_code = self.rd_and_unpack(rother, "!i", 4)
-                if ret_code is None:
-                    ret_code = uerr.ERR_UNPACK_FAIL
-                # 1 byte for data on if any exceptions were raised
-                exceps_raised = self.rd_and_unpack(rother, "!?", 1)
-                if exceps_raised is None:
-                    ret_code = uerr.ERR_UNPACK_FAIL
-                elif exceps_raised:
-                    excep_wrap = self.retrieve_excep(rother)
-                    excep_nm = excep_wrap.e.__class__.__name__
-                    excep_str = str(excep_wrap.e)
-                    tb_msg = "".join(excep_wrap.exc_txt)
-                    os.kill(pid, sig.SIGKILL)
-                    if isinstance(excep_wrap.e, RecursionError):
-                        ugen.crit_Q(
-                            f"Recursion depth exceeded; command '{data.cmd_nm}'",
-                            exc_txt=(f"Recursion depth exceeded; command '{data.cmd_nm}'\n"
-                                     f"{tb_msg}"  # There's already a newline at the end
-                                     f"{excep_nm}: {excep_str}")
-                        )
-                    else:
-                        ugen.crit_Q(
-                            f"Uncaught exception in external command '{data.cmd_nm}': {excep_nm}",
-                            exc_txt=(f"Uncaught exception in external command '{data.cmd_nm}'\n"
-                                     f"{tb_msg}"  # There's already a newline at the end
-                                     f"{excep_nm}: {excep_str}")
-                        )
-                os.close(rother)
-                # To prevent zombie (defunct) processes
-                os.wait()
-                # _, status = os.wait()
-                # exit_status = os.WEXITSTATUS(status)
-                err_code = err_code or ret_code
+                try:
+                    # Do NOT rely on child process exit codes, because Linux only
+                    # supports 8-bit uints; child process always has an exit code 0
+                    os.close(wout)
+                    os.close(werr)
+                    os.close(wother)
+                    # Stream STDOUT and STDERR of child from pipe
+                    self.stream_data({rout: stdout_obj, rerr: stderr_obj}, 4096)
+                    os.close(rout)
+                    os.close(rerr)
+                    # 4 bytes for command return code
+                    ret_code = self.rd_and_unpack(rother, "!i", 4)
+                    if ret_code is None:
+                        ret_code = uerr.ERR_UNPACK_FAIL
+                    # 1 byte for data on if any exceptions were raised
+                    exceps_raised = self.rd_and_unpack(rother, "!?", 1)
+                    if exceps_raised is None:
+                        ret_code = uerr.ERR_UNPACK_FAIL
+                    elif exceps_raised:
+                        excep_wrap = self.retrieve_excep(rother)
+                        excep_nm = excep_wrap.e.__class__.__name__
+                        excep_str = str(excep_wrap.e)
+                        tb_msg = "".join(excep_wrap.exc_txt)
+                        os.kill(pid, sig.SIGKILL)
+                        if isinstance(excep_wrap.e, RecursionError):
+                            ugen.crit_Q(
+                                f"Recursion depth exceeded; command '{data.cmd_nm}'",
+                                exc_txt=(f"Recursion depth exceeded; command '{data.cmd_nm}'\n"
+                                         f"{tb_msg}"  # There's already a newline at the end
+                                         f"{excep_nm}: {excep_str}")
+                            )
+                        else:
+                            ugen.crit_Q(
+                                f"Uncaught exception in external command '{data.cmd_nm}': {excep_nm}",
+                                exc_txt=(f"Uncaught exception in external command '{data.cmd_nm}'\n"
+                                         f"{tb_msg}"  # There's already a newline at the end
+                                         f"{excep_nm}: {excep_str}")
+                            )
+                    os.close(rother)
+                    # To prevent zombie (defunct) processes
+                    os.wait()
+                    # _, status = os.wait()
+                    # exit_status = os.WEXITSTATUS(status)
+                    err_code = err_code or ret_code
+                except KeyboardInterrupt as e:
+                    if pid == 0:
+                        raise e
+                    elif pid > 0:
+                        raise ugen.KeyboardInterruptWPrevileges(e, pid)
 
         # Built-in command; run in same process as interpreter
         elif cmd_src == "built-in":

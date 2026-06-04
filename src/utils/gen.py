@@ -35,8 +35,8 @@ class ExcepWPrevileges(Exception):
 
 
 class KeyboardInterruptWPrevileges(Exception):
-    def __init__(self, msg: str, child_pid: int) -> None:
-        super().__init__(msg)
+    def __init__(self, e: Exception, child_pid: int) -> None:
+        self.err = err
         self.child_pid = child_pid
 
 
