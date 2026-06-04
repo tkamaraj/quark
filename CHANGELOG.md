@@ -2,6 +2,11 @@
 
 ## Latest commit
 
+- `src/intrpr/eng.py`, `utils/gen.py`: Added support for subcommands (literally
+just popped the first item from the arguments list and named it subcommand)
+
+## Commit 034a4ef2972f2e419a0cde01086c2046a1b8512d
+
 feat: implement subcommands in command module alias
 
 - `src/intrpr/builtin_cmds/alias.py`: Implemented subcommands in command module

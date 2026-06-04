@@ -70,6 +70,7 @@ class InvAccess(Exception):
 
 class CmdData(ty.NamedTuple):
     cmd_nm: str
+    sub_cmd: str | None
     args: tuple[str, ...]
     opts: dict[str, str]
     flags: tuple[str, ...]

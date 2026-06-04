@@ -361,7 +361,12 @@ class Intrpr:
         self,
         params: "list[past.Param]",
         cmd_spec: ugen.CmdSpec
-    ) -> tuple[tuple[str, ...], dict[str, str], tuple[str, ...]] | int:
+    ) -> tuple[
+        str | None,
+        tuple[str, ...],
+        dict[str, str],
+        tuple[str, ...]
+    ] | int:
         args = []
         opts = {}
         flags = []
@@ -437,7 +442,8 @@ class Intrpr:
             )
             return uerr.ERR_INSUFF_ARGS
 
-        return (tuple(args), opts, tuple(flags))
+        sub_cmd = None if args == [] else args.pop(0)
+        return (sub_cmd, tuple(args), opts, tuple(flags))
 
     def rd_from_fd(self, fd: io.IOBase, n: int) -> bytes:
         chunks = []
@@ -730,7 +736,7 @@ class Intrpr:
         tmp = self.classi_params(params, cmd_spec)
         if isinstance(tmp, int):
             return iint.CmdCompdObj(tmp)
-        args, opts, flags = tmp
+        sub_cmd, args, opts, flags = tmp
 
         try:
             term_sz = os.get_terminal_size()
@@ -738,6 +744,7 @@ class Intrpr:
             term_sz = None
         data = ugen.CmdData(
             cmd_nm=cmd_nm,
+            sub_cmd=sub_cmd,
             args=tuple(args),
             opts=opts,
             flags=tuple(flags),
