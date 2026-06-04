@@ -11,13 +11,13 @@ import tty
 import types
 import typing as ty
 
-import src.parser.internals as pint
-import src.utils.consts as uconst
-import src.utils.loggers as ulog
-import src.logger.eng as leng
+import parser.internals as pint
+import utils.consts as uconst
+import utils.loggers as ulog
+import logger.eng as leng
 if ty.TYPE_CHECKING:
-    import src.intrpr.cmd_reslvr as icrsr
-    import src.intrpr.internals as iint
+    import intrpr.cmd_reslvr as icrsr
+    import intrpr.internals as iint
 
 
 #########################

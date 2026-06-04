@@ -2,7 +2,7 @@ import logging as lg
 import os
 import typing as ty
 
-import src.utils.consts as uconst
+import utils.consts as uconst
 
 DEBUG = lg.DEBUG
 INFO = lg.INFO

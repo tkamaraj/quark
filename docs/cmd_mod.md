@@ -45,10 +45,10 @@ which is assigned to the environment variable `_LAST_RET_`.
 ## Example
 
 ```python
-import src.utils.err_codes
-import src.utils.gen
+import utils.err_codes
+import utils.gen
 
-HELP = src.utils.gen.HelpObj(
+HELP = utils.gen.HelpObj(
     usage="test [flag ...] [opt] arg [...]",
     summary="Example summary",
     details=(
@@ -62,7 +62,7 @@ HELP = src.utils.gen.HelpObj(
     )
 )
 
-CMD_SPEC = src.utils.gen.CmdSpec(
+CMD_SPEC = utils.gen.CmdSpec(
     min_args=1,
     max_args=float("inf"),
     opts=("-opt",),
@@ -70,6 +70,6 @@ CMD_SPEC = src.utils.gen.CmdSpec(
 )
 
 
-def run(data: src.utils.gen.CmdData) -> int:
-    return src.utils.err_codes.ERR_ALL_GOOD
+def run(data: utils.gen.CmdData) -> int:
+    return utils.err_codes.ERR_ALL_GOOD
 ```

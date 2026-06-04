@@ -1,7 +1,7 @@
 import os
 import sys
 import typing as ty
-import src.parser.internals as pint
+import parser.internals as pint
 
 VER = "0.1"
 TAB_SZ = 2

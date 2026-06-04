@@ -4,8 +4,8 @@ import os
 import sys
 import typing as ty
 
-import src.utils.consts as uconst
-import src.utils.gen as ugen
+import utils.consts as uconst
+import utils.gen as ugen
 
 
 def set_log_lvl(lvl: int) -> None | ty.NoReturn:

@@ -2,13 +2,13 @@ import math
 import os
 import typing as ty
 
-import src.utils.consts as uconst
-import src.utils.err_codes as uerr
-import src.utils.gen as ugen
+import utils.consts as uconst
+import utils.err_codes as uerr
+import utils.gen as ugen
 
 if ty.TYPE_CHECKING:
-    import src.intrpr.cmd_reslvr as icres
-    import src.intrpr.internals as iint
+    import intrpr.cmd_reslvr as icres
+    import intrpr.internals as iint
 
 CMD_NM = __name__.split(".")[-1]
 

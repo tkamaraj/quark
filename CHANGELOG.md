@@ -2,6 +2,15 @@
 
 ## Latest commit
 
+chore: installed src/ as a Python package
+
+- `src/*`: Removed `src.` from imports of project modules
+- `.gitignore`: Updated .gitignore
+
+## Commit b9b4c7c456dc92f2844b3cf7ba1fa4230c0ee78f
+
+chore: removed demo video from tracked files
+
 - `.gitignore`: Moved the demo video to a new directory and removed it from
 tracked files
 

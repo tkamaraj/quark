@@ -1,6 +1,7 @@
 # General
 **/__pycache__/
 **/*.pyc
+**/*.egg-info/
 
 # Project root
 build/
@@ -9,9 +10,9 @@ old_vers/
 releases/
 tmp/
 venv/
+pyproject.toml
 
 # Project source
-src/old_vers/
 src/quark.log
 src/quark.txt
 src/quark_hist.txt

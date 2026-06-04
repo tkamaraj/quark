@@ -18,18 +18,18 @@ import time
 import traceback as tb
 import typing as ty
 
-import src.intrpr.cfg_mgr as cmgr
-import src.intrpr.cmd_reslvr as icrsr
-import src.intrpr.internals as iint
-import src.parser.eng as peng
-import src.parser.ast_nodes as past
-import src.utils.gen as ugen
-import src.utils.consts as uconst
+import intrpr.cfg_mgr as cmgr
+import intrpr.cmd_reslvr as icrsr
+import intrpr.internals as iint
+import parser.eng as peng
+import parser.ast_nodes as past
+import utils.gen as ugen
+import utils.consts as uconst
 import utils.debug as udeb
-import src.utils.err_codes as uerr
+import utils.err_codes as uerr
 
 if ty.TYPE_CHECKING:
-    import src.parser.internals as pint
+    import parser.internals as pint
 
 TH_TokGrp = tuple[list[str], "pint.SpChr"]
 TH_CmdFn = ty.Callable[[ugen.CmdData], int]
@@ -978,7 +978,7 @@ class Intrpr:
         :type cmd_fn: TH_CmdFn
 
         :param data: Data to be passed to the command function.
-        :type data: src.utils.gen.CmdData
+        :type data: utils.gen.CmdData
 
         :returns: Integer error code.
         :rtype: int

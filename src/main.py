@@ -1,7 +1,7 @@
 #!/usr/bin/env -S python3 -BOO
 
 import collections as collns
-import logging as lg
+# import logging as lg
 import os
 import re
 # import readline as rl
@@ -13,13 +13,13 @@ import traceback as tb
 import tty
 import typing as ty
 
-import src.intrpr.cfg_mgr as cmgr
-import src.intrpr.eng as ieng
-import src.utils.consts as uconst
-import src.utils.err_codes as uerr
-import src.utils.gen as ugen
-import src.utils.loggers as ulog
-import src.logger.eng as leng
+import intrpr.cfg_mgr as cmgr
+import intrpr.eng as ieng
+import utils.consts as uconst
+import utils.err_codes as uerr
+import utils.gen as ugen
+import utils.loggers as ulog
+import logger.eng as leng
 
 if not sys.argv:
     called_nm = "[main]"

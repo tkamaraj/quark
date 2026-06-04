@@ -5,8 +5,8 @@ import pwd
 import stat
 import typing as ty
 
-import src.utils.err_codes as uerr
-import src.utils.gen as ugen
+import utils.err_codes as uerr
+import utils.gen as ugen
 
 CMD_NM = __name__.split(".")[-1]
 

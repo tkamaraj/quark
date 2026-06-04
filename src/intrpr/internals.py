@@ -3,11 +3,11 @@ import traceback as tb
 import typing as ty
 import types
 
-import src.utils.err_codes as uerr
-import src.utils.gen as ugen
+import utils.err_codes as uerr
+import utils.gen as ugen
 
 if ty.TYPE_CHECKING:
-    import src.intrpr.cmd_reslvr as icrsr
+    import intrpr.cmd_reslvr as icrsr
 
 
 # To not lose the traceback string (note that I said string) during the
