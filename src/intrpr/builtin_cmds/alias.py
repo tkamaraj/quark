@@ -47,38 +47,25 @@ def run(data: ugen.CmdData) -> int:
     to_write: list[tuple[str, str]]
 
     err_code = uerr.ERR_ALL_GOOD
+    sub_cmd = "list"
     set_alias = False
+    args_cpy = list(data.args)
     try:
         alias_dict = data.env_vars.get("_ALIASES_")
     except ugen.UnkVarErr:
         ugen.warn("Cannot find _ALIASES_; using empty dict")
         alias_dict = {}
 
-    for flag in data.flags:
-        if flag in ("-s", "--set"):
-            set_alias = True
 
-    if set_alias:
-        if len(data.args) < 2:
-            ugen.err(
-                f"Insufficient arguments for setting aliases; expected 2, got {len(data.args)}",
-                nm=data.cmd_nm
-            )
-            return uerr.ERR_INSUFF_ARGS
-        elif len(data.args) > 2:
-            ugen.err(
-                "Unexpected arguments for setting aliases; expected 2, got {len(data.args)}",
-                nm=data.cmd_nm
-            )
-            return uerr.ERR_UNEXPD_ARGS
-        alias_dict[data.args[0]] = data.args[1]
-        data.env_vars.set("_ALIASES_", alias_dict)
+    if len(args_cpy) >= 1:
+        sub_cmd = args_cpy.pop(0)
 
-    else:
+    if sub_cmd == "list":
         max_len = 0
         to_write = []
 
-        if not data.args:
+        # Don't forget 1st element is the subcommand
+        if len(args_cpy) == 0:
             for i, alias in enumerate(alias_dict):
                 alias_val = alias_dict[alias]
                 if not isinstance(alias, str) or not isinstance(alias_val, str):
@@ -92,7 +79,7 @@ def run(data: ugen.CmdData) -> int:
                     "'" + alias_val + "'"
                 ))
         else:
-            for arg in data.args:
+            for arg in args_cpy:
                 if arg not in alias_dict:
                     err_code = err_code or ERR_UNK_ALIAS
                     to_write.append(Err(f"Unknown alias: '{arg}'"))
@@ -121,5 +108,21 @@ def run(data: ugen.CmdData) -> int:
                 + (" = " if data.is_tty else "=")
                 + f"{i.val}\n"
             )
+
+    elif sub_cmd == "set":
+        if len(args_cpy) < 2:
+            ugen.err(
+                f"Insufficient arguments; expected 2 args after subcommand, got {len(args_cpy)}",
+                nm=data.cmd_nm
+            )
+            return uerr.ERR_INSUFF_ARGS
+        elif len(args_cpy) > 2:
+            ugen.err(
+                f"Unexpected arguments; expected 2 after subcommand, got {len(args_cpy)}",
+                nm=data.cmd_nm
+            )
+            return uerr.ERR_UNEXPD_ARGS
+        alias_dict[args_cpy[0]] = args_cpy[1]
+        data.env_vars.set("_ALIASES_", alias_dict)
 
     return err_code

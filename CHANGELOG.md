@@ -2,6 +2,13 @@
 
 ## Latest commit
 
+feat: implement subcommands in command module alias
+
+- `src/intrpr/builtin_cmds/alias.py`: Implemented subcommands in command module
+alias
+
+## Commit aec09f5af7b8e51c360ca30d95cd13b026e51864
+
 feat: alias set for session in command module alias; feat: multiline support in
 usage string in command module help
 
@@ -9,7 +16,7 @@ usage string in command module help
 - `src/intrpr/builtin_cmds/help.py`: Implemented multiline support for usage
 strings
 
-## Commit 
+## Commit 981f30440d546bc160c9120484cc8646eae36408
 
 chore: installed src/ as a Python package
 
