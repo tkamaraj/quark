@@ -2,6 +2,12 @@
 
 ## Latest commit
 
+feat: option to recursively calculate directory sizes
+
+- `src/bin/ls.py`: Added a flag -r/--recursive to calculate directory sizes
+
+## Commit 3014cfb0625768e1cb4013d57fc2e1de691ff938
+
 feat: added support for parsing and not parsing subcommands
 
 - `src/intrpr/eng.py`, `src/utils/gen.py`: Fine-tuned subcommand support, added

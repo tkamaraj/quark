@@ -35,6 +35,7 @@ HELP = ugen.HelpObj(
         ("-m, --number-inode-links", "Display the number of links to inodes in long listing"),
         ("-N, --no-symlink-symbols", "Suppress symlink indicators"),
         ("-o, --iso", "Use ISO-8601 for dates and times"),
+        ("-r, --recursive", "Recursively calculate directory sizes"),
         ("-S, --no-slashes", "Suppress slashes at the end of directory names"),
         ("-t, --almost-all", "Do not list .. and ."),
         ("-u, --unsorted", "Unsorted listing"),
@@ -57,6 +58,7 @@ CMD_SPEC = ugen.CmdSpec(
         "-m", "--number-inode-links",
         "-N", "--no-symlink-symbols",
         "-o", "--iso",
+        "-r", "--recursive",
         "-S", "--no-slashes",
         "-t", "--almost-all",
         "-u", "--unsorted",
@@ -96,6 +98,7 @@ class LsCtx(ty.NamedTuple):
     iso: bool
     case_sensi: bool
     unsorted: bool
+    recur_dir_szs: bool
     fmt_no_tty: bool
     padding: int
 
@@ -288,6 +291,9 @@ def long_list_prn(
 
         # Size
         sz = item_stat.st_size
+        if ctx.recur_dir_szs and typ == "d":
+            tmp = pl.Path(item)
+            sz = sum(f.stat().st_size for f in tmp.glob('**/*') if f.is_file())
         sz_ch = ""
         if ctx.human_rdble:
             sz_len = len(str(sz))
@@ -502,6 +508,7 @@ def run(data: ugen.CmdData) -> int:
     symlnk_syms = True
     xble_syms = True
     slashes = True
+    recur_dir_szs = False
     padding = 2
 
     for flag in data.flags:
@@ -523,6 +530,8 @@ def run(data: ugen.CmdData) -> int:
             unsorted = True
         elif flag in ("-o", "--iso"):
             iso = True
+        elif flag in ("-r", "--recursive"):
+            recur_dir_szs = True
         elif flag in ("-f", "--format-no-tty"):
             fmt_no_tty = True
         elif flag in ("-t", "--almost-all"):
@@ -559,6 +568,7 @@ def run(data: ugen.CmdData) -> int:
         iso=iso,
         case_sensi=case_sensi,
         unsorted=unsorted,
+        recur_dir_szs=recur_dir_szs,
         fmt_no_tty=fmt_no_tty,
         padding=padding
     )
