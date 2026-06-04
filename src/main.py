@@ -25,19 +25,23 @@ if not sys.argv:
     called_nm = "[main]"
 else:
     called_nm = sys.argv[0]
+    # Nuitka overwrites sys.argv[0]
+    if "__compiled__" in locals():
+        called_nm = __compiled__.original_argv0
 
 MIN_ARGS = 0
 MAX_ARGS = 1
 VALID_OPTS = {}
 VALID_FLAGS = {}
 
+# TODO: Update the help string
 HELP_TXT = f"""USAGE
-  {called_nm} [flag ...] [fl]
+  {called_nm} [flag ...] [opt] [fl]
 ARGUMENTS
   fl          Script to run
 OPTIONS
-  -t, --debug-time-unit
-              Set unit for debugging time output.
+  -t, --debug-time-unit unit
+              Unit for debugging time output
               Valid: 'ns', 'us', 'ms', 's'
 FLAGS
   -d, --debug

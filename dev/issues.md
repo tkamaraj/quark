@@ -88,4 +88,4 @@ mean).
 
 ### Alias command module (src/intrpr/builtin_cmds/alias.py)
 
-1. Implement alias setting for session.
+1. [DONE] Implement alias setting for session.

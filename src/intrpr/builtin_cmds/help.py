@@ -113,12 +113,16 @@ def cons_detailed_help_str(
             )
         details_str.append(full_ln)
 
+    # To support multiline usage strings
+    usage_str = []
+    for usage_ln in help_obj.usage.splitlines():
+        usage_str.append(tab * 2 + usage_ln)
+
     return (
-        tab + help_obj.summary
-        + "\n" + tab + ugen.S.fmt("USAGE", is_tty, ugen.S.magenta_4)
-        + "\n" + tab * 2 + help_obj.usage
-        + "\n" + tab
-        + ("\n" + tab).join(details_str)
+        tab + help_obj.summary + "\n"                                   # Summary ending in newline
+        + tab + ugen.S.fmt("USAGE", is_tty, ugen.S.magenta_4) + "\n"    # Usage header
+        + "\n".join(usage_str) + "\n"                                   # Usage (multiline supported)
+        + tab + ("\n" + tab).join(details_str)                          # Details (multiline supported for each entry)
     )
 
 

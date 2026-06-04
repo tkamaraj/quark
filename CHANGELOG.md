@@ -2,6 +2,15 @@
 
 ## Latest commit
 
+feat: alias set for session in command module alias; feat: multiline support in
+usage string in command module help
+
+- `src/intrpr/builtin_cmds/alias.py`: Implemented alias set for session
+- `src/intrpr/builtin_cmds/help.py`: Implemented multiline support for usage
+strings
+
+## Commit 
+
 chore: installed src/ as a Python package
 
 - `src/*`: Removed `src.` from imports of project modules
