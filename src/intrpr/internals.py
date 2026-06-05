@@ -1,3 +1,5 @@
+import collections.abc as cabc
+import copy
 import importlib.machinery as ilm
 import traceback as tb
 import typing as ty
@@ -79,9 +81,21 @@ class EnvVar:
 
 
 class Env:
-    def __init__(self):
-        self.env_vars: dict[str, EnvVar]
-        self.env_vars = {}
+    def __init__(self, env_vars: dict[str, EnvVar] = {}) -> None:
+        self.env_vars = env_vars
+
+    def __len__(self) -> int:
+        return len(self.env_vars)
+
+    def __iter__(self) -> ty.Generator[EnvVar, None, None]:
+        for i in self.env_vars.values():
+            yield i
+
+    def __contains__(self, val: ty.Any) -> bool:
+        return val in self.env_vars
+
+    def __repr__(self) -> str:
+        return str(self.env_vars)
 
     def set(self, nm: str, val: ty.Any) -> None | ty.NoReturn:
         var_obj = self.env_vars.get(nm)
@@ -103,15 +117,11 @@ class Env:
         except KeyError as e:
             pass
 
-    def __iter__(self) -> ty.Generator[EnvVar, None, None]:
-        for i in self.env_vars.values():
-            yield i
+    def items(self) -> cabc.ItemsView[str, ty.Any]:
+        return self.env_vars.items()
 
-    def __contains__(self, val: ty.Any) -> bool:
-        return val in self.env_vars
-
-    def __repr__(self) -> str:
-        return str(self.env_vars)
+    def crt_self_cp(self) -> "Env":
+        return copy.deepcopy(self)
 
 
 def exec_fn_dummy(*args, **kwargs) -> None:

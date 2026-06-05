@@ -92,6 +92,7 @@ class Intrpr:
         self.stderr_ansi = stderr_ansi
         self.debug_time_expo = debug_time_expo
         self.log_lvl = log_lvl
+        self.intrpr_vars = iint.Env()
         self.env_vars = iint.Env()
         self.parser = peng.Parser()
         self.cmd_reslvr = icrsr.CmdReslvr(
@@ -442,12 +443,37 @@ class Intrpr:
             )
             return uerr.ERR_INSUFF_ARGS
 
+        # Horrendous
         sub_cmd = None
         if cmd_spec.parse_sub_cmds:
             sub_cmd = sub_cmd if args == [] else args.pop(0)
-            if sub_cmd not in cmd_spec.sub_cmds and sub_cmd is not None:
-                ugen.err(f"Invalid subcommand: '{sub_cmd}'")
-                return uerr.ERR_INV_SUB_CMD
+            arg_cnt = len(args)
+            # Subcommand is not present in the command spec
+            if sub_cmd not in cmd_spec.sub_cmds:
+                if sub_cmd is None:
+                    ugen.err("Expected subcommand")
+                    return uerr.ERR_EXPD_SUB_CMD
+                else:
+                    ugen.err(f"Invalid subcommand: '{sub_cmd}'")
+                    return uerr.ERR_INV_SUB_CMD
+            # Check if number of arguments supplied is correct for the
+            # subcommand
+            lower_lt = cmd_spec.sub_cmds[sub_cmd][0]
+            upper_lt = cmd_spec.sub_cmds[sub_cmd][1]
+            if arg_cnt < lower_lt:
+                ugen.err(
+                    "Insufficient arguments"
+                    + (f" ({sub_cmd})" if sub_cmd is not None else "")
+                    + f"; expected at least {lower_lt}, got {arg_cnt}"
+                )
+                return uerr.ERR_INSUFF_ARGS
+            elif arg_cnt > upper_lt:
+                ugen.err(
+                    "Unexpected arguments"
+                    + (f" ({sub_cmd})" if sub_cmd is not None else "")
+                    + f"; expected at most {upper_lt}, got {arg_cnt}"
+                )
+                return uerr.ERR_UNEXPD_ARGS
 
         return (sub_cmd, tuple(args), opts, tuple(flags))
 
@@ -761,6 +787,7 @@ class Intrpr:
             opts=opts,
             flags=tuple(flags),
             cmd_reslvr=self.cmd_reslvr,
+            intrpr_vars=self.intrpr_vars,
             env_vars=self.env_vars,
             ext_cached_cmds=self.ext_cached_cmds,
             term_sz=term_sz,

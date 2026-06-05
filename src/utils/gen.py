@@ -75,6 +75,7 @@ class CmdData(ty.NamedTuple):
     opts: dict[str, str]
     flags: tuple[str, ...]
     cmd_reslvr: "icrsr.CmdReslvr"
+    intrpr_vars: "iint.Env"
     env_vars: "iint.Env"
     ext_cached_cmds: "dict[str, iint.CmdCacheEntry]"
     term_sz: os.terminal_size | None

@@ -18,7 +18,7 @@ HELP = ugen.HelpObj(
         "OPTIONS",
         ("none", ""),
         "FLAGS",
-        ("-s, --set", "Set an alias for current session")
+        ("none", ""),
     )
 )
 
@@ -26,9 +26,9 @@ CMD_SPEC = ugen.CmdSpec(
     min_args=0,
     max_args=float("inf"),
     parse_sub_cmds=True,
-    sub_cmds=("list", "set"),
+    sub_cmds={None: (0, 0), "list": (0, float("inf")), "set": (2, 2)},
     opts=(),
-    flags=("-s", "--set")
+    flags=()
 )
 
 
@@ -60,7 +60,6 @@ def run(data: ugen.CmdData) -> int:
         max_len = 0
         to_write = []
 
-        # Don't forget 1st element is the subcommand
         if len(data.args) == 0:
             for i, alias in enumerate(alias_dict):
                 alias_val = alias_dict[alias]

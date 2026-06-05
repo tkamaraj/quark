@@ -2,6 +2,15 @@
 
 ## Latest commit
 
+feat: command module env; fix: subcommand parsing
+
+- `src/intrpr/eng.py`: Improve subcommand parsing and classification
+- `src/intrpr/builtin_cmds/env.py`: Create command module env combining
+functionality of command modules set and get
+- `src/intrpr/builtin_cmds/alias.py`: Changed for new subcommand architecture
+
+## Commit 75a199f41513033bc3c43d09e66d8cf4e63da7da
+
 fix: implement kill child on ^c again
 
 - `src/intrpr/eng.py`: Implemented kill child process on ^c on parent
