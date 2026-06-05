@@ -10,7 +10,6 @@ old_vers/
 releases/
 tmp/
 venv/
-pyproject.toml
 
 # Project source
 src/quark.log

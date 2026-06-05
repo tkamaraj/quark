@@ -1,0 +1,8 @@
+[project]
+name = "quark"
+description = "The Quark source tree package (idk what else to call it)"
+version = "0.1"
+authors = [
+    { name = "Thiruvalluvan Kamaraj", email = "thiruisanidiot@gmail.com" }
+]
+dependencies = []

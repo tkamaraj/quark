@@ -2,6 +2,12 @@
 
 ## Latest commit
 
+chore: remove pyproject.toml from .gitignore
+
+- `.gitignore`: Removed pyproject.toml from list of untracked files
+
+## Commit c282c40227ed1346ae082828513c16d8d1bded60
+
 feat: command module env; fix: subcommand parsing
 
 - `src/intrpr/eng.py`: Improve subcommand parsing and classification
