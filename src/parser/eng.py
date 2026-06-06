@@ -140,7 +140,7 @@ class Parser:
     def _reslv_esc_chrs(
         self,
         param: past.Param | past.Op
-    ) -> past.Param | int:
+    ) -> past.Param | past.Op | int:
         reslvd_val = []
         param_len = len(param.val)
         skip = 0
@@ -165,7 +165,9 @@ class Parser:
             # If 2nd character is not in the escape character dict AND the 2nd
             # character is not one of the globbing characters, append it as it
             # is to the array, because, for example, we shouldn't change \*.
-            if tmp is None and param.val[i + 1] not in pint.GLOB_CHS:
+            # Later comment: I think the statement below is pure nonsense
+            # if tmp is None and param.val[i + 1] not in pint.GLOB_CHS:
+            if tmp is None:
                 reslvd_val.append(param.val[i + 1])
             else:
                 reslvd_val.append(tmp)
@@ -174,19 +176,19 @@ class Parser:
             if not i and param.val[i + 1] == "-":
                 escd_hyp = True
 
-        # Unquoted
-        if param.__class__ == past.Unquoted:
-            return past.Unquoted(
+        # Quoted
+        if isinstance(param, past.Quoted):
+            return past.Quoted(
                 val="".join(reslvd_val),
+                quote=param.quote,
                 escd_hyp=escd_hyp,
                 start=param.start,
                 end=param.end,
             )
-        # Quoted, unless I'm very mistaken
+        # Unquoted, unless I'm very mistaken
         else:
-            return past.Quoted(
+            return past.Unquoted(
                 val="".join(reslvd_val),
-                quote=param.quote,
                 escd_hyp=escd_hyp,
                 start=param.start,
                 end=param.end,
@@ -220,7 +222,11 @@ class Parser:
         ln: str,
         pth: str,
         start: int
-    ) -> tuple[list[past.SimpCmd], list[past.Op], int] | int:
+    ) -> tuple[past.CmdExpr, int] | int:
+        op: past.Op
+        ops: list[past.Op]
+        simp_cmds: list[past.SimpCmd]
+
         ln_len = len(ln)
         simp_cmds = []
         ops = []
@@ -267,6 +273,8 @@ class Parser:
         return (past.CmdExpr(simp_cmds, ops), idx)
 
     def get_cmd_seq(self, ln: str, pth: str, start: int = 0):
+        cmd_exprs: list[past.CmdExpr]
+
         ln_len = len(ln)
         idx = start
         cmd_exprs = []

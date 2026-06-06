@@ -92,8 +92,8 @@ class Intrpr:
         self.stderr_ansi = stderr_ansi
         self.debug_time_expo = debug_time_expo
         self.log_lvl = log_lvl
-        self.intrpr_vars = iint.Env()
-        self.env_vars = iint.Env()
+        self.intrpr_vars = iint.IntrprTbl()
+        self.env_vars = iint.EnvTbl()
         self.parser = peng.Parser()
         self.cmd_reslvr = icrsr.CmdReslvr(
             self.ext_cached_cmds,
@@ -101,9 +101,9 @@ class Intrpr:
         )
         self._last_bad_prompt_obj = None
 
-        self.env_vars.set("_USR_DIR_", str(self.usr_dir))
-        self.env_vars.set("_PREV_CWD_", os.getcwd())
-        self.env_vars.set("_LAST_RET_", uerr.ERR_ALL_GOOD)
+        self.intrpr_vars["_USR_DIR_"] = str(self.usr_dir)
+        self.intrpr_vars["_PREV_CWD_"] = os.getcwd()
+        self.intrpr_vars["_LAST_RET_"] = uerr.ERR_ALL_GOOD
 
         try:
             os.chdir(udeb.TMP_DIR)
@@ -143,37 +143,32 @@ class Intrpr:
 
     def reslv_prompt_var(
         self,
-        prompt: ty.Callable[[iint.Env], ty.Any] | str
+        prompt: ty.Callable[[iint.IntrprTbl], ty.Any] | str
     ) -> str:
+        dflt_prompt = uconst.Defaults.PROMPT(self.intrpr_vars)
+
         if isinstance(prompt, str):
             prompt_str = prompt
-
         elif callable(prompt):
             try:
-                prompt_str = prompt(self.env_vars)
+                prompt_str = prompt(self.intrpr_vars)
             except Exception as e:
-                ugen.crit_Q(
-                    f"Errant prompt function; raised {e.__class__.__name__} ({e})"
-                )
-                prompt_str = uconst.Defaults.PROMPT(self.env_vars)
-
+                ugen.crit_Q(f"Errant prompt function; {e.__class__.__name__}")
+                prompt_str = dflt_prompt
             if not isinstance(prompt_str, str):
                 ugen.crit_Q(
-                    f"Expected return of type 'str' from prompt function; got '{type(prompt_str).__name__}'"
+                    f"Expected 'str' from prompt function, got '{type(prompt_str).__name__}'"
                 )
-                prompt_str = uconst.Defaults.PROMPT(self.env_vars)
-
+                prompt_str = dflt_prompt
         else:
-            ugen.err_Q(
-                f"Invalid type for prompt variable: '{type(prompt).__name__}'"
-            )
-            prompt_str = uconst.Defaults.PROMPT(self.env_vars)
+            ugen.crit_Q(f"Invalid prompt type: '{type(prompt).__name__}'")
+            prompt_str = dflt_prompt
 
         return prompt_str
 
     def reslv_prompt(
         self,
-        prompt_obj: ty.Callable[[iint.Env], ty.Any] | str | None
+        prompt_obj: ty.Callable[[iint.IntrprTbl], ty.Any] | str | None
     ) -> str:
         # Pretty bad design, I guess, handling the None case for variable
         # prompt in this method, but I don't want to clutter up the main file
@@ -269,7 +264,7 @@ class Intrpr:
                 continue
 
             elif nxt_chr == "?":
-                final_prompt += str(self.env_vars.get("_LAST_RET_"))
+                final_prompt += str(self.intrpr_vars["_LAST_RET_"])
                 skip += 1
                 continue
 
@@ -291,22 +286,22 @@ class Intrpr:
         return final_prompt
 
     def use_cfg(self) -> None:
-        self.env_vars.set("_PROMPT_", self.cfg.prompt)
-        self.env_vars.set("_ALIASES_", self.cfg.aliases)
-        # expansions = {"@bin": uconst.USR_BIN_PTH, "@prog": uconst.RUN_PTH}
+        self.intrpr_vars["_PROMPT_"] = self.cfg.prompt
+        self.intrpr_vars["_ALIASES_"] = self.cfg.aliases
+        expansions = {
+            "@bin" : uconst.BIN_PTH,
+            "@run": uconst.RUN_PTH
+        }
         pths = []
-
         for pth in self.cfg.pth:
-            if pth.startswith("@bin"):
-                pth = re.sub("^@bin", uconst.BIN_PTH, pth)
-            elif pth.startswith("@prog"):
-                pth = re.sub("^@prog", uconst.RUN_PTH, pth)
+            matches = [ex for ex in expansions if pth.startswith(ex)]
+            if matches:
+                pth = re.sub(f"^{matches[0]}", expansions[matches[0]], pth)
             pths.append(str(pl.Path(pth).expanduser().absolute()))
-
-        self.env_vars.set("_PTH_", tuple(pths))
+        self.intrpr_vars["_PTH_"] = tuple(pths)
 
     def ld_all_ext_mods(self) -> None:
-        pths = self.env_vars.get("_PTH_")
+        pths = self.intrpr_vars["_PTH_"]
         for pth in pths:
             pth = pl.Path(pth).expanduser().resolve()
             try:
@@ -339,7 +334,7 @@ class Intrpr:
         cmd_nm: str,
         ext_cached_cmds: dict[str, iint.CmdCacheEntry],
         cmd_reslvr: icrsr.CmdReslvr,
-        env_vars: iint.Env
+        intrpr_vars: iint.IntrprTbl
     ) -> tuple[
         ty.Callable[[ugen.CmdData], int],
         ugen.CmdSpec,
@@ -351,7 +346,7 @@ class Intrpr:
 
         ext_cmd = self.cmd_reslvr.get_ext_cmd(
             cmd_nm,
-            env_vars.get("_PTH_"),
+            intrpr_vars["_PTH_"],
             ext_cached_cmds
         )
         if isinstance(ext_cmd, int):
@@ -515,17 +510,17 @@ class Intrpr:
             cmd_nm,
             self.ext_cached_cmds,
             self.cmd_reslvr,
-            self.env_vars
+            self.intrpr_vars
         )
 
         if isinstance(get_cmd_res, int):
-            aliases = self.env_vars.get("_ALIASES_")
+            aliases = self.intrpr_vars["_ALIASES_"]
             if cmd_nm in aliases:
                 get_cmd_res = self.get_cmd(
                     aliases[cmd_nm],
                     self.ext_cached_cmds,
                     self.cmd_reslvr,
-                    self.env_vars
+                    self.intrpr_vars
                 )
 
         if isinstance(get_cmd_res, int):
@@ -780,6 +775,11 @@ class Intrpr:
             term_sz = os.get_terminal_size()
         except OSError:
             term_sz = None
+        if cmd_src == "built-in":
+            intrpr_vars_cp = self.intrpr_vars
+        else:
+            intrpr_vars_cp = self.intrpr_vars.crt_self_cp()
+
         data = ugen.CmdData(
             cmd_nm=cmd_nm,
             sub_cmd=sub_cmd,
@@ -787,8 +787,7 @@ class Intrpr:
             opts=opts,
             flags=tuple(flags),
             cmd_reslvr=self.cmd_reslvr,
-            intrpr_vars=self.intrpr_vars,
-            env_vars=self.env_vars,
+            intrpr_vars=intrpr_vars_cp,
             ext_cached_cmds=self.ext_cached_cmds,
             term_sz=term_sz,
             is_tty=is_tty,
@@ -815,7 +814,7 @@ class Intrpr:
         # Empty command, and cmd_expr will ALWAYS have one SimpCmd object in
         # simp_cmds list, even if the input line was empty
         if not cmd_expr.simp_cmds[0].params:
-            return self.env_vars.get("_LAST_RET_")
+            return self.intrpr_vars["_LAST_RET_"]
 
         ugen.debug(
             ugen.fmt_d_stmt(

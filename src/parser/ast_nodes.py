@@ -5,8 +5,8 @@ import typing as ty
 @dc.dataclass(repr=False)
 class Tok:
     val: str
-    start: str
-    end: str
+    start: int
+    end: int
 
     def __repr__(self) -> str:
         return repr(self.val)
@@ -75,7 +75,7 @@ class Quoted(Param):
 class SimpCmd:
     params: list[Param]
 
-    def get_param(self, idx: int) -> Param:
+    def get_param(self, idx: int) -> Param | None:
         if idx >= len(self.params):
             return None
         return self.params[idx]

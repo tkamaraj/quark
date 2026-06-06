@@ -2,6 +2,18 @@
 
 ## Latest commit
 
+feat, refactor: new two-system variable system; fix: static analysis bugs
+
+- `src/intrpr/internals.py`: Implemented separate interpreter and environment
+variables
+- `src/intrpr/eng.py`: Made changes to accommodate the new variable system
+- `src/`: Statically analyses code (mypy) and fixed problems
+- `src/utils/logger.py`: Removed module (not needed)
+
+(Entry might be incomplete)
+
+## Commit 5b87efd3c411fab84d0fd6eecafe262a15466e7b
+
 chore: remove pyproject.toml from .gitignore
 
 - `.gitignore`: Removed pyproject.toml from list of untracked files

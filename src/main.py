@@ -18,7 +18,6 @@ import intrpr.eng as ieng
 import utils.consts as uconst
 import utils.err_codes as uerr
 import utils.gen as ugen
-import utils.loggers as ulog
 import logger.eng as leng
 
 if not sys.argv:
@@ -177,11 +176,6 @@ def main() -> None:
             leng.Lgr("lgr_q", "Q", parsed_params.log_lvl, sys.stderr),
             leng.Lgr("fl_lgr", "F", leng.LogLvls.CRIT, log_fd)
         )
-        # lgrs = ulog.init_lgrs(
-        #     parsed_params.log_lvl,
-        #     parsed_params.log_lvl,
-        #     ulog.CRIT
-        # )
         # Recommended not to put any debug, info or warning statements above
         # this, because even though those functions can handle loggers not
         # being initialised, they do not obey the log levels, because log
@@ -233,16 +227,17 @@ def main() -> None:
                 prompt_404_warned = True
             raw_ln = input(intrpr.reslv_prompt(prompt))
             cmd_ret = intrpr.exec(raw_ln)
-            intrpr.env_vars.set("_LAST_RET_", cmd_ret)
+            intrpr.env_vars.set("_LAST_RET_", str(cmd_ret))
+            ugen.debug(str(intrpr.intrpr_vars))
 
         # ^c on a built-in command
         except KeyboardInterrupt:
-            intrpr.env_vars.set("_LAST_RET_", uerr.ERR_KB_INTERR)
+            intrpr.env_vars.set("_LAST_RET_", str(uerr.ERR_KB_INTERR))
             ugen.write("\n")
 
         # ^c on an external command
         except ugen.KeyboardInterruptWPrevileges as e:
-            intrpr.env_vars.set("_LAST_RET_", uerr.ERR_KB_INTERR)
+            intrpr.env_vars.set("_LAST_RET_", str(uerr.ERR_KB_INTERR))
             os.kill(e.child_pid, sig.SIGKILL)
             ugen.write("\n")
 

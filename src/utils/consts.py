@@ -1,7 +1,10 @@
 import os
 import sys
 import typing as ty
+
 import parser.internals as pint
+if ty.TYPE_CHECKING:
+    import intrpr.internals as iint
 
 VER = "0.1"
 TAB_SZ = 2
@@ -48,18 +51,19 @@ cwd = f"{ANSI_GREEN_4}!P{ANSI_RESET}"
 
 
 class Defaults:
-    # TODO: Uncomment on final release and remove previous line
-    PTH = (USR_BIN_PTH, *SYS_BIN_PTHS, os.path.join(RUN_PTH, "bin"))
+    ALIASES: dict[str, str]
+
+    PTH = (USR_BIN_PTH, *SYS_BIN_PTHS, BIN_PTH)
     ALIASES = {}
     LN_MODE = "emacs"
 
     # PROMPT = f"┌ !? {ANSI_BLUE_4}!u{ANSI_RESET}@{ANSI_YELLOW_4}!h{ANSI_RESET} {ANSI_GREEN_4}!P{ANSI_RESET}\n└─❯ "
-    def PROMPT(env_vars: "iint.Env") -> str:
-        if env_vars.get("_LAST_RET_") != 0:
+    @staticmethod
+    def PROMPT(intrpr_vars: "iint.IntrprTbl") -> str:
+        if intrpr_vars["_LAST_RET_"] != 0:
             err = f"{ANSI_RED_4}•!?{ANSI_RESET}"
         else:
             err = f"{ANSI_GREEN_4}•{ANSI_RESET}"
-
         return f"┌ {err} {usr}@{host} {cwd}\n└─❯ "
 
 

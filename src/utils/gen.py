@@ -13,26 +13,16 @@ import typing as ty
 
 import parser.internals as pint
 import utils.consts as uconst
-import utils.loggers as ulog
 import logger.eng as leng
 if ty.TYPE_CHECKING:
     import intrpr.cmd_reslvr as icrsr
+    import intrpr.eng as ieng
     import intrpr.internals as iint
 
 
 #########################
 ### CUSTOM EXCEPTIONS ###
 #########################
-
-class LogicalErr(Exception):
-    pass
-
-
-class ExcepWPrevileges(Exception):
-    def __init__(self, err: Exception, child_pid: int) -> None:
-        self.err = err
-        self.child_pid = child_pid
-
 
 class KeyboardInterruptWPrevileges(Exception):
     def __init__(self, e: Exception, child_pid: int) -> None:
@@ -49,6 +39,7 @@ class InvVarTypErr(Exception):
         *args,
         **kwargs
     ):
+        super().__init__(*args, **kwargs)
         self.var_nm = var_nm
         self.var_typ = var_typ
         self.got_typ = got_typ
@@ -56,13 +47,28 @@ class InvVarTypErr(Exception):
 
 class InvVarNmErr(Exception):
     def __init__(self, var_nm: str, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.var_nm = var_nm
+
+
+class InvVarValErr(Exception):
+    def __init__(self, var_nm: str, var_val: ty.Any, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.var_nm = var_nm
+        self.var_val = var_val
 
 
 class UnkVarErr(Exception):
-    def __init__(self, var_nm: str, *args, **kwargs):
+    def __init__(self, message: str = "", *, var_nm: str | None = None):
         self.var_nm = var_nm
 
+    def __str__(self) -> str:
+        msg = super().__str__()
+        if self.var_nm is not None:
+            if msg:
+                return f"{msg} (with var {self.var_nm})"
+            return f"Unknown variable: {self.var_nm}"
+        return msg
 
 class InvAccess(Exception):
     pass
@@ -75,8 +81,8 @@ class CmdData(ty.NamedTuple):
     opts: dict[str, str]
     flags: tuple[str, ...]
     cmd_reslvr: "icrsr.CmdReslvr"
-    intrpr_vars: "iint.Env"
-    env_vars: "iint.Env"
+    intrpr_vars: "iint.IntrprTbl"
+    # env_vars: "iint.Env"
     ext_cached_cmds: "dict[str, iint.CmdCacheEntry]"
     term_sz: os.terminal_size | None
     is_tty: bool
@@ -91,7 +97,7 @@ class CmdSpec(ty.NamedTuple):
     opts: tuple[str, ...]
     flags: tuple[str, ...]
     parse_sub_cmds: bool = False
-    sub_cmds: tuple[str] = ()
+    sub_cmds: tuple[str, ...] = ()
 
 
 class HelpObj(ty.NamedTuple):
@@ -340,11 +346,10 @@ def get_pos() -> tuple[int, int] | None:
 
     # Reading the actual values, but what if a keystroke appears while reading
     # from stdin? As dirty work around, getpos() returns if this fails: None
-    try:
-        matches = re.match(get_pos_regex, buf)
-        groups = matches.groups()
-    except AttributeError:
+    matches = re.match(get_pos_regex, buf)
+    if matches is None:
         return None
+    groups = matches.groups()
 
     return (int(groups[0]), int(groups[1]))
 
@@ -373,6 +378,8 @@ class InpHdlr:
 
 
 def inp(inp_hdlr: InpHdlr, hist: str, tab_spaces: int = 4) -> str:
+    buf: list[str]
+
     init_pos = get_pos()
     while init_pos is None:
         init_pos = get_pos()

@@ -13,6 +13,7 @@ def set_log_lvl(lvl: int) -> None | ty.NoReturn:
         raise ValueError(f"Invalid log level: {lvl}")
     global LOG_LVL
     LOG_LVL = lvl
+    return None
 
 
 class LogLvls(enum.IntEnum):
@@ -83,13 +84,15 @@ class LgrVessel(ty.NamedTuple):
     fl_lgr: Lgr
 
 
+ERR_HEADER_MAP: dict[int, str]
+
 # Default log level is ERR
-set_log_lvl(LogLvls.ERR)
+LOG_LVL = LogLvls.ERR
 ERR_HEADER_MAP = {
     LogLvls.DEBUG: "D",
-    LogLvls.INFO: "I",
-    LogLvls.WARN: "W",
-    LogLvls.ERR: "E",
-    LogLvls.CRIT: "C",
+    LogLvls.INFO : "I",
+    LogLvls.WARN : "W",
+    LogLvls.ERR  : "E",
+    LogLvls.CRIT : "C",
     LogLvls.FATAL: "F"
 }

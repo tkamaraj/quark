@@ -5,11 +5,13 @@ import typing as ty
 import utils.consts as uconst
 import utils.gen as ugen
 import utils.err_codes as uerr
+if ty.TYPE_CHECKING:
+    import intrpr.internals as iint
 
 
 class Cfg(ty.NamedTuple):
-    prompt: str
-    pth: tuple[str]
+    prompt: "str | ty.Callable[[iint.IntrprTbl], str]"
+    pth: tuple[str, ...]
     aliases: dict[str, str]
     ln_mode: str
 
@@ -32,7 +34,7 @@ def sandbox_runpy(fl: str) -> dict[str, ty.Any] | None:
         return None
 
 
-def err_typ_repo(key: str, expd_typs: tuple[type], got_typ: type) -> None:
+def err_typ_repo(key: str, expd_typs: tuple[type, ...], got_typ: type) -> None:
     comma_sepd = ", ".join(f"'{i.__name__}'" for i in expd_typs[: -1])
     or_sepd = f"{' or ' if comma_sepd else ''}'{expd_typs[-1].__name__}'"
     expd_str = comma_sepd + or_sepd
@@ -51,6 +53,8 @@ def get_cfg() -> Cfg:
               else default values.
     :rtype: Cfg
     """
+    aliases: dict[str, str]
+
     ln_mode = uconst.Defaults.LN_MODE
     prompt = uconst.Defaults.PROMPT
     pth = uconst.Defaults.PTH
