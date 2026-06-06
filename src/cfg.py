@@ -1,5 +1,3 @@
-import typing as ty
-
 # Colour codes
 _ANSI_RESET = "\x1b[0m"
 _ANSI_RED = "\x1b[31m"

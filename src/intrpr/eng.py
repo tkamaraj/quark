@@ -1,9 +1,6 @@
 import errno
-import importlib.util as ilu
-import inspect as ins
 import io
 import logging as lg
-import multiprocessing as mp
 import os
 import pathlib as pl
 import pickle as pi
@@ -27,7 +24,6 @@ import utils.gen as ugen
 import utils.consts as uconst
 import utils.debug as udeb
 import utils.err_codes as uerr
-
 if ty.TYPE_CHECKING:
     import parser.internals as pint
 
@@ -522,14 +518,13 @@ class Intrpr:
                     self.cmd_reslvr,
                     self.intrpr_vars
                 )
-
         if isinstance(get_cmd_res, int):
             # Write error message to current STDERR
             err_msg = self.GET_CMD_ERR_MSG_MAP.get(
                 get_cmd_res,
                 "missing_err_msg"
             )
-            err_code = get_cmd_res
+            err_code = err_code or get_cmd_res
             ugen.err_Q(f"{err_msg}: '{cmd_nm}'")
             return get_cmd_res
 
@@ -597,7 +592,7 @@ class Intrpr:
         packed_obj = self.rd_from_fd(fd, expd_bytes)
         try:
             return st.unpack(fmt_str, packed_obj)[0]
-        except st.error as e:
+        except st.error:
             ugen.crit_Q(f"Expected {expd_bytes}-byte unpack ({fmt_str})")
             return
 

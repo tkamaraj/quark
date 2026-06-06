@@ -1,16 +1,9 @@
 #!/usr/bin/env -S python3 -BOO
 
-import collections as collns
-# import logging as lg
 import os
-import re
-# import readline as rl
-import select as sel
 import signal as sig
 import sys
-import termios
 import traceback as tb
-import tty
 import typing as ty
 
 import intrpr.cfg_mgr as cmgr
@@ -156,18 +149,6 @@ def parse_argv(passed_params: list[str]) -> MainProgParsed:
 
 def main() -> None:
     try:
-        hist_fl = None
-        try:
-            hist_fl = open(uconst.HIST_FL, "a+")
-        except PermissionError:
-            ugen.warn_Q(f"Access denied: \"{uconst.HIST_FL}\"\n")
-        except OSError as e:
-            ugen.warn_Q(f"OS error; {e.strerror}\n")
-        except Exception as e:
-            ugen.warn_Q(
-                f"Unknown error; ({e.__class__.__name__}) {e}; cannot write history\n"
-            )
-
         parsed_params = parse_argv(sys.argv[1 :])
         log_fd = open(uconst.LOG_FL, "a")
         leng.set_log_lvl(parsed_params.log_lvl)
@@ -190,7 +171,6 @@ def main() -> None:
             debug_time_expo=parsed_params.debug_time_expo,
             log_lvl=parsed_params.log_lvl
         )
-        inp_hdlr = ugen.InpHdlr()
         ugen.info_Q(f"running from \"{uconst.RUN_PTH}\"")
         # No line mode option passed from command line
         if parsed_params.ln_mode == "default":

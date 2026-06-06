@@ -1,11 +1,7 @@
-import typing as ty
-
 import parser.ast_nodes as past
 import parser.internals as pint
 import utils.err_codes as uerr
-import utils.consts as uconst
 import utils.gen as ugen
-import utils.debug as udeb
 
 
 class Parser:

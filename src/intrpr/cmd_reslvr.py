@@ -1,7 +1,6 @@
 import hashlib as hl
 import importlib as il
 import importlib.util as ilu
-import inspect as ins
 import os
 import pathlib as pl
 import pkgutil as pu
@@ -72,7 +71,7 @@ class CmdReslvr:
             return uerr.ERR_IS_A_DIR
         except OSError:
             return uerr.ERR_OS_ERR
-        except Exception as e:
+        except Exception:
             return uerr.ERR_UNK_ERR
         fl_hash = sha256.hexdigest()
         # DEBUG: Hash time end
@@ -118,7 +117,7 @@ class CmdReslvr:
             cache_entry = ext_cached_cmds.get(cmd)
             try:
                 fl_stat = fl.stat(follow_symlinks=False)
-            except FileNotFoundError as e:
+            except FileNotFoundError:
                 continue
             # This fucking thing is raised when something like `./ls/` is input
             except NotADirectoryError:
@@ -144,7 +143,7 @@ class CmdReslvr:
             # FileNotFoundError is raised by _io.open_code(...) in
             # importlib._bootstrap_external.py if the file is not found [called due
             # to loader.exec_module(...)]
-            except (FileNotFoundError, ImportError) as e:
+            except (FileNotFoundError, ImportError):
                 continue
             except SyntaxError:
                 ugen.crit_Q(

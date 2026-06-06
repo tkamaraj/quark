@@ -1,14 +1,11 @@
 import atexit
-import datetime as dt
 import os
-import pathlib as pl
 import re
 import select
 import signal as sig
 import sys
 import termios
 import tty
-import types
 import typing as ty
 
 import parser.internals as pint
@@ -608,12 +605,3 @@ mv_cur_col = lambda col: f"\x1b[{col}G"
 #     leng.LogLvls.CRIT:  _lgrs.fl_lgr.crit_Q,
 #     leng.LogLvls.FATAL: _lgrs.fl_lgr.fatal_Q
 # }
-
-
-def test():
-    h = InpHdlr()
-    h.set_new_sett()
-    k = h.getch()
-    while h.kbhit():
-        k += h.getch()
-    print(repr(k))

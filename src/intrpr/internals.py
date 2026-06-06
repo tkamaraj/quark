@@ -7,14 +7,11 @@ import importlib.machinery as ilm
 import multiprocessing as mp
 import multiprocessing.shared_memory as mpshm
 import struct as st
-import time
 import traceback as tb
 import typing as ty
 import types
 
-import utils.err_codes as uerr
 import utils.gen as ugen
-
 if ty.TYPE_CHECKING:
     import intrpr.cmd_reslvr as icrsr
 
@@ -203,7 +200,7 @@ class IntrprTbl:
     def rm(self, nm: str) -> None:
         try:
             self.intrpr_tbl.pop(nm)
-        except KeyError as e:
+        except KeyError:
             pass
 
     def items(self) -> cabc.ItemsView[str, ty.Any]:

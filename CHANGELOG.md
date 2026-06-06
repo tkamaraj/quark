@@ -2,6 +2,12 @@
 
 ## Latest commit
 
+fix: remove unused imports in main interpreter
+
+- `src/`: Fixed unused imported in the interpreter (not including any commands)
+
+## Commit d6363fa89275ca9f9641c82b1609d664d94bd19a
+
 feat, refactor: new two-system variable system; fix: static analysis bugs
 
 - `src/intrpr/internals.py`: Implemented separate interpreter and environment
