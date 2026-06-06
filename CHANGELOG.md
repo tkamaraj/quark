@@ -2,6 +2,15 @@
 
 ## Latest commit
 
+fix: revert changes during var system implementation; fix: incorrect resolution
+of commands
+
+- `src/main.py`: Reverted some changes made during implementation of the
+two-system variable system
+- `src/intrpr/cmd_reslvr.py`: Fixed resolution of `./ls` to `ls` and such
+
+## Commit 9659c14c42913e816a75447224e7286becd30562
+
 fix: remove unused imports in main interpreter
 
 - `src/`: Fixed unused imported in the interpreter (not including any commands)

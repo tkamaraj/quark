@@ -198,7 +198,7 @@ def main() -> None:
     while True:
         try:
             try:
-                prompt = intrpr.env_vars.get("_PROMPT_")
+                prompt = intrpr.intrpr_vars["_PROMPT_"]
                 prompt_404_warned = False
             except ugen.UnkVarErr:
                 if not prompt_404_warned:
@@ -207,17 +207,17 @@ def main() -> None:
                 prompt_404_warned = True
             raw_ln = input(intrpr.reslv_prompt(prompt))
             cmd_ret = intrpr.exec(raw_ln)
-            intrpr.env_vars.set("_LAST_RET_", str(cmd_ret))
+            intrpr.intrpr_vars["_LAST_RET_"] = cmd_ret
             ugen.debug(str(intrpr.intrpr_vars))
 
         # ^c on a built-in command
         except KeyboardInterrupt:
-            intrpr.env_vars.set("_LAST_RET_", str(uerr.ERR_KB_INTERR))
+            intrpr.intrpr_vars["_LAST_RET_"] = uerr.ERR_KB_INTERR
             ugen.write("\n")
 
         # ^c on an external command
         except ugen.KeyboardInterruptWPrevileges as e:
-            intrpr.env_vars.set("_LAST_RET_", str(uerr.ERR_KB_INTERR))
+            intrpr.intrpr_vars["_LAST_RET_"] = uerr.ERR_KB_INTERR
             os.kill(e.child_pid, sig.SIGKILL)
             ugen.write("\n")
 

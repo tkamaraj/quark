@@ -107,6 +107,9 @@ class CmdReslvr:
     ) -> types.ModuleType | int:
         fl: pl.Path
 
+        if "/" in cmd or "\0" in cmd:
+            return uerr.ERR_BAD_CMD
+
         # DEBUG: Module load time start
         _t_mod_ld = time.perf_counter_ns()
 

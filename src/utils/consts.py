@@ -57,7 +57,6 @@ class Defaults:
     ALIASES = {}
     LN_MODE = "emacs"
 
-    # PROMPT = f"┌ !? {ANSI_BLUE_4}!u{ANSI_RESET}@{ANSI_YELLOW_4}!h{ANSI_RESET} {ANSI_GREEN_4}!P{ANSI_RESET}\n└─❯ "
     @staticmethod
     def PROMPT(intrpr_vars: "iint.IntrprTbl") -> str:
         if intrpr_vars["_LAST_RET_"] != 0:
