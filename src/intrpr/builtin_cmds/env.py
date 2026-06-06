@@ -64,7 +64,7 @@ def set_vars_helper(
     var_nm: str,
     var_typ: str,
     var_val: str,
-    env_vars: "iint.Env"
+    intrpr_vars: "iint.IntrprTbl"
 ) -> int:
     err_code = uerr.ERR_ALL_GOOD
 
@@ -97,7 +97,7 @@ def set_vars_helper(
             return ERR_INV_VAL_FOR_TYP
 
     try:
-        env_vars.set(var_nm, var_val)
+        intrpr_vars[var_nm] = var_val
     except ugen.InvVarTypErr:
         err_code = uerr.ERR_ENV_VAR_INV_TYP
         ugen.err(
@@ -124,22 +124,22 @@ def run(data: ugen.CmdData) -> int:
 
     if data.sub_cmd is None or data.sub_cmd == "list":
         max_nm_len = (
-            len(max((i.nm for i in data.env_vars), key=len))
-            if data.env_vars else 0
+            len(max((i for i in data.intrpr_vars), key=len))
+            if data.intrpr_vars else 0
         )
-        for nm, val in data.env_vars.items():
+        for nm, val in data.intrpr_vars.items():
             ugen.write(
-                f"{nm:<{max_nm_len}} = {repr(val.val) if repr_val else val.val}\n"
+                f"{nm:<{max_nm_len}} = {repr(val) if repr_val else val}\n"
             )
 
     elif data.sub_cmd == "get":
         max_arg_len = len(max(data.args, key=len)) if data.args else 0
         for arg in data.args:
-            if arg not in data.env_vars:
+            if arg not in data.intrpr_vars:
                 ugen.err(f"No such variable: '{arg}'", nm=data.cmd_nm)
                 err_code = err_code or uerr.ERR_ENV_UNK_VAR
                 continue
-            val = data.env_vars.get(arg)
+            val = data.intrpr_vars[arg]
             ugen.write(
                 f"{arg:<{max_arg_len}} = {repr(val) if repr_val else val}\n"
             )
@@ -153,16 +153,22 @@ def run(data: ugen.CmdData) -> int:
             nm,
             typ,
             val,
-            data.env_vars
+            data.intrpr_vars
         )
         err_code = err_code or tmp_err_code
 
     elif data.sub_cmd == "remove":
         for arg in data.args:
-            if arg not in data.env_vars:
+            if arg not in data.intrpr_vars:
                 ugen.err(f"No such variable: '{arg}'", nm=data.cmd_nm)
                 err_code = err_code or uerr.ERR_ENV_UNK_VAR
                 continue
-            data.env_vars.pop(arg)
+            try:
+                data.intrpr_vars.pop(arg)
+            except ugen.InvAccess:
+                ugen.err(
+                    f"Cannot remove protected variable: {arg}",
+                    nm=data.cmd_nm
+                )
 
     return err_code

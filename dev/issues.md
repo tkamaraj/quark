@@ -35,6 +35,12 @@ and hence "./ls" gets converted to "ls", which invokes the ls command. Make the
 command resolver not resolve the path when searching for a command, as
 resolution of the path is not needed for searching.
 
+### Interpreter internals (src/intrpr/internals.py)
+
+1. Shared memory does not fucking work. I've got no idea why. Fuck me. After so
+much time and effort implementing it, just for it to not work. Changes do not
+get reflected. That's the problem.
+
 ### Logger (src/logger/)
 
 1. Implement per-logger levels.

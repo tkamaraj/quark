@@ -57,7 +57,7 @@ def set_vars_helper(
     var_typ: str,
     var_val: str,
     complain: bool,
-    env_vars: "iint.Env"
+    intrpr_vars: "iint.IntrprTbl"
 ) -> int:
     err_code = uerr.ERR_ALL_GOOD
 
@@ -93,11 +93,11 @@ def set_vars_helper(
         #     return ERR_TXT_SYN_ERR
 
     try:
-        if complain and var_nm in env_vars:
+        if complain and var_nm in intrpr_vars:
             ugen.err("Variable exists: '{var_nm}'", nm=cmd_nm)
             err_code = ERR_VAR_EXISTS
         else:
-            env_vars.set(var_nm, var_val)
+            intrpr_vars.set(var_nm, var_val)
     except ugen.InvVarTypErr:
         err_code = uerr.ERR_ENV_VAR_INV_TYP
         ugen.err(
@@ -127,11 +127,11 @@ def run(data: ugen.CmdData) -> int:
 
     if rm:
         for arg in data.args:
-            if complain and arg not in data.env_vars:
+            if complain and arg not in data.intrpr_vars:
                 err_code = err_code or ERR_NO_SUCH_VAR
                 ugen.err(f"No such variable: '{arg}'", nm=data.cmd_nm)
                 continue
-            data.env_vars.rm(arg)
+            data.intrpr_vars.rm(arg)
 
     else:
         if len(data.args) not in (2, 3):
@@ -150,7 +150,7 @@ def run(data: ugen.CmdData) -> int:
             var_typ,
             var_val,
             complain,
-            data.env_vars
+            data.intrpr_vars
         )
         err_code = err_code or tmp_err_code
 

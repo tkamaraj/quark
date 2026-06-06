@@ -198,11 +198,11 @@ def main() -> None:
     while True:
         try:
             try:
-                prompt = intrpr.intrpr_vars["_PROMPT_"]
+                prompt = intrpr.intrpr_vars["PROMPT"]
                 prompt_404_warned = False
             except ugen.UnkVarErr:
                 if not prompt_404_warned:
-                    ugen.warn_Q("_PROMPT_ not found; using default")
+                    ugen.warn_Q("PROMPT not found; using default")
                 prompt = uconst.Defaults.PROMPT
                 prompt_404_warned = True
             raw_ln = input(intrpr.reslv_prompt(prompt))

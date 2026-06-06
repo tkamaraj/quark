@@ -2,6 +2,22 @@
 
 ## Latest commit
 
+fix: variable object name in builtins; feat: protected variables
+
+- `src/intrpr/builtin_cmds/`: Changed any names to new interpreter variable
+table object
+- `src/intrpr/eng.py`: Changed names from (_)PTH(_), (_)PROMPT(_) and
+(_)ALIASES(_) to PTH, PROMPT and ALIASES; Made PTH, PROMPT and ALIASES
+protected interpreter variables
+- `src/intrpr/internals.py`: Added support for protected variables in
+IntrprTbl; Implemented magic method (__)repr(__) for EnvTbl
+
+## Commit 98bdbf1a1e1d23da714697cab5721a136e01ec59
+
+- `src/test.py`: Removed (accidentally tracked)
+
+## Commit 98bdbf1a1e1d23da714697cab5721a136e01ec59
+
 fix: revert changes during var system implementation; fix: incorrect resolution
 of commands
 

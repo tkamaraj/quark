@@ -55,5 +55,5 @@ def run(data: ugen.CmdData) -> int:
     err_code = uerr.ERR_ALL_GOOD
     if err:
         err_code = ERR_FROM_CMD
-    data.env_vars.set("_RN_CMD_RET_", err)
+    data.intrpr_vars["_RN_CMD_RET_"] = err
     return err_code

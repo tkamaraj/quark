@@ -5,7 +5,6 @@ import typing as ty
 import utils.gen as ugen
 import utils.consts as uconst
 import utils.err_codes as uerr
-
 if ty.TYPE_CHECKING:
     import intrpr.internals as iint
 
@@ -42,7 +41,7 @@ def actually_chg_dir(
     cmd_nm: str,
     pth: pl.Path,
     prn_dir: bool,
-    env_vars: "iint.Env"
+    intrpr_vars: "iint.IntrprTbl"
 ) -> int:
     """
     The actual directory changing component of the cd command.
@@ -58,7 +57,7 @@ def actually_chg_dir(
     try:
         before = os.getcwd()
         os.chdir(pth)
-        env_vars.set("_PREV_CWD_", before)
+        intrpr_vars["_PREV_CWD_"] = before
         if prn_dir:
             ugen.write(str(pth) + "\n")
     except FileNotFoundError:
@@ -113,7 +112,7 @@ def run(data: ugen.CmdData) -> int:
 
     # Change to previous directory option
     if chg_to_prev_cwd:
-        chg_to = pl.Path(data.env_vars.get("_PREV_CWD_")).expanduser()
+        chg_to = pl.Path(data.intrpr_vars["_PREV_CWD_"]).expanduser()
 
     # Temporary directory
     elif tmp_dir:
@@ -158,5 +157,5 @@ def run(data: ugen.CmdData) -> int:
             ugen.err(f"OS error; {e.strerror}", nm=data.cmd_nm)
             return uerr.ERR_OS_ERR
 
-    err_code = actually_chg_dir(data.cmd_nm, chg_to, prn_dir, data.env_vars)
+    err_code = actually_chg_dir(data.cmd_nm, chg_to, prn_dir, data.intrpr_vars)
     return err_code

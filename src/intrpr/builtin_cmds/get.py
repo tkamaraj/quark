@@ -34,10 +34,10 @@ def run(data: ugen.CmdData) -> int:
     max_nm_len = 0
 
     if not data.args:
-        for var in data.env_vars:
+        for var in data.intrpr_vars:
             max_nm_len = max(max_nm_len, len(var.nm))
 
-        for var in data.env_vars:
+        for var in data.intrpr_vars:
             if data.is_tty:
                 to_prn = ugen.ljust(
                     ugen.S.fmt(var.nm, data.is_tty, ugen.S.green_4),
@@ -56,14 +56,14 @@ def run(data: ugen.CmdData) -> int:
     # names influencing padding
     for arg in data.args:
         try:
-            data.env_vars.get(arg)
+            data.intrpr_vars.get(arg)
             max_nm_len = max(max_nm_len, len(arg))
         except ugen.UnkVarErr:
             pass
 
     for arg in data.args:
         try:
-            var_val = data.env_vars.get(arg)
+            var_val = data.intrpr_vars.get(arg)
             if data.is_tty:
                 to_prn = ugen.ljust(
                     ugen.S.fmt(arg, data.is_tty, ugen.S.green_4),

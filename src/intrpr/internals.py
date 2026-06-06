@@ -118,7 +118,7 @@ class EnvTbl:
         tmp_len_val = len(val)
         # Check bounds for key and values (stored as 8-byte ints)
         if not ((0 <= tmp_len_key < 2 ** 64) and (0 <= tmp_len_val < 2 ** 64)):
-            raise MemoryError("Items too large")
+            raise MemoryError("Item(s) too large")
         # I'm having this here, just in case, so that any metadata (if any)
         # from the int object does not mess with me
         len_key = ct.c_uint64(tmp_len_key)
@@ -145,7 +145,18 @@ class EnvTbl:
         return None
 
     def __repr__(self) -> str:
-        raise NotImplementedError("__repr__ not implemented yet")
+        # raise NotImplementedError("__repr__ not implemented yet")
+        off = 0
+        data_dict = {}
+        for _ in range(self.cnt):
+            len_key, len_val = st.unpack("!QQ", self.shm.buf[off : off + 16])
+            off += 16
+            cur_key = self.shm.buf[off : off + len_key].tobytes().decode()
+            off += len_key
+            cur_val = self.shm.buf[off : off + len_val].tobytes().decode()
+            off += len_val
+            data_dict[cur_key] = cur_val
+        return str(data_dict)
 
     def set(self, nm: str, val: ty.Any) -> None | ty.NoReturn:
         return self.__setitem__(nm, val)
@@ -163,12 +174,13 @@ class EnvTbl:
 @dcs.dataclass
 class IntrprTbl:
     intrpr_tbl: dict[str, ty.Any] = dcs.field(default_factory=dict)
+    protection_status: dict[str, bool] = dcs.field(default_factory=dict)
 
     def __len__(self) -> int:
         return len(self.intrpr_tbl)
 
     def __iter__(self) -> ty.NoReturn:
-        raise NotImplementedError("__iter__ not implemented yet")
+        yield from self.intrpr_tbl
 
     def __contains__(self, key: ty.Any) -> bool:
         return key in self.intrpr_tbl
@@ -191,14 +203,24 @@ class IntrprTbl:
     def __repr__(self) -> str:
         return str(self.intrpr_tbl)
 
-    def set(self, nm: str, val: ty.Any) -> None | ty.NoReturn:
-        return self.__setitem__(nm, val)
+    def set(
+        self,
+        nm: str,
+        val: ty.Any,
+        protected: bool = False
+    ) -> None | ty.NoReturn:
+        tmp = self.__setitem__(nm, val)
+        self.protection_status[nm] = protected
+        return tmp
 
     def get(self, nm: str) -> ty.Any | ty.NoReturn:
         return self.__getitem__(nm)
 
-    def rm(self, nm: str) -> None:
+    def pop(self, nm: str) -> None:
         try:
+            # If protected, raise InvAccess
+            if self.protection_status[nm]:
+                raise ugen.InvAccess(f"Pop of protected variable: {nm}")
             self.intrpr_tbl.pop(nm)
         except KeyError:
             pass

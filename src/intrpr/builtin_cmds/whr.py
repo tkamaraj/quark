@@ -63,7 +63,7 @@ def run(data: ugen.CmdData) -> int:
     op_buf: list[Out | Err]
 
     err_code = uerr.ERR_ALL_GOOD
-    dir_pths = data.env_vars.get("_PTH_")
+    dir_pths = data.intrpr_vars["PTH"]
     show_all = False
     short_op = False
 

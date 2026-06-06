@@ -70,7 +70,7 @@ def run(data: ugen.CmdData) -> int:
         inp = input()
     try:
         to_set = var_obj(inp)
-        data.env_vars.set(ident, to_set)
+        data.intrpr_vars[ident] = to_set
     except ValueError:
         err_code = ERR_INV_VAL_FOR_TYP
         ugen.err(f"Invalid value for type '{typ}': '{inp}'")

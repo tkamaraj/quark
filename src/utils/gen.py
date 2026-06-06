@@ -79,7 +79,7 @@ class CmdData(ty.NamedTuple):
     flags: tuple[str, ...]
     cmd_reslvr: "icrsr.CmdReslvr"
     intrpr_vars: "iint.IntrprTbl"
-    # env_vars: "iint.Env"
+    env_vars: "iint.EnvTbl"
     ext_cached_cmds: "dict[str, iint.CmdCacheEntry]"
     term_sz: os.terminal_size | None
     is_tty: bool

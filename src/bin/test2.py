@@ -24,18 +24,7 @@ CMD_SPEC = ugen.CmdSpec(
 )
 
 
-def high_mem() -> None:
-    ugen.write(data.stdin)
-    full = 10 ** 8
-    segment = full // 5
-    for j, i in enumerate(range(segment, full, segment)):
-        ugen.write(str(j) * i)
-        x = " " * 10 ** 10
-    return None
-
-
 def run(data: ugen.CmdData) -> int:
-    # data.env_vars["foo"] = "bar"
-    # data.env_vars["haha"] = "hehe"
+    data.env_vars["foo"] = "spam"
     ugen.write(data.env_vars["foo"])
     return uerr.ERR_ALL_GOOD

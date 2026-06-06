@@ -51,9 +51,9 @@ def run(data: ugen.CmdData) -> int:
     err_code = uerr.ERR_ALL_GOOD
     set_alias = False
     try:
-        alias_dict = data.env_vars.get("_ALIASES_")
+        alias_dict = data.intrpr_vars["ALIASES"]
     except ugen.UnkVarErr:
-        ugen.warn("Cannot find _ALIASES_; using empty dict")
+        ugen.warn("Cannot find ALIASES; using empty dict")
         alias_dict = {}
 
     if data.sub_cmd == "list" or data.sub_cmd is None:
@@ -65,7 +65,7 @@ def run(data: ugen.CmdData) -> int:
                 alias_val = alias_dict[alias]
                 if not isinstance(alias, str) or not isinstance(alias_val, str):
                     err_code = err_code or ERR_INV_ALIAS
-                    to_write.append(Err(f"Invalid alias at pos {i} in _ALIASES_"))
+                    to_write.append(Err(f"Invalid alias at pos {i} in ALIASES"))
                     continue
                 escd_alias = ugen.esc_chrs(alias, extra=("=",))
                 max_len = max(max_len, len(escd_alias))
@@ -118,6 +118,6 @@ def run(data: ugen.CmdData) -> int:
             )
             return uerr.ERR_UNEXPD_ARGS
         alias_dict[data.args[0]] = data.args[1]
-        data.env_vars.set("_ALIASES_", alias_dict)
+        data.intrpr_vars["ALIASES"] = alias_dict
 
     return err_code

@@ -212,7 +212,7 @@ def run(data: ugen.CmdData) -> int:
         # Either all commands or just external ones
         if all_cmds or ext_cmds:
             cmd_nm_arr = []
-            pths = data.env_vars.get("_PTH_")
+            pths = data.intrpr_vars["PTH"]
             # Run, run, RUNNNNN through paths in the path variable
             for pth in pths:
                 try:
@@ -260,7 +260,7 @@ def run(data: ugen.CmdData) -> int:
         op_buf.extend(get_detailed_help(
             cmd_reslvr,
             data.ext_cached_cmds,
-            data.env_vars.get("_PTH_"),
+            data.intrpr_vars["PTH"],
             data.args,
             data.term_sz,
             data.is_tty

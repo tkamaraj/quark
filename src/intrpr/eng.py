@@ -282,8 +282,8 @@ class Intrpr:
         return final_prompt
 
     def use_cfg(self) -> None:
-        self.intrpr_vars["_PROMPT_"] = self.cfg.prompt
-        self.intrpr_vars["_ALIASES_"] = self.cfg.aliases
+        self.intrpr_vars.set("PROMPT", self.cfg.prompt, protected=True)
+        self.intrpr_vars.set("ALIASES", self.cfg.aliases, protected=True)
         expansions = {
             "@bin" : uconst.BIN_PTH,
             "@run": uconst.RUN_PTH
@@ -294,10 +294,10 @@ class Intrpr:
             if matches:
                 pth = re.sub(f"^{matches[0]}", expansions[matches[0]], pth)
             pths.append(str(pl.Path(pth).expanduser().absolute()))
-        self.intrpr_vars["_PTH_"] = tuple(pths)
+        self.intrpr_vars.set("PTH", tuple(pths), protected=True)
 
     def ld_all_ext_mods(self) -> None:
-        pths = self.intrpr_vars["_PTH_"]
+        pths = self.intrpr_vars["PTH"]
         for pth in pths:
             pth = pl.Path(pth).expanduser().resolve()
             try:
@@ -342,7 +342,7 @@ class Intrpr:
 
         ext_cmd = self.cmd_reslvr.get_ext_cmd(
             cmd_nm,
-            intrpr_vars["_PTH_"],
+            intrpr_vars["PTH"],
             ext_cached_cmds
         )
         if isinstance(ext_cmd, int):
@@ -510,7 +510,7 @@ class Intrpr:
         )
 
         if isinstance(get_cmd_res, int):
-            aliases = self.intrpr_vars["_ALIASES_"]
+            aliases = self.intrpr_vars["ALIASES"]
             if cmd_nm in aliases:
                 get_cmd_res = self.get_cmd(
                     aliases[cmd_nm],
@@ -783,6 +783,7 @@ class Intrpr:
             flags=tuple(flags),
             cmd_reslvr=self.cmd_reslvr,
             intrpr_vars=intrpr_vars_cp,
+            env_vars=self.env_vars,
             ext_cached_cmds=self.ext_cached_cmds,
             term_sz=term_sz,
             is_tty=is_tty,
