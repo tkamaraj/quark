@@ -2,6 +2,18 @@
 
 ## Latest commit
 
+feat: fixed-size env var entries
+- `src/intrpr/internals.py`
+1. Made environment variable entries fixed size
+2. Environment variable bug fixes
+2. Defined \_\_contains\_\_
+3. Comment and docstring updates
+- `src/intrpr/eng.py`
+1. Moved lock from interpreter internals to interpreter engine
+2. Comment updates
+
+## Commit edc37c131acbd5f2242707a29cb1a1a1bfe0d684
+
 fix: shared memory environment variable system
 
 - `src/intrpr/internals.py`: Fixed shared memory environment variables not

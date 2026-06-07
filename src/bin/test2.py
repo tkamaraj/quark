@@ -25,6 +25,7 @@ CMD_SPEC = ugen.CmdSpec(
 
 
 def run(data: ugen.CmdData) -> int:
-    data.env_vars["foo"] = "spam"
+    data.env_vars["foo"] = "bar"
+    print("foo" in data.env_vars)
     print(len(data.env_vars), data.env_vars.get_wrt_idx(), data.env_vars.shm.size)
     return uerr.ERR_ALL_GOOD

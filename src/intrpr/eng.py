@@ -2,6 +2,7 @@ import atexit
 import errno
 import io
 import logging as lg
+import multiprocessing as mp
 import multiprocessing.shared_memory as mpshm
 import os
 import pathlib as pl
@@ -84,12 +85,22 @@ class Intrpr:
         self.usernm = pwd.getpwuid(int(self.uid)).pw_name
         self.is_usr_root = (self.uid == "0")
 
-        self.SHM_SZ = 512 * 1024        # 512 KiB
+        # See src.intrpr.internals.EnvTbl for memory layout
+        # Memory for total number of items = 8B
+        # Memory for write index           = 8B
+        # Maximum number of entries        = 100
+        # Memory per variable entry        = (8+8+128+8048)B = 8192B = 8KiB
+        #     Length of key   = 8B
+        #     Length of value = 8B
+        #     Key             = 128B
+        #     Value           = 8048B
+        self.SHM_SZ = 819216
         self.shm = mpshm.SharedMemory(
             create=True,
             track=True,
             size=self.SHM_SZ
         )
+        self.lock = mp.Lock()
         atexit.register(self.shm.unlink)
 
         self.ext_cached_cmds = {}
@@ -99,7 +110,7 @@ class Intrpr:
         self.debug_time_expo = debug_time_expo
         self.log_lvl = log_lvl
         self.intrpr_vars = iint.IntrprTbl()
-        self.env_vars = iint.EnvTbl(self.shm)
+        self.env_vars = iint.EnvTbl(self.shm, self.lock)
         self.parser = peng.Parser()
         self.cmd_reslvr = icrsr.CmdReslvr(
             self.ext_cached_cmds,
