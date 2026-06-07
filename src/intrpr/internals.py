@@ -1,12 +1,11 @@
-import atexit
 import collections.abc as cabc
 import copy
 import ctypes as ct
 import dataclasses as dcs
 import importlib.machinery as ilm
 import multiprocessing as mp
-import multiprocessing.shared_memory as mpshm
 import struct as st
+import multiprocessing.shared_memory as mpshm
 import traceback as tb
 import typing as ty
 import types
@@ -47,24 +46,22 @@ class CmdReslnRes(ty.NamedTuple):
 
 @dcs.dataclass
 class EnvTbl:
-    shm: mpshm.SharedMemory = dcs.field(init=False)
-    cnt: int = dcs.field(init=False)
+    shm: mpshm.SharedMemory
 
     def __post_init__(self) -> None:
-        # self.cnt is the number of items in the table
-        self.SHM_SZ = 512 * 1024        # 512 KiB
-        self.shm = mpshm.SharedMemory(
-            create=True,
-            track=True,
-            size=self.SHM_SZ
-        )
-        self.cnt = 0
-        self.wrt_idx = 0
+        self.SHM_SZ = self.shm.size
+        self.CNT_START_IDX = 0
+        self.WRT_IDX_START_IDX = 8
+        self.ENTRY_START_IDX = 16
+        self.wrt_cnt(self.CNT_START_IDX)
+        self.wrt_wrt_idx(self.ENTRY_START_IDX)
         self.lock = mp.Lock()
-        atexit.register(self.shm.unlink)
 
     def __len__(self) -> int:
-        return self.cnt
+        return st.unpack(
+            "!Q",
+            self.shm.buf[self.CNT_START_IDX : self.WRT_IDX_START_IDX]
+        )[0]
 
     def __iter__(self) -> ty.NoReturn:
         raise NotImplementedError(
@@ -79,8 +76,9 @@ class EnvTbl:
     def __getitem__(self, key: str) -> ty.Any | ty.NoReturn:
         if self.shm.buf is None:
             raise RuntimeError("Operation of closed shared memory descriptor")
-        off = 0
-        for _ in range(self.cnt):
+        cnt = len(self)
+        off = self.ENTRY_START_IDX
+        for _ in range(cnt):
             len_key, len_val = st.unpack("!QQ", self.shm.buf[off : off + 16])
             off += 16
             cur_key = self.shm.buf[off : off + len_key].tobytes().decode()
@@ -92,6 +90,19 @@ class EnvTbl:
             # Found the motherfucker!
             return self.shm.buf[off : off + len_val].tobytes().decode()
         raise ugen.UnkVarErr(var_nm=key)
+
+    def get_key_idx_in_mem(self, key: str) -> int | None:
+        # INCOMPLETE!
+        cnt = self.get_cnt()
+        off = self.ENTRY_START_IDX
+        for _ in range(cnt):
+            len_key, len_val = st.unpack(self.shm.buf[off : off + 16])[0]
+            off += 16
+            cur_key = self.shm.buf[off : off + len_key].tobytes().decode()
+            if cur_key == key:
+                return offset
+            # WE WILL NEED TO SHIFT THE OTHER ENTRIES IF WE PROCEED WITH THIS
+            # APPROACH!
 
     def __setitem__(self, key: str, val: str) -> None | ty.NoReturn:
         len_key: ct.c_uint64
@@ -106,16 +117,18 @@ class EnvTbl:
             raise ugen.InvVarValErr(var_nm=key, var_val=val)
         # Structure in memory:
         # .++++++++++++++++,
-        # |   key length   | -> 8B
-        # | -------------- |
-        # |  value length  | -> 8B
-        # | -------------- |
-        # |      key       | -> (key length)B
-        # | -------------- |
-        # |     value      | -> (value length)B
+        # ||  key length  || -> 8B
+        # ||--------------||
+        # || value length || -> 8B
+        # ||--------------||
+        # ||     key      || -> (key length)B
+        # ||--------------||
+        # ||    value     || -> (value length)B
         # `++++++++++++++++'
-        tmp_len_key = len(key)
-        tmp_len_val = len(val)
+        cnt = len(self)
+        wrt_idx = self.get_wrt_idx()
+        tmp_len_key = len(key.encode())
+        tmp_len_val = len(val.encode())
         # Check bounds for key and values (stored as 8-byte ints)
         if not ((0 <= tmp_len_key < 2 ** 64) and (0 <= tmp_len_val < 2 ** 64)):
             raise MemoryError("Item(s) too large")
@@ -124,7 +137,7 @@ class EnvTbl:
         len_key = ct.c_uint64(tmp_len_key)
         len_val = ct.c_uint64(tmp_len_val)
         bytes_reqd = 8 + 8 + len_key.value + len_val.value
-        if self.wrt_idx >= self.SHM_SZ - bytes_reqd:
+        if wrt_idx >= self.SHM_SZ - bytes_reqd:
             raise MemoryError("Insufficient memory")
 
         # Acquire lock and write to shared memory
@@ -134,21 +147,22 @@ class EnvTbl:
                 len_key.value,
                 len_val.value
             )
-            self.shm.buf[self.wrt_idx : self.wrt_idx + 16] = len_data                   # Length of key and value
-            self.wrt_idx += 16
-            self.shm.buf[self.wrt_idx : self.wrt_idx + len_key.value] = key.encode()    # Key itself
-            self.wrt_idx += len_key.value
-            self.shm.buf[self.wrt_idx : self.wrt_idx + len_val.value] = val.encode()    # Value itself
-            self.wrt_idx += len_val.value
-            self.cnt += 1
+            self.shm.buf[wrt_idx : wrt_idx + 16] = len_data                 # Length of key and value
+            wrt_idx += 16
+            self.shm.buf[wrt_idx : wrt_idx + len_key.value] = key.encode()  # Key itself
+            wrt_idx += len_key.value
+            self.shm.buf[wrt_idx : wrt_idx + len_val.value] = val.encode()  # Value itself
+            wrt_idx += len_val.value
+            self.wrt_cnt(cnt + 1)
+            self.wrt_wrt_idx(wrt_idx)
 
         return None
 
     def __repr__(self) -> str:
-        # raise NotImplementedError("__repr__ not implemented yet")
-        off = 0
+        cnt = self.get_cnt()
+        off = self.ENTRY_START_IDX
         data_dict = {}
-        for _ in range(self.cnt):
+        for _ in range(cnt):
             len_key, len_val = st.unpack("!QQ", self.shm.buf[off : off + 16])
             off += 16
             cur_key = self.shm.buf[off : off + len_key].tobytes().decode()
@@ -157,6 +171,28 @@ class EnvTbl:
             off += len_val
             data_dict[cur_key] = cur_val
         return str(data_dict)
+
+    def get_cnt(self) -> int | ty.NoReturn:
+        return self.__len__()
+
+    def wrt_cnt(self, cnt: int) -> None | ty.NoReturn:
+        c_cnt = ct.c_int64(cnt)
+        self.shm.buf[: self.WRT_IDX_START_IDX] = st.pack("!Q", c_cnt.value)
+        return None
+
+    def get_wrt_idx(self) -> int | ty.NoReturn:
+        return st.unpack(
+            "!Q",
+            self.shm.buf[self.WRT_IDX_START_IDX : self.ENTRY_START_IDX]
+        )[0]
+
+    def wrt_wrt_idx(self, wrt_idx: int) -> None | ty.NoReturn:
+        c_wrt_idx = ct.c_int64(wrt_idx)
+        self.shm.buf[self.WRT_IDX_START_IDX : self.ENTRY_START_IDX ] = st.pack(
+            "!Q",
+            c_wrt_idx.value
+        )
+        return None
 
     def set(self, nm: str, val: ty.Any) -> None | ty.NoReturn:
         return self.__setitem__(nm, val)

@@ -2,6 +2,15 @@
 
 ## Latest commit
 
+fix: shared memory environment variable system
+
+- `src/intrpr/internals.py`: Fixed shared memory environment variables not
+working; Moved shared memory out of EnvTbl, and reserved space for count and
+write index in shared memory itself to be accessed across processes
+- `src/intrpr/eng.py`: Moved shared memory object to the interpreter
+
+## Commit f4ec56bcaf1eac22fc946c9ec5085c17a9d63911
+
 fix: variable object name in builtins; feat: protected variables
 
 - `src/intrpr/builtin_cmds/`: Changed any names to new interpreter variable

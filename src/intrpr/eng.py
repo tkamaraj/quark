@@ -1,6 +1,8 @@
+import atexit
 import errno
 import io
 import logging as lg
+import multiprocessing.shared_memory as mpshm
 import os
 import pathlib as pl
 import pickle as pi
@@ -82,6 +84,14 @@ class Intrpr:
         self.usernm = pwd.getpwuid(int(self.uid)).pw_name
         self.is_usr_root = (self.uid == "0")
 
+        self.SHM_SZ = 512 * 1024        # 512 KiB
+        self.shm = mpshm.SharedMemory(
+            create=True,
+            track=True,
+            size=self.SHM_SZ
+        )
+        atexit.register(self.shm.unlink)
+
         self.ext_cached_cmds = {}
         self.cfg = cfg
         self.stdout_ansi = stdout_ansi
@@ -89,7 +99,7 @@ class Intrpr:
         self.debug_time_expo = debug_time_expo
         self.log_lvl = log_lvl
         self.intrpr_vars = iint.IntrprTbl()
-        self.env_vars = iint.EnvTbl()
+        self.env_vars = iint.EnvTbl(self.shm)
         self.parser = peng.Parser()
         self.cmd_reslvr = icrsr.CmdReslvr(
             self.ext_cached_cmds,
