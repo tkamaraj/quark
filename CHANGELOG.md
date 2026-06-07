@@ -2,6 +2,12 @@
 
 ## Latest commit
 
+docs: update README
+- `README.md`
+1. Updated README
+
+## Commit dde7309504cec87b93b6c57102c194f1810701bc
+
 chore: removed test command module
 - `src/bin/test2.py`
 1. Removed
