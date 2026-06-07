@@ -2,6 +2,12 @@
 
 ## Latest commit
 
+chore: removed test command module
+- `src/bin/test2.py`
+1. Removed
+
+## Commit be63d30014e60a721781d59e1efc8c88196b6ca3
+
 feat: fixed-size env var entries
 - `src/intrpr/internals.py`
 1. Made environment variable entries fixed size
