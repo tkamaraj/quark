@@ -37,11 +37,11 @@ resolution of the path is not needed for searching.
 
 ### Interpreter internals (src/intrpr/internals.py)
 
-1. Shared memory does not fucking work. I've got no idea why. Fuck me. After so
-much time and effort implementing it, just for it to not work. Changes do not
-get reflected. That's the problem.
-2. Lock needs be in the interpreter object so that it's shared instead of being
-separate for each process
+1. [DONE] Shared memory does not fucking work. I've got no idea why. Fuck me.
+After so much time and effort implementing it, just for it to not work. Changes
+do not get reflected. That's the problem.
+2. [DONE] Lock needs be in the interpreter object so that it's shared instead
+of being separate for each process.
 
 ### Logger (src/logger/)
 
