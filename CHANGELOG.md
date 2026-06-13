@@ -2,6 +2,15 @@
 
 ## Latest commit
 
+fix: unpack errors due to corrupted shared memory, better exceptions
+
+- `src/internals.py`
+1. Handled unpack errors that could be caused by corrupted shared memory
+2. Changed exceptions raised for various memory errors in environment variable
+table
+
+## Commit 8aed16e478338d7427af961cd19d540de6b109cc
+
 docs: updated issue statuses
 
 - `dev/issues.md`

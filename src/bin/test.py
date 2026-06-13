@@ -35,7 +35,7 @@ def high_mem() -> None:
 
 
 def run(data: ugen.CmdData) -> int:
-    # data.env_vars["foo"] = "bar"
+    data.env_vars["foo"] = "bar"
     # data.env_vars["haha"] = "hehe"
     # ugen.write(str(data.env_vars.cnt))
     # print(data.env_vars)

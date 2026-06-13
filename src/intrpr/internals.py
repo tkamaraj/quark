@@ -2,6 +2,7 @@ import collections.abc as cabc
 import copy
 import ctypes as ct
 import dataclasses as dcs
+import functools
 import importlib.machinery as ilm
 import struct as st
 import traceback as tb
@@ -43,6 +44,18 @@ class CmdReslnRes(ty.NamedTuple):
     cmd_fn: ty.Callable[[ugen.CmdData], int]
     cmd_spec: ugen.CmdSpec
     cmd_src: str
+
+
+def catch_exceps_env_tbl(
+    f: ty.Callable[[ty.Any, ...], ty.Any]
+) -> ty.Callable[[ty.Any, ...], ty.Any]:
+    @functools.wraps(f)
+    def fn(*args, **kwargs) -> ty.Any | ty.NoReturn:
+        try:
+            return f(*args, **kwargs)
+        except st.error:
+            ugen.fatal_Q("Corrupted shared memory; cannot continue execution")
+    return fn
 
 
 @dcs.dataclass
@@ -109,6 +122,7 @@ class EnvTbl:
     def __setitem__(self, key: str, val: str) -> None | ty.NoReturn:
         return self.set(key, val)
 
+    @catch_exceps_env_tbl
     def __repr__(self) -> str:
         cnt = self.get_cnt()
         off = self.ENTRY_START
@@ -123,6 +137,7 @@ class EnvTbl:
             data_dict[cur_key] = cur_val
         return str(data_dict)
 
+    @catch_exceps_env_tbl
     def get_cnt(self) -> int | ty.NoReturn:
         return st.unpack(
             "!Q",
@@ -134,6 +149,7 @@ class EnvTbl:
         self.shm.buf[: self.WRT_IDX_START] = st.pack("!Q", c_cnt.value)
         return None
 
+    @catch_exceps_env_tbl
     def get_wrt_idx(self) -> int | ty.NoReturn:
         return st.unpack(
             "!Q",
@@ -164,14 +180,14 @@ class EnvTbl:
         len_val = len(encoded_val)
         # Check if length of key and value is more than allowed
         if len_key > self.KEY_MAX_SZ:
-            raise MemoryError(f"Key too large: '{key}' ({len_key})")
+            raise ugen.EnvKeyTooLarge(f"Key too large: '{key}' ({len_key})")
         if len_val > self.VAL_MAX_SZ:
             prn_val = val[: 10] + "..." if len(val) > 10 else val
-            raise MemoryError(f"Value length too large: '{prn_val}' ({len_val})")
+            raise ugen.EnvValTooLarge(f"Value length too large: '{prn_val}' ({len_val})")
         # Check bounds for key and value lengths (stored as 8-byte ints)
         # Not needed, but let it be there, just in case
         if not ((0 <= len_key < 2 ** 64) and (0 <= len_val < 2 ** 64)):
-            raise MemoryError("Item(s) too large")
+            raise ugen.EnvKeyValLenOverflow("Item(s) too large")
 
         try:
             off = self.get(key, ret_off=True)                                   # Offset at start of length of key
@@ -186,7 +202,9 @@ class EnvTbl:
         cnt = len(self)
         wrt_idx = self.get_wrt_idx()
         if wrt_idx >= self.SHM_SZ - self.ENTRY_BYTES_REQD:
-            raise MemoryError("Insufficient memory")
+            raise MemoryError(
+                f"Shared memory exhausted; need {self.ENTRY_BYTES_REQD}B, available {self.SHM_SZ - self.ENTRY_BYTES_REQD}B"
+            )
 
         # Acquire lock and write to shared memory
         with self.lock:
@@ -202,6 +220,7 @@ class EnvTbl:
 
         return None
 
+    @catch_exceps_env_tbl
     def get(self, key: str, ret_off: bool = False) -> str | ty.NoReturn:
         if self.shm.buf is None:
             raise RuntimeError("Operation of closed shared memory descriptor")

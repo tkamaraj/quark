@@ -67,6 +67,19 @@ class UnkVarErr(Exception):
             return f"Unknown variable: {self.var_nm}"
         return msg
 
+
+class EnvKeyTooLarge(Exception):
+    pass
+
+
+class EnvKeyTooLarge(Exception):
+    pass
+
+
+class EnvKeyValLenOverflow(Exception):
+    pass
+
+
 class InvAccess(Exception):
     pass
 
