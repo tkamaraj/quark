@@ -97,3 +97,7 @@ mean).
 ### Alias command module (src/intrpr/builtin_cmds/alias.py)
 
 1. [DONE] Implement alias setting for session.
+
+### Read command module (src/intrpr/builtin_cmds/read.py)
+
+1. Must add variables to environment variables, not interpreter variables.
