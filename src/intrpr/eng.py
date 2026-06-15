@@ -336,7 +336,7 @@ class Intrpr:
                     )
                     if isinstance(tmp, int):
                         continue
-                    ugen.info_Q(f"Loaded {i.path}")
+                    ugen.info_Q(f"loaded {i.path}")
             except FileNotFoundError:
                 ugen.warn_Q(f"No such directory: \"{pth}\"")
             except NotADirectoryError:

@@ -2,6 +2,13 @@
 
 ## Latest commit
 
+fix: case of info statement in interpreter engine
+
+- `src/intrpr/eng.py`:
+1. Changed case of info statement
+
+## Commit a947b444c4ff5101a14f17e7615213e4c907592e
+
 fix: unpack errors due to corrupted shared memory, better exceptions
 
 - `src/internals.py`
