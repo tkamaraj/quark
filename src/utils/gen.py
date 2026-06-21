@@ -49,10 +49,34 @@ class InvVarNmErr(Exception):
 
 
 class InvVarValErr(Exception):
-    def __init__(self, var_nm: str, var_val: ty.Any, *args, **kwargs):
+    def __init__(
+        self,
+        message: str = "",
+        var_nm: str | None = None,
+        var_val: ty.Any = None,
+        *args: ty.Any,
+        **kwargs: ty.Any
+    ):
         super().__init__(*args, **kwargs)
         self.var_nm = var_nm
         self.var_val = var_val
+
+    def __str__(self) -> str:
+        msg = super().__str__()
+        if self.var_nm is None and self.var_val is None:
+            return msg
+        if self.var_nm is None:
+            if not msg:
+                return f"Invalid variable value {self.var_val}"
+            return f"{msg} (variable value {self.var_val})"
+        elif self.var_val is None:
+            if not msg:
+                return f"Invalid variable value for {self.var_nm}"
+            return f"{msg} (variable {self.var_nm})"
+        else:
+            if not msg:
+                return f"Invalid variable value {self.var_val} for {self.var_nm}"
+            return f"{msg} (variable {self.var_nm} with value {self.var_val})"
 
 
 class UnkVarErr(Exception):
@@ -61,11 +85,11 @@ class UnkVarErr(Exception):
 
     def __str__(self) -> str:
         msg = super().__str__()
-        if self.var_nm is not None:
-            if msg:
-                return f"{msg} (with var {self.var_nm})"
-            return f"Unknown variable: {self.var_nm}"
-        return msg
+        if self.var_nm is None:
+            return msg
+        if msg:
+            return f"{msg} (with var {self.var_nm})"
+        return f"Unknown variable: {self.var_nm}"
 
 
 class EnvKeyTooLarge(Exception):

@@ -2,6 +2,13 @@
 
 ## Latest commit
 
+- `src/utils/gen.py`
+1. Fixed bugs in InvVarValErr class where unpickling the serialised data
+sent through a pipe resulted in the interpreter crashing due to how data was
+added to the Exception-derived class
+
+## Commit 5603be4221031d78d2d52f524a7774a3f49e2b30
+
 fix: case of info statement in interpreter engine
 
 - `src/intrpr/eng.py`:
