@@ -2,6 +2,14 @@
 
 ## Latest commit
 
+fix: exception handling logic in argumented command call branch
+
+- `src/bin/ls.py`
+1. Fixed UnboundLocalError due to faulty logic in handling exceptions in
+argumented command call branch
+
+## Commit d9dc7d389cbad59498cccbfb81367f663bbf7b9a
+
 fix: int overflow in json indent value
 
 - `src/bin/stat.py`

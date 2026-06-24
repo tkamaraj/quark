@@ -615,20 +615,20 @@ def run(data: ugen.CmdData) -> int:
                     os.path.expanduser(arg),
                     ctx=ctx
                 )
-                err_code = err_code or tmp_err_code
             # FileNotFoundError, PermissionError will be due to race conditions
             except FileNotFoundError:
-                err_code = err_code or uerr.ERR_FL_DIR_404
+                tmp_err_code = uerr.ERR_FL_DIR_404
                 ugen.err(f"No such file/directory: \"{arg}\"", nm=data.cmd_nm)
             except PermissionError:
-                err_code = err_code or uerr.ERR_PERM_DENIED
+                tmp_err_code = uerr.ERR_PERM_DENIED
                 ugen.err(f"Access denied: \"{arg}\"", nm=data.cmd_nm)
             except OSError as e:
-                err_code = err_code or uerr.ERR_OS_ERR
+                tmp_err_code = uerr.ERR_OS_ERR
                 ugen.err(f"OS error; {e.strerror}", nm=data.cmd_nm)
 
             # Errors encountered when "getting" items for current argument
             if tmp_err_code:
+                err_code = err_code or tmp_err_code
                 continue
             ugen.write(ugen.S.fmt(arg, data.is_tty, ugen.S.green_4) + "\n")
             if long_list:
