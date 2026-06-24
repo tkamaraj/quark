@@ -2,6 +2,15 @@
 
 ## Latest commit
 
+fix: int overflow in json indent value
+
+- `src/bin/stat.py`
+1. Fixed OverflowError when json indent size was too large
+
+## Commit a5809fdfb4c6cb8e161e4dba133cf14a71f236a3
+
+fix: interpreter crash on Exception sent through pipe
+
 - `src/utils/gen.py`
 1. Fixed bugs in InvVarValErr class where unpickling the serialised data
 sent through a pipe resulted in the interpreter crashing due to how data was

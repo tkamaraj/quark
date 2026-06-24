@@ -100,8 +100,7 @@ def run(data: ugen.CmdData) -> int:
         fmt_str = r"%b %d '%y %I.%M%p"
 
     if data.is_tty:
-        # Remember to change max_len when adding in columns bigger than the
-        # current value!
+        # Remember: Change max_len when adding columns bigger than current value!
         max_len = 24
     else:
         max_len = 0
@@ -228,10 +227,15 @@ def run(data: ugen.CmdData) -> int:
                 "atime": atime,
                 "mtime": mtime
             }
-            dict_str_arr = json.dumps(
-                data_dict,
-                indent=json_indent
-            ).splitlines()
+            try:
+                dict_str_arr = json.dumps(
+                    data_dict,
+                    indent=json_indent
+                ).splitlines()
+            except OverflowError:
+                ugen.err(f"Indent value too large: {json_indent}")
+                err_code = err_code or uerr.ERR_INT_OVERFLOW
+                return err_code
             ugen.write(
                 # No idea why this first indent is needed. It should've been
                 # covered in "\n" + " " * json_indent itself, but... it isn't
