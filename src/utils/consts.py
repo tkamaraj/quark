@@ -59,7 +59,7 @@ class Defaults:
 
     @staticmethod
     def PROMPT(intrpr_vars: "iint.IntrprTbl") -> str:
-        if intrpr_vars["_LAST_RET_"] != 0:
+        if intrpr_vars["LAST_RET"] != 0:
             err = f"{ANSI_RED_4}•!?{ANSI_RESET}"
         else:
             err = f"{ANSI_GREEN_4}•{ANSI_RESET}"

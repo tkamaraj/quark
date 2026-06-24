@@ -2,6 +2,16 @@
 
 ## Latest commit
 
+style: rename interpreter variable \_LAST\_RET\_ to LAST\_RET
+
+- `src/main.py`
+- `src/intrpr/eng.py`
+- `src/utils/consts.py`
+1. Renamed the last command return code interpreter variable from \_LAST\_RET\_
+to LAST\_RET
+
+## Commit 74fe3a6b570d8d9f32ef97462f345e147ef89563
+
 fix: exception handling logic in argumented command call branch
 
 - `src/bin/ls.py`

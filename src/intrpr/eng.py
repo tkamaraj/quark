@@ -120,7 +120,7 @@ class Intrpr:
 
         self.intrpr_vars["_USR_DIR_"] = str(self.usr_dir)
         self.intrpr_vars["_PREV_CWD_"] = os.getcwd()
-        self.intrpr_vars["_LAST_RET_"] = uerr.ERR_ALL_GOOD
+        self.intrpr_vars["LAST_RET"] = uerr.ERR_ALL_GOOD
 
         try:
             os.chdir(udeb.TMP_DIR)
@@ -281,7 +281,7 @@ class Intrpr:
                 continue
 
             elif nxt_chr == "?":
-                final_prompt += str(self.intrpr_vars["_LAST_RET_"])
+                final_prompt += str(self.intrpr_vars["LAST_RET"])
                 skip += 1
                 continue
 
@@ -831,7 +831,7 @@ class Intrpr:
         # Empty command, and cmd_expr will ALWAYS have one SimpCmd object in
         # simp_cmds list, even if the input line was empty
         if not cmd_expr.simp_cmds[0].params:
-            return self.intrpr_vars["_LAST_RET_"]
+            return self.intrpr_vars["LAST_RET"]
 
         ugen.debug(
             ugen.fmt_d_stmt(
