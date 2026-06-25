@@ -1,5 +1,9 @@
 # PLANNED
 
+## Entry point
+
+- Implement more powerful tab-completion. Context-aware, etc.
+
 ## Parser
 
 ### Parser engine (src/intrpr/eng.py)

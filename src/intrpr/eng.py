@@ -5,6 +5,7 @@ import logging as lg
 import multiprocessing as mp
 import multiprocessing.shared_memory as mpshm
 import os
+import os.path as ospth
 import pathlib as pl
 import pickle as pi
 import platform as pf
@@ -80,7 +81,7 @@ class Intrpr:
 
         ugen.warn_Q("Exercise caution when running untrusted commands")
 
-        self.usr_dir = pl.Path("~").expanduser()
+        self.usr_dir = os.path.expanduser("~")
         self.uid = str(os.getuid())
         self.usernm = pwd.getpwuid(int(self.uid)).pw_name
         self.is_usr_root = (self.uid == "0")
@@ -314,23 +315,23 @@ class Intrpr:
             matches = [ex for ex in expansions if pth.startswith(ex)]
             if matches:
                 pth = re.sub(f"^{matches[0]}", expansions[matches[0]], pth)
-            pths.append(str(pl.Path(pth).expanduser().absolute()))
+            pths.append(os.path.abspath(ospth.realpath(ospth.expanduser(pth))))
         self.intrpr_vars.set("PTH", tuple(pths), protected=True)
 
     def ld_all_ext_mods(self) -> None:
         pths = self.intrpr_vars["PTH"]
         for pth in pths:
-            pth = pl.Path(pth).expanduser().resolve()
+            pth = ospth.realpath(ospth.expanduser(pth))
             try:
                 for i in os.scandir(pth):
-                    if os.path.isdir(i):
+                    if ospth.isdir(i):
                         continue
                     if not i.name.endswith(".py"):
                         continue
                     if i.name == "__init__.py":
                         continue
                     tmp = self.cmd_reslvr.get_ext_cmd(
-                        os.path.splitext(i.name)[0],
+                        ospth.splitext(i.name)[0],
                         ext_cached_cmds=self.ext_cached_cmds,
                         pths=pths
                     )

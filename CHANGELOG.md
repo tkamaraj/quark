@@ -2,7 +2,14 @@
 
 ## Latest commit
 
-fix: directories named "~" unable to be entered
+refactor: changed from pathlib to os.path in interpreter engine
+
+- `src/intrpr/eng.py`
+1. Changed from pathlib to os.path for handling paths
+
+## Commit 796ab3a060b24d1b06d66e636885100c7d9bbe22
+
+fix: directories named ~ unable to be entered
 
 - `src/intrpr/builtin_cmds/cd.py`
 1. Fixed directories named "~" not being able to be entered
