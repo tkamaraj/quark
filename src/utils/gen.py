@@ -626,19 +626,3 @@ get_pos_regex = re.compile(r"^\x1b\[(\d*);(\d*)R")
 str_join = "".join
 mv_cur = lambda ln, col: f"\x1b[{ln};{col}H"
 mv_cur_col = lambda col: f"\x1b[{col}G"
-# C_LOG_LVL_FN_MAP = {
-#     leng.LogLvls.DEBUG: _lgrs.fl_lgr.debug,
-#     leng.LogLvls.INFO:  _lgrs.fl_lgr.info,
-#     leng.LogLvls.WARN:  _lgrs.fl_lgr.warn,
-#     leng.LogLvls.ERR:   _lgrs.fl_lgr.err,
-#     leng.LogLvls.CRIT:  _lgrs.fl_lgr.crit,
-#     leng.LogLvls.FATAL: _lgrs.fl_lgr.fatal
-# }
-# Q_LOG_LVL_FN_MAP = {
-#     leng.LogLvls.DEBUG: _lgrs.fl_lgr.debug_Q,
-#     leng.LogLvls.INFO:  _lgrs.fl_lgr.info_Q,
-#     leng.LogLvls.WARN:  _lgrs.fl_lgr.warn_Q,
-#     leng.LogLvls.ERR:   _lgrs.fl_lgr.err_Q,
-#     leng.LogLvls.CRIT:  _lgrs.fl_lgr.crit_Q,
-#     leng.LogLvls.FATAL: _lgrs.fl_lgr.fatal_Q
-# }

@@ -39,27 +39,18 @@ ERR_CANT_ALLOT_TMP_DIR = 1000
 
 def actually_chg_dir(
     cmd_nm: str,
-    pth: pl.Path,
+    pth: str,
     prn_dir: bool,
     intrpr_vars: "iint.IntrprTbl"
 ) -> int:
-    """
-    The actual directory changing component of the cd command.
-
-    :param pth: The path to change CWD to.
-    :type pth: str
-
-    :returns: Integer error code.
-    :rtype: int
-    """
     err_code = uerr.ERR_ALL_GOOD
 
     try:
         before = os.getcwd()
-        os.chdir(pth)
+        os.chdir(os.path.expanduser(pth))
         intrpr_vars["_PREV_CWD_"] = before
         if prn_dir:
-            ugen.write(str(pth) + "\n")
+            ugen.write(pth + "\n")
     except FileNotFoundError:
         err_code = uerr.ERR_DIR_404
         ugen.err(f"No such directory: \"{pth}\"", nm=cmd_nm)
@@ -112,7 +103,7 @@ def run(data: ugen.CmdData) -> int:
 
     # Change to previous directory option
     if chg_to_prev_cwd:
-        chg_to = pl.Path(data.intrpr_vars["_PREV_CWD_"]).expanduser()
+        chg_to = data.intrpr_vars["_PREV_CWD_"]
 
     # Temporary directory
     elif tmp_dir:
@@ -132,10 +123,10 @@ def run(data: ugen.CmdData) -> int:
             return ERR_CANT_ALLOT_TMP_DIR
 
     elif data.args:
-        chg_to = pl.Path(data.args[0]).expanduser()
+        chg_to = data.args[0]
 
     else:
-        chg_to = pl.Path("~").expanduser()
+        chg_to = os.path.expanduser("~")
 
     # Make directories before changing
     if mk_dirs:

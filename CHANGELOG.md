@@ -2,6 +2,13 @@
 
 ## Latest commit
 
+fix: directories named "~" unable to be entered
+
+- `src/intrpr/builtin_cmds/cd.py`
+1. Fixed directories named "~" not being able to be entered
+
+## Commit 9b02ac62b9733d622aa6bf3a06723ec3f229b9f8
+
 fix: environment variable setting; feat: (INCOMPLETE) command module env
 
 - `src/intrpr/internals.py`
