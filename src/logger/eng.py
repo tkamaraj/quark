@@ -44,7 +44,7 @@ class Lgr:
         self.fl_num = self.stream.fileno()
 
     def _log(self, msg: str, lvl: int, fmting: str | None = None) -> None:
-        if lvl < LOG_LVL:
+        if lvl < self.lvl:
             return
         os.write(
             self.fl_num,
@@ -83,9 +83,6 @@ class LgrVessel(ty.NamedTuple):
 
 
 ERR_HEADER_MAP: dict[int, str]
-
-# Default log level is ERR
-LOG_LVL = LogLvls.ERR
 ERR_HEADER_MAP = {
     LogLvls.DEBUG: "D",
     LogLvls.INFO : "I",

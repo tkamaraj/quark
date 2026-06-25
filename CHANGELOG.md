@@ -2,6 +2,14 @@
 
 ## Latest commit
 
+fix: logger not working as expected and intended
+
+- `src/logger/eng.py`
+1. Finally hit me how to actually make the logger work as I expected
+2. Removed the absurdly stupid idea of "overall module log level."
+
+## Commit a950acc98baee2f76b21c9c516b96ee7ffaffed1
+
 style: rename interpreter variable \_LAST\_RET\_ to LAST\_RET
 
 - `src/main.py`
