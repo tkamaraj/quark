@@ -2,6 +2,24 @@
 
 ## Latest commit
 
+fix: environment variable setting; feat: (INCOMPLETE) command module env
+
+- `src/intrpr/internals.py`
+1. Implemented \_\_bool\_\_ and \_\_iter\_\_ for EnvTbl (environment variable
+table)
+2. Added locks in helper functions wherever necessary and missing
+3. Fixed major bugs in EnvTbl.set (for setting environment variables) which
+were a result of a history of refactors of the method
+
+- `src/intrpr/eng.py`
+1. Changed the type of lock from multiprocessing.Lock to multiprocessing.RLock
+for recursive locking functionality
+
+- `src/bin/env.py`
+1. Created command module env (STILL INCOMPLETE)
+
+## Commit 736a86cf06c14d9d17b7dd7bc82f7d34bceedcbc
+
 fix: write variables from read to env variables instead of interpreter
 variables
 

@@ -26,6 +26,7 @@ the return code should be src.utils.err_codes.ERR_RNTIME_ERR. But the child
 fails to send the error code through the pipe.
 4. Redirects do not work (think it's because of changing the outputs to pipes
 to the parent process).
+5. Make the interpreter execute aliased commands
 
 ### Command resolver (src/intrpr/cmd_reslvr.py)
 
