@@ -2,6 +2,20 @@
 
 ## Latest commit
 
+fix: write variables from read to env variables instead of interpreter
+variables
+
+- `src/intrpr/builtin_cmds/rd.py`
+1. Renamed read.py to rd.py
+2. Made the command write variables to environment variables, not interpreter
+variables
+- `src/intrpr/builtin_cmds/intrpr.py`
+1. Renamed from env.py to intrpr.py
+- `src/intrpr/internals.py`
+1. Fixed type annotation
+
+## Commit 7fad5cc1ebd4489dd1f65f5087d9128eeeb5b228
+
 fix: logger not working as expected and intended
 
 - `src/logger/eng.py`

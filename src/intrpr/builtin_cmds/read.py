@@ -40,22 +40,9 @@ def run(data: ugen.CmdData) -> int:
     for flag in data.flags:
         if flag in ("-g", "--getch"):
             single_chr = True
-
     for opt, val in data.opts.items():
         if opt in ("-p", "--prompt"):
             prompt = val
-
-    if typ is None:
-        var_obj = str
-    else:
-        for nm, obj in vars(builtins).items():
-            if nm == typ:
-                var_obj = obj
-                found = True
-                break
-        else:
-            ugen.err(f"No such type in scope: '{typ}'", nm=data.cmd_nm)
-            return ERR_NO_SUCH_BUILTIN_TYP
 
     ugen.write(prompt, flush=True)
     if single_chr:
@@ -68,11 +55,6 @@ def run(data: ugen.CmdData) -> int:
         ugen.write("\n")
     else:
         inp = input()
-    try:
-        to_set = var_obj(inp)
-        data.intrpr_vars[ident] = to_set
-    except ValueError:
-        err_code = ERR_INV_VAL_FOR_TYP
-        ugen.err(f"Invalid value for type '{typ}': '{inp}'")
 
+    data.env_vars[ident] = inp
     return err_code

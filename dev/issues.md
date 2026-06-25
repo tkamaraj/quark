@@ -29,11 +29,11 @@ to the parent process).
 
 ### Command resolver (src/intrpr/cmd_reslvr.py)
 
-1. The command resolver successfully resolves lines like "./ls" to "ls". This
-shouldn't happen. It happens because the paths are resolved with Path.resolve()
-and hence "./ls" gets converted to "ls", which invokes the ls command. Make the
-command resolver not resolve the path when searching for a command, as
-resolution of the path is not needed for searching.
+1. [DONE] The command resolver successfully resolves lines like "./ls" to "ls".
+This shouldn't happen. It happens because the paths are resolved with
+Path.resolve() and hence "./ls" gets converted to "ls", which invokes the ls
+command. Make the command resolver not resolve the path when searching for a
+command, as resolution of the path is not needed for searching.
 
 ### Interpreter internals (src/intrpr/internals.py)
 
@@ -45,7 +45,7 @@ of being separate for each process.
 
 ### Logger (src/logger/)
 
-1. Implement per-logger levels.
+1. [DONE] Implement per-logger levels.
 
 ## Utilities
 
@@ -100,4 +100,5 @@ mean).
 
 ### Read command module (src/intrpr/builtin_cmds/read.py)
 
-1. Must add variables to environment variables, not interpreter variables.
+1. [DONE] Must add variables to environment variables, not interpreter
+variables.

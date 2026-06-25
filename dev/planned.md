@@ -44,3 +44,7 @@ sort.
 ### pl (src/bin/pl.py)
 
 1. [DONE] Add process filtering.
+
+### intrpr (src/intrpr/builtin_cmds/intrpr.py)
+
+1. Add colour for TTY output

@@ -48,7 +48,7 @@ class CmdReslnRes(ty.NamedTuple):
 
 def catch_exceps_env_tbl(
     f: ty.Callable[[ty.Any, ...], ty.Any]
-) -> ty.Callable[[ty.Any, ...], ty.Any]:
+) -> ty.Callable[[ty.Any, ...], ty.Any] | ty.NoReturn:
     @functools.wraps(f)
     def fn(*args, **kwargs) -> ty.Any | ty.NoReturn:
         try:
