@@ -183,13 +183,23 @@ def rjust(string: str, amt: int) -> str:
     return string.rjust(amt + len(string) - len(rm_ansi("", string)))
 
 
-def esc_chrs(s: str, extra: tuple[str]) -> str:
+def esc_chrs_all(s: str, extra: tuple[str] = ()) -> str:
     to_ret = []
     for ch in s:
         if ch in pint.REV_ESC_CHR_MAP:
             to_ret.append(pint.REV_ESC_CHR_MAP[ch])
             continue
         if ch in extra:
+            to_ret.append("\\" + ch)
+            continue
+        to_ret.append(ch)
+    return "".join(to_ret)
+
+
+def esc_chrs(s: str, to_esc: tuple[str]) -> str:
+    to_ret = []
+    for ch in s:
+        if ch in to_esc:
             to_ret.append("\\" + ch)
             continue
         to_ret.append(ch)
@@ -626,3 +636,4 @@ get_pos_regex = re.compile(r"^\x1b\[(\d*);(\d*)R")
 str_join = "".join
 mv_cur = lambda ln, col: f"\x1b[{ln};{col}H"
 mv_cur_col = lambda col: f"\x1b[{col}G"
+ESC_CHR_MAP = pint.ESC_CHR_MAP

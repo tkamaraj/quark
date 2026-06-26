@@ -2,6 +2,15 @@
 
 ## Latest commit
 
+feat, fix: subcommand get, output display in command module alias
+
+- `src/intrpr/builtin_cmds/alias.py`
+1. Added subcommand get
+2. Refactor on how output is displayed and processed
+3. Updated help object and command spec
+
+## Commit 98e9c18c7cc19427c88cb0c6359116d9ccf98dd3
+
 refactor: changed from pathlib to os.path in interpreter engine
 
 - `src/intrpr/eng.py`

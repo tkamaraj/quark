@@ -8,10 +8,14 @@ CMD_NM = __name__.split(".")[-1]
 HELP = ugen.HelpObj(
     usage=(
         f"{CMD_NM} [name ...]\n"
-        f"{CMD_NM} -s name val"
+        f"{CMD_NM} set name val"
     ),
     summary="Inspect and edit aliases",
     details=(
+        "SUBCOMMANDS",
+        ("-", "Same as subcommand list"),
+        ("set", "Set aliases"),
+        ("list", "List aliases"),
         "ARGUMENTS",
         ("name", "Name of alias to fetch or set"),
         ("val", "Value of alias to set"),
@@ -26,7 +30,12 @@ CMD_SPEC = ugen.CmdSpec(
     min_args=0,
     max_args=float("inf"),
     parse_sub_cmds=True,
-    sub_cmds={None: (0, 0), "list": (0, float("inf")), "set": (2, 2)},
+    sub_cmds={
+        None: (0, 0),
+        "list": (0, float("inf")),
+        "get": (1, float("inf")),
+        "set": (2, 2)
+    },
     opts=(),
     flags=()
 )
@@ -50,6 +59,8 @@ def run(data: ugen.CmdData) -> int:
 
     err_code = uerr.ERR_ALL_GOOD
     set_alias = False
+    to_write = []
+    max_len = 0
     try:
         alias_dict = data.intrpr_vars["ALIASES"]
     except ugen.UnkVarErr:
@@ -57,9 +68,6 @@ def run(data: ugen.CmdData) -> int:
         alias_dict = {}
 
     if data.sub_cmd == "list" or data.sub_cmd is None:
-        max_len = 0
-        to_write = []
-
         if len(data.args) == 0:
             for i, alias in enumerate(alias_dict):
                 alias_val = alias_dict[alias]
@@ -67,12 +75,17 @@ def run(data: ugen.CmdData) -> int:
                     err_code = err_code or ERR_INV_ALIAS
                     to_write.append(Err(f"Invalid alias at pos {i} in ALIASES"))
                     continue
-                escd_alias = ugen.esc_chrs(alias, extra=("=",))
-                max_len = max(max_len, len(escd_alias))
-                to_write.append(Out(
-                    ugen.S.fmt(escd_alias, data.is_tty, ugen.S.green_4),
-                    "'" + alias_val + "'"
-                ))
+                alias = ugen.esc_chrs_all(alias)
+                if (
+                    "=" in alias
+                    or " " in alias
+                    or [i for i in ugen.ESC_CHR_MAP if i in alias]
+                ):
+                    alias = f"'{alias}'"
+                max_len = max(max_len, len(alias))
+                to_write.append(
+                    Out(alias, f"'{ugen.esc_chrs_all(alias_val)}'")
+                )
         else:
             for arg in data.args:
                 if arg not in alias_dict:
@@ -84,24 +97,35 @@ def run(data: ugen.CmdData) -> int:
                     err_code = err_code or ERR_INV_ALIAS
                     to_write.append(Err(f"Invalid alias '{arg}'"))
                     continue
-                escd_arg = ugen.esc_chrs(arg, extra=("=",))
-                max_len = max(max_len, len(escd_arg))
-                to_write.append(Out(
-                    ugen.S.fmt(escd_arg, data.is_tty, ugen.S.green_4),
-                    "'" + alias_val + "'"
-                ))
+                alias = ugen.esc_chrs_all(arg)
+                if (
+                    "=" in alias
+                    or " " in alias
+                    or [i for i in ugen.ESC_CHR_MAP if i in alias]
+                ):
+                    alias = f"'{alias}'"
+                max_len = max(max_len, len(alias))
+                to_write.append(
+                    Out(alias, f"'{ugen.esc_chrs_all(alias_val)}'")
+                )
 
-        # For the quotes that'll surround the name
-        max_len += 2
-        pad_fn = ugen.ljust if data.is_tty else (lambda s, amt: s)
-        for i in to_write:
-            if isinstance(i, Err):
-                ugen.err(i.msg, nm=data.cmd_nm)
+    elif data.sub_cmd == "get":
+        len_max_arg = 0
+        for arg in data.args:
+            if arg not in alias_dict:
+                to_write.append(Err(f"No such alias: '{arg}'"))
+                err_code = err_code or ERR_UNK_ALIAS
                 continue
-            ugen.write(
-                pad_fn("'" + i.alias + "'", max_len)
-                + (" = " if data.is_tty else "=")
-                + f"{i.val}\n"
+            alias = ugen.esc_chrs_all(arg)
+            if (
+                "=" in alias
+                or " " in alias
+                or [i for i in ugen.ESC_CHR_MAP if i in alias]
+            ):
+                alias = f"'{alias}'"
+            max_len = max(max_len, len(alias))
+            to_write.append(
+                Out(alias, f"'{ugen.esc_chrs_all(alias_dict[arg])}'")
             )
 
     elif data.sub_cmd == "set":
@@ -119,5 +143,17 @@ def run(data: ugen.CmdData) -> int:
             return uerr.ERR_UNEXPD_ARGS
         alias_dict[data.args[0]] = data.args[1]
         data.intrpr_vars["ALIASES"] = alias_dict
+
+    # Actually print the data
+    pad_fn = ugen.ljust if data.is_tty else (lambda s, amt: s)
+    for i in to_write:
+        if isinstance(i, Err):
+            ugen.err(i.msg, nm=data.cmd_nm)
+            continue
+        ugen.write(
+            pad_fn(ugen.S.fmt(i.alias, data.is_tty, ugen.S.green_4), max_len)
+            + (" -> " if data.is_tty else "=")
+            + f"{i.val}\n"
+        )
 
     return err_code

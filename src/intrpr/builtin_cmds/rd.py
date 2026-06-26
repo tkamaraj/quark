@@ -21,7 +21,7 @@ HELP = ugen.HelpObj(
 
 CMD_SPEC = ugen.CmdSpec(
     min_args=1,
-    max_args=2,
+    max_args=1,
     opts=("-p", "--prompt"),
     flags=("-g", "--getch")
 )
@@ -35,7 +35,6 @@ def run(data: ugen.CmdData) -> int:
     prompt = ""
     single_chr = False
     ident = data.args[0]
-    typ = data.args[1] if len(data.args) == 2 else None
 
     for flag in data.flags:
         if flag in ("-g", "--getch"):

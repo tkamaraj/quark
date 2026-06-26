@@ -41,7 +41,6 @@ ESC_CHR_MAP = {
     "\\\"": "\"",
     "\\n": "\n",
     "\\t": "\t",
-    # "\\r": "\r"
 }
 # No duplicate values in the values of this dictionary
 assert len(set(ESC_CHR_MAP.values())) == len(ESC_CHR_MAP.values())
