@@ -2,6 +2,14 @@
 
 ## Latest commit
 
+fix: \_\_iter\_\_ providing incorrect values in EnvTbl
+
+- `src/intrpr/internals.py`
+1. Fixed \_\_iter\_\_ providing incorrect values due to incorrect offset
+increments in environment variable table class (EnvTbl)
+
+## Commit 0e18a6076bea7970c75214cc43846fb4d3f0a6c0
+
 feat, fix: subcommand get, output display in command module alias
 
 - `src/intrpr/builtin_cmds/alias.py`

@@ -36,24 +36,3 @@ to reach the parent process from the child process through the pipe.
 - The length of all the entries are calculated even when not using all the
 entries, like when supplying arguments to filter processes. Modify the module
 so that entries that are included the output only get their lengths calculated.
-
-### List directory command (src/bin/ls.py)
-
-- [DONE] Quotes surrounding names with special characters get coloured. They
-should not be.
-- [DONE] Try to put in a space before the names without surrounding quotes if
-its column contains a name with surrounding quotes.
-
-### System command module (src/intrpr/builtin_cmds/cmd.py)
-
-- [DONE] UnicodeDecodeError when reading a non-text file (you know what I
-mean).
-
-### Alias command module (src/intrpr/builtin_cmds/alias.py)
-
-- [DONE] Implement alias setting for session.
-
-### Read command module (src/intrpr/builtin_cmds/read.py)
-
-- [DONE] Must add variables to environment variables, not interpreter
-variables.

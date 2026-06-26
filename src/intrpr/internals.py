@@ -115,9 +115,9 @@ class EnvTbl:
             len_key, len_val = st.unpack("!QQ", self.shm.buf[off : off + 16])
             off += 16
             cur_key = self.shm.buf[off : off + len_key].tobytes().decode()
-            off += len_key
+            off += self.KEY_MAX_SZ
             cur_val = self.shm.buf[off : off + len_val].tobytes().decode()
-            off += len_val
+            off += self.VAL_MAX_SZ
             yield (cur_key, cur_val)
 
     def __contains__(self, key: ty.Any) -> bool:

@@ -60,7 +60,7 @@ def run(data: ugen.CmdData) -> int:
 
     if data.sub_cmd is None or data.sub_cmd == "list":
         max_nm_len = (
-            len(max((i for i in data.env_vars), key=len))
+            len(max((nm for (nm, val) in data.env_vars), key=len))
             if data.env_vars else 0
         )
         for (nm, val) in data.env_vars:
