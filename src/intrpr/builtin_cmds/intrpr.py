@@ -128,8 +128,12 @@ def run(data: ugen.CmdData) -> int:
             if data.intrpr_vars else 0
         )
         for nm, val in data.intrpr_vars.items():
+            fmted_nm = ugen.S.fmt(nm, data.is_tty, ugen.S.green_4)
             ugen.write(
-                f"{nm:<{max_nm_len}} = {repr(val) if repr_val else val}\n"
+                (ugen.ljust(fmted_nm, max_nm_len) if data.is_tty else fmted_nm)
+                + (" = " if data.is_tty else "=")
+                + (repr(val) if repr_val else str(val))
+                + "\n"
             )
 
     elif data.sub_cmd == "get":
@@ -139,9 +143,14 @@ def run(data: ugen.CmdData) -> int:
                 ugen.err(f"No such variable: '{arg}'", nm=data.cmd_nm)
                 err_code = err_code or uerr.ERR_ENV_UNK_VAR
                 continue
+            fmted_arg = ugen.S.fmt(arg, data.is_tty, ugen.S.green_4)
             val = data.intrpr_vars[arg]
+            val = repr(val) if repr_val else str(val)
             ugen.write(
-                f"{arg:<{max_arg_len}} = {repr(val) if repr_val else val}\n"
+                (ugen.ljust(fmted_arg, max_arg_len) if data.is_tty else fmted_arg)
+                + (" = " if data.is_tty else "=")
+                + val
+                + "\n"
             )
 
     elif data.sub_cmd == "set":

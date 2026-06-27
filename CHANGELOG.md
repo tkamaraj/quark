@@ -2,6 +2,14 @@
 
 ## Latest commit
 
+feat & fix: colours in command module intrpr & behaviour changes for non-TTY
+
+- `src/intrpr/builtin_cmds/intrpr.py`
+1. Added colours to output for TTY
+2. Changed behaviour for non-TTY
+
+## Commit 362331769d9c543233f77e62ea02df08f52f3b03
+
 fix: \_\_iter\_\_ providing incorrect values in EnvTbl
 
 - `src/intrpr/internals.py`

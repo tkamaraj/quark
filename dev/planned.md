@@ -16,7 +16,6 @@
 
 - [IRRELEVANT] [DROPPED] Use temporary files to overcome the restriction in
 size of io.StringIO buffers.
-- [DONE] Implement aliases.
 - Improve aliases. Right now, it's very basic. You can alias only commands,
 not commands and options or arguments or flags.
 
