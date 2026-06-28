@@ -34,4 +34,4 @@ sort.
 
 ### intrpr (src/intrpr/builtin_cmds/intrpr.py)
 
-- Add colour for TTY output.
+- [DONE] Add colour for TTY output.

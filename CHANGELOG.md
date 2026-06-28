@@ -2,6 +2,14 @@
 
 ## Latest commit
 
+feat: command module pg; fix: other changes
+
+- `src/bin/pg.py`
+1. Implemented pager: command module pg
+- Other changes
+
+## Commit a3a2e60bcb16706d3dbfe0f61fdc04a2661885b1
+
 feat & fix: colours in command module intrpr & behaviour changes for non-TTY
 
 - `src/intrpr/builtin_cmds/intrpr.py`

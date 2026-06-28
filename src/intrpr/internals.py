@@ -13,6 +13,7 @@ if ty.TYPE_CHECKING:
     import multiprocessing as mp
     import multiprocessing.shared_memory as mpshm
 
+import utils.err_codes as uerr
 import utils.gen as ugen
 if ty.TYPE_CHECKING:
     import intrpr.cmd_reslvr as icrsr
@@ -45,6 +46,40 @@ class CmdReslnRes(ty.NamedTuple):
     cmd_fn: ty.Callable[[ugen.CmdData], int]
     cmd_spec: ugen.CmdSpec
     cmd_src: str
+
+
+class Snoo:
+    def __init__(self) -> None:
+        self.CMD_SPEC = ugen.CmdSpec(
+            min_args=0,
+            max_args=float("inf"),
+            opts=(),
+            flags=("-C", "--no-crash"),
+            parse_sub_cmds=False
+        )
+        self.HELP = ugen.HelpObj(
+            usage="snoo [flag] [...]",
+            summary="Oh, you'll see...",
+            details=(
+                "ARGUMENTS",
+                ("none", ""),
+                "OPTIONS",
+                ("none", ""),
+                "FLAGS",
+                ("-C, --no-crash", "Do not crash the interpreter")
+            )
+        )
+
+    def run(self, data: ugen.CmdData) -> int | ty.NoReturn:
+        crash = True
+        for flag in data.flags:
+            if flag in ("-C", "--no-crash"):
+                crash = False
+        if crash:
+            ugen.fatal_Q("Beauty overload", ret=uerr.ERR_MP_BEAUTY_OVERLD)
+        else:
+            ugen.crit_Q("Beauty overload")
+            return uerr.ERR_BEAUTY_OVERLD
 
 
 def catch_exceps_env_tbl(

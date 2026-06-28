@@ -15,6 +15,7 @@ ERR_FALSE = iota()
 ERR_MP_EXPD_VAL_OPT = iota(2)
 ERR_MP_UNK_TOK = iota()
 ERR_MP_INV_VAL = iota()
+ERR_MP_BEAUTY_OVERLD = iota()
 
 ERR_UNK_FATAL = iota(10)
 ERR_BEAUTY_OVERLD = iota()

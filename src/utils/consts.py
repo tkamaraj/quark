@@ -20,6 +20,12 @@ SYS_BIN_PTHS = (
     "/bin",
     "/sbin"
 )
+PY_PTH = os.path.join(RUN_PTH, "py")
+USR_PY_PTH = os.path.join(os.path.expanduser("~"), "py")
+SYS_PY_PTHS = (
+    "/py",
+    "/usr/py"
+)
 CFG_FL = os.path.join(RUN_PTH, "cfg.py")
 BUILTIN_PTH = os.path.join(RUN_PTH, "intrpr", "builtin_cmds")
 HIST_FL = os.path.join(RUN_PTH, "quark_hist.txt")
@@ -53,7 +59,7 @@ cwd = f"{ANSI_GREEN_4}!P{ANSI_RESET}"
 class Defaults:
     ALIASES: dict[str, str]
 
-    PTH = (USR_BIN_PTH, *SYS_BIN_PTHS, BIN_PTH)
+    PTH = (USR_PY_PTH, *SYS_PY_PTHS, PY_PTH)
     ALIASES = {}
     LN_MODE = "emacs"
 

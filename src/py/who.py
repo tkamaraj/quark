@@ -52,4 +52,3 @@ def run(data: ugen.CmdData) -> int:
         ugen.write(f"{uid}\n")
 
     return err_code
-

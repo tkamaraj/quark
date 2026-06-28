@@ -307,7 +307,7 @@ class Intrpr:
         self.intrpr_vars.set("PROMPT", self.cfg.prompt, protected=True)
         self.intrpr_vars.set("ALIASES", self.cfg.aliases, protected=True)
         expansions = {
-            "@bin" : uconst.BIN_PTH,
+            "@bin" : uconst.PY_PTH,
             "@run": uconst.RUN_PTH
         }
         pths = []
@@ -530,6 +530,10 @@ class Intrpr:
             self.cmd_reslvr,
             self.intrpr_vars
         )
+
+        if cmd_nm == "snoo":
+            snoo_obj = iint.Snoo()
+            return iint.CmdReslnRes(snoo_obj.run, snoo_obj.CMD_SPEC, "built-in")
 
         if isinstance(get_cmd_res, int):
             aliases = self.intrpr_vars["ALIASES"]
