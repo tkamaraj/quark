@@ -142,7 +142,7 @@ def main() -> None:
     out_fl_nm = (base_nm if cfg.out_fl_nm is None else cfg.out_fl_nm)
     build_dir_pth = os.path.join(proj_root_dir, build_dir)
     tmp_dir_pth = os.path.join(proj_root_dir, "tmp")
-    bin_dir_pth = os.path.join(proj_root_dir, "src", "bin")
+    py_dir_pth = os.path.join(proj_root_dir, "src", "py")
     cfg_fl_pth = os.path.join(proj_root_dir, "src", "cfg.py")
 
     cmd = [
@@ -200,8 +200,8 @@ def main() -> None:
             os.path.abspath(build_dot_dist)
         )
         lgr.info(f"Moved {build_dot_dist_prn} to {build_dir}")
-        sh.copytree(bin_dir_pth, os.path.join(build_dir_pth, "bin"))
-        lgr.info(f"Copied bin to build directory")
+        sh.copytree(py_dir_pth, os.path.join(build_dir_pth, "bin"))
+        lgr.info(f"Copied py to build directory")
         sh.copy2(cfg_fl_pth, build_dir_pth)
         lgr.info(f"Copied config to build directory")
 

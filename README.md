@@ -13,14 +13,13 @@ See [`dev/issues.md`](./dev/issues.md) for bugs and issues in the project.
 ## Features
 
 - Implemented in pure Python
-- Two command systems (built-in and external)
 - Extensible command system
 - Live reload
 - Powerful scripting system (Python)
 
 ## Quick start
 
-Python 3.13 is required to run the shell from source.  
+Python 3.13 or later is required for running the program from source.  
 To run the shell from source, go to the project root and run:
 
 ```bash

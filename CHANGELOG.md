@@ -2,6 +2,13 @@
 
 ## Latest commit
 
+build: fixed for change of command directory name
+
+- `dev/pc.py`
+1. Changed for change of directory `bin` to `py`
+
+## Commit a91106e509a2bae430b680949df45bf64f249012
+
 feat: command module pg; fix: other changes
 
 - `src/bin/pg.py`
