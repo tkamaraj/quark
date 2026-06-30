@@ -200,7 +200,7 @@ def main() -> None:
             os.path.abspath(build_dot_dist)
         )
         lgr.info(f"Moved {build_dot_dist_prn} to {build_dir}")
-        sh.copytree(py_dir_pth, os.path.join(build_dir_pth, "bin"))
+        sh.copytree(py_dir_pth, os.path.join(build_dir_pth, "py"))
         lgr.info(f"Copied py to build directory")
         sh.copy2(cfg_fl_pth, build_dir_pth)
         lgr.info(f"Copied config to build directory")

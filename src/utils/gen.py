@@ -104,6 +104,14 @@ class EnvKeyValLenOverflow(Exception):
     pass
 
 
+class EnvWrtIdxOutOfRng(Exception):
+    pass
+
+
+class EnvCntOutOfRng(Exception):
+    pass
+
+
 class InvAccess(Exception):
     pass
 
@@ -361,11 +369,16 @@ def debug_Q(msg: str, nm: str | None = None) -> None:
         sys.stderr.flush()
 
 
-def fmt_d_stmt(src: str, lhs: str, rhs: str | None = None, pad: int = 24) \
-        -> str:
+def fmt_d_stmt(
+    src: str,
+    lhs: str,
+    rhs: str | None = None,
+    pad: int = 24,
+    lhs_rhs_sep: str = " -> "
+) -> str:
     full_str = f"[{src}] {lhs}".ljust(pad)
     if rhs:
-        full_str += f" -> {rhs}"
+        full_str += f"{lhs_rhs_sep}{rhs}"
     return full_str
 
 

@@ -88,14 +88,14 @@ class Intrpr:
 
         # See src.intrpr.internals.EnvTbl for memory layout
         # Memory for total number of items = 8B
-        # Memory for write index           = 8B
+        # Memory for write index           = 64B
         # Maximum number of entries        = 100
         # Memory per variable entry        = (8+8+128+8048)B = 8192B = 8KiB
         #     Length of key   = 8B
         #     Length of value = 8B
         #     Key             = 128B
         #     Value           = 8048B
-        self.SHM_SZ = 819216
+        self.SHM_SZ = 819272
         self.shm = mpshm.SharedMemory(
             create=True,
             track=True,

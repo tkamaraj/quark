@@ -20,19 +20,14 @@ See [`dev/issues.md`](./dev/issues.md) for bugs and issues in the project.
 ## Quick start
 
 Python 3.13 or later is required for running the program from source.  
-To run the shell from source, go to the project root and run:
+To run the shell from source:
 
 ```bash
-git clone https://gitea.com/tkamaraj/quark.git/
+git clone https://gitea.com/tkamaraj/quark.git
 cd ./quark/
 python3 -m venv ./venv/
 source ./venv/bin/activate
 python3 -BOO ./src/main.py
-```
-or
-```bash
-chmod +x ./src/main.py
-./src/main.py
 ```
 
 Use the `-h` flag with the main program for the help text.  
@@ -47,7 +42,7 @@ echo -s , hello world
 
 ## Building from source
 
-Python 3.13 and Nuitka 4.0.8 are (currently) required for building the project.
+Python 3.13 and Nuitka 4.0.8 are required for building the project.  
 See the full list of dependencies in `build_reqmts.txt`.
 
 Go to the project root, and build the project with the build script `dev/pc.py`

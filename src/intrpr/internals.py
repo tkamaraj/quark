@@ -119,7 +119,7 @@ class EnvTbl:
     def __post_init__(self) -> None:
         self.SHM_SZ = self.shm.size
         self.CNT_SZ = 8                                                         # Size to store number of items
-        self.WRT_IDX_SZ = 8                                                     # Size to store write index
+        self.WRT_IDX_SZ = 64                                                    # Size to store write index
         self.KEY_LEN_SZ = 8                                                     # Size to store key length
         self.VAL_LEN_SZ = 8                                                     # Size to store value length
         self.KEY_MAX_SZ = 128                                                   # Maximum allowed size of key
@@ -132,8 +132,8 @@ class EnvTbl:
         )
         self.LEN_DATA_SZ = self.KEY_LEN_SZ + self.VAL_LEN_SZ                    # Size of key and value length combined
         self.CNT_START = 0                                                      # Start offset of number of items
-        self.WRT_IDX_START = 8                                                  # Start offset of write index
-        self.ENTRY_START = 16                                                   # Start offset of entries
+        self.WRT_IDX_START = self.CNT_SZ                                        # Start offset of write index
+        self.ENTRY_START = self.CNT_SZ + self.WRT_IDX_START                     # Start offset of entries
         self.wrt_cnt(0)                                                         # Set count, i.e. number of items to 0
         self.wrt_wrt_idx(self.ENTRY_START)                                      # Set write index to start of entries
 
@@ -183,9 +183,10 @@ class EnvTbl:
         )[0]
 
     def wrt_cnt(self, cnt: int) -> None | ty.NoReturn:
-        c_cnt = ct.c_int64(cnt)
+        if not (0 <= cnt <= 2 ** self.CNT_SZ - 1):
+            raise ugen.EnvCntOutOfRng()
         with self.lock:
-            self.shm.buf[: self.WRT_IDX_START] = st.pack("!Q", c_cnt.value)
+            self.shm.buf[: self.WRT_IDX_START] = st.pack("!Q", cnt)
         return None
 
     @catch_exceps_env_tbl
@@ -196,11 +197,12 @@ class EnvTbl:
         )[0]
 
     def wrt_wrt_idx(self, wrt_idx: int) -> None | ty.NoReturn:
-        c_wrt_idx = ct.c_int64(wrt_idx)
+        if not (0 <= wrt_idx < 2 ** self.WRT_IDX_SZ):
+            raise ugen.EnvWrtIdxOutOfRng()
         with self.lock:
             self.shm.buf[self.WRT_IDX_START : self.ENTRY_START] = st.pack(
                 "!Q",
-                c_wrt_idx.value
+                wrt_idx
             )
         return None
 
@@ -233,21 +235,35 @@ class EnvTbl:
         cnt = len(self)
         wrt_idx = self.get_wrt_idx()
         end_wrt_idx = wrt_idx
-        inc_cnt = True
+        prev_entry_present = False
         for (nm, val) in self:
             if key == nm:
                 # 128 subtracted for the key's assigned memory
                 # 16 (8 + 8) subtracted for the key and value's lengths' assigned memory
                 # Because we need the start of the entry, which is at the start of the key length's memory
                 wrt_idx = self.get(key, ret_off=True) - 128 - 16
-                inc_cnt = False
+                prev_entry_present = True
         if wrt_idx >= self.SHM_SZ - self.ENTRY_BYTES_REQD:
             raise MemoryError(
                 f"Shared memory exhausted; need {self.ENTRY_BYTES_REQD}B, available {self.SHM_SZ - self.ENTRY_BYTES_REQD}B"
             )
 
-        ugen.debug_Q(f"[env] write index (thread {th.current_thread().name}): {wrt_idx}")
-        ugen.debug_Q(f"[env] previous entry present: {not inc_cnt}")
+        ugen.debug_Q(
+            ugen.fmt_d_stmt(
+                "env",
+                f"write index for current entry (thread {th.current_thread().name})",
+                str(wrt_idx),
+                lhs_rhs_sep=": "
+            )
+        )
+        ugen.debug_Q(
+            ugen.fmt_d_stmt(
+                "env",
+                f"previous entry present",
+                str(prev_entry_present),
+                lhs_rhs_sep=": "
+            )
+        )
         # Acquire lock and write to shared memory
         with self.lock:
             len_data = st.pack("!QQ", len_key, len_val)
@@ -257,8 +273,17 @@ class EnvTbl:
             wrt_idx += self.KEY_MAX_SZ
             self.shm.buf[wrt_idx : wrt_idx + len_val] = encoded_val             # Value itself
             wrt_idx += self.VAL_MAX_SZ
-            self.wrt_cnt(cnt + 1) if inc_cnt else None
-            self.wrt_wrt_idx(end_wrt_idx)
+            self.wrt_cnt(cnt + 1) if not prev_entry_present else None
+            self.wrt_wrt_idx(end_wrt_idx + self.ENTRY_BYTES_REQD) if not prev_entry_present else None
+        ugen.debug_Q(
+             ugen.fmt_d_stmt(
+                 "env",
+                 "after env table write",
+                 f"count = {self.get_cnt()}, write index = {self.get_wrt_idx()}",
+                 lhs_rhs_sep=": "
+             )
+        )
+        ugen.debug_Q("[env] after write: ")
 
         return None
 

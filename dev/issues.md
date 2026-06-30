@@ -14,6 +14,18 @@ fails to send the error code through the pipe.
 to the parent process).
 - Make the interpreter execute aliased commands
 
+### Interpreter internals (src/intrpr/internals.py)
+
+- [DONE] Try this:
+```quark
+env set hello world
+env get hello
+env set foo bar
+env get foo
+env get hello
+env
+```
+
 ## Utilities
 
 ## Command modules

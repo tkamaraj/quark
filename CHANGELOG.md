@@ -2,6 +2,18 @@
 
 ## Latest commit
 
+fix: env variable table set issues
+
+- `src/intrpr/internals.py`
+1. Fixed environment variable set issues, like variables getting overwritten
+for no reason
+- `src/utils/gen.py`
+1. Minor changes
+- `README.md`
+1. Changes
+
+## Commit a4f00a6d85e81a3039a987d78ad22238fafc0484
+
 build: fixed for change of command directory name
 
 - `dev/pc.py`
