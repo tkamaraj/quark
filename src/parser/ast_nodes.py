@@ -106,6 +106,7 @@ class CmdExpr:
         return self.simp_cmds[idx]
 
     def __repr__(self) -> str:
+        # return f"E{self.simp_cmds};{self.ops}"
         return f"E{self.simp_cmds}"
 
     def __iter__(self) -> ty.Generator[SimpCmd, None, None]:
@@ -126,3 +127,18 @@ class CmdSeq:
     def __iter__(self) -> ty.Generator[CmdExpr, None, None]:
         for i in self.cmds:
             yield i
+
+    def __len__(self) -> int:
+        return len(self.cmds)
+
+    def __getitem__(self, idx: int | slice) -> CmdExpr:
+        return self.cmds[idx]
+
+    def __setitem__(self, idx: int | slice, item: CmdExpr) -> None:
+        self.cmds[idx] = item
+
+    def pop(self, idx: int = -1) -> CmdExpr:
+        return self.cmds.pop(idx)
+
+    def insert(self, idx: int, item: CmdExpr) -> None:
+        self.cmds.insert(idx, item)

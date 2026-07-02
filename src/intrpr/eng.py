@@ -365,7 +365,7 @@ class Intrpr:
         ext_cmd = self.cmd_reslvr.get_ext_cmd(
             cmd_nm,
             intrpr_vars["PTH"],
-            ext_cached_cmds
+            ext_cached_cmds,
         )
         if isinstance(ext_cmd, int):
             return ext_cmd
@@ -507,19 +507,11 @@ class Intrpr:
         while total < len_data:
             total += os.write(fd, data[total :])
 
-    def loop_set_lgr_streams(
+    def cmd_resln(
         self,
-        chk_if: io.TextIOBase,
-        set_to: io.TextIOBase
-    ) -> None:
-        for lgr in lg.Logger.manager.loggerDict.values():
-            if isinstance(lgr, lg.PlaceHolder):
-                continue
-            for hdlr in lgr.handlers:
-                if hdlr.stream is chk_if:
-                    hdlr.stream = set_to
-
-    def cmd_resln(self, cmd_nm: str) -> iint.CmdReslnRes | int:
+        cmd_nm: str,
+        cmd_expr: past.CmdExpr
+    ) -> iint.CmdReslnRes | None | int:
         # DEBUG: Command resolution time start
         _t_cmd_resln = time.perf_counter_ns()
 
@@ -536,19 +528,14 @@ class Intrpr:
             return iint.CmdReslnRes(snoo_obj.run, snoo_obj.CMD_SPEC, "built-in")
 
         if isinstance(get_cmd_res, int):
-            aliases = self.intrpr_vars["ALIASES"]
-            if cmd_nm in aliases:
-                get_cmd_res = self.get_cmd(
-                    aliases[cmd_nm],
-                    self.ext_cached_cmds,
-                    self.cmd_reslvr,
-                    self.intrpr_vars
-                )
-        if isinstance(get_cmd_res, int):
+            # If command name is in alias list, then don't print an error
+            # message because aliases are handled elsewhere
+            if cmd_nm in self.intrpr_vars["ALIASES"]:
+                return get_cmd_res
             # Write error message to current STDERR
             err_msg = self.GET_CMD_ERR_MSG_MAP.get(
                 get_cmd_res,
-                "missing_err_msg"
+                "missing_err_msg",
             )
             err_code = err_code or get_cmd_res
             ugen.err_Q(f"{err_msg}: '{cmd_nm}'")
@@ -815,15 +802,14 @@ class Intrpr:
             is_tty=is_tty,
             stdin=stdin,
             exec_fn=self.exec,
-            operation=""                        # Dummy as of now
         )
         return self.exec_cmd_fn(cmd_fn, cmd_src, data, stdout_obj, stderr_obj)
 
     def exec_cmd_expr(
         self,
         cmd_expr: past.CmdExpr,
-        stdin: str
-    ):
+        stdin: str,
+    ) -> int | str:
         # DEBUG: Expression execute time start
         _t_exec_expr = time.perf_counter_ns()
 
@@ -856,7 +842,18 @@ class Intrpr:
             # Resolve command
             cmd_nm = params[0].val
             params = params[1 :]
-            cmd_resln_res = self.cmd_resln(cmd_nm)
+            aliases = self.intrpr_vars["ALIASES"]
+            cmd_resln_res = self.cmd_resln(cmd_nm, cmd_expr)
+            if cmd_nm in aliases:
+                params_cp = list(params)
+                for i, param in enumerate(params_cp):
+                    if isinstance(param, past.Quoted):
+                        params_cp[i] = quote + param.val + quote
+                        continue
+                    params_cp[i] = param.val
+                # If a string is returned, it means command is an alias
+                return aliases[cmd_nm] + " " + " ".join(params_cp)
+
             if isinstance(cmd_resln_res, int):
                 return cmd_resln_res
             cmd_fn = cmd_resln_res.cmd_fn
@@ -984,8 +981,22 @@ class Intrpr:
         # DEBUG: Full sequence execute time start
         _t_full_seq = time.perf_counter_ns()
 
-        for cmd_expr in cmd_seq:
-            err_code = self.exec_cmd_expr(cmd_expr, stdin="")
+        idx = 0
+        while idx < len(cmd_seq):
+            cmd_expr = cmd_seq[idx]
+            err_code_or_alias = self.exec_cmd_expr(cmd_expr, stdin="")
+            # If that return value is a string, it means command was an alias,
+            # and sequence needs to be edited
+            if isinstance(err_code_or_alias, str):
+                cmd_seq.pop(idx)
+                cmd_seq[idx : idx] = self.parser.get_cmd_seq(
+                    err_code_or_alias,
+                    os.getcwd(),
+                    start=0
+                )
+                continue
+            err_code = err_code_or_alias
+            idx += 1
 
         # DEBUG: Full sequence execute time end
         ugen.debug_Q(

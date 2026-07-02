@@ -4,11 +4,11 @@ Quark is a shell written in pure Python. It aims to be extensible and easy to
 use.
 
 See [`CHANGELOG.md`](./CHANGELOG.md) for a history of changes.  
-See [`docs/`](./docs/) for detailed documentation on modules and internals.  
-See [`dev/`](./dev/) for development notes and plans.  
-See [`dev/planned.md`](./dev/planned.md) for future development plans and
+See [`docs/`](../docs/) for detailed documentation on modules and internals.  
+See [`dev/`](../dev/) for development notes and plans.  
+See [`dev/planned.md`](../dev/planned.md) for future development plans and
 ideas.  
-See [`dev/issues.md`](./dev/issues.md) for bugs and issues in the project.
+See [`dev/issues.md`](../dev/issues.md) for bugs and issues in the project.
 
 ## Features
 

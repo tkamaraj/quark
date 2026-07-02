@@ -2,6 +2,13 @@
 
 ## Latest commit
 
+feat: improved aliases
+
+- `src/intrpr/eng.py`, `src/parser/ast_nodes.py`, `src/parser/eng.py`
+1. Improved aliases
+
+## Commit da2f8e71cf56f8559e3ae489a2f2edfe69a8a420
+
 fix: env variable table set issues
 
 - `src/intrpr/internals.py`

@@ -213,7 +213,7 @@ class Parser:
             params.append(nxt_param)
         return past.SimpCmd(params)
 
-    def _get_cmd_expr(
+    def get_cmd_expr(
         self,
         ln: str,
         pth: str,
@@ -276,7 +276,7 @@ class Parser:
         cmd_exprs = []
 
         idx = self._skip_ws(ln, ln_len, idx)
-        res = self._get_cmd_expr(ln, pth, start)
+        res = self.get_cmd_expr(ln, pth, start)
         if isinstance(res, int):
             return cmd_exprs
         cmd_expr, idx = res
@@ -291,7 +291,7 @@ class Parser:
             idx += 1
 
             idx = self._skip_ws(ln, ln_len, idx)
-            res = self._get_cmd_expr(ln, pth, idx)
+            res = self.get_cmd_expr(ln, pth, idx)
             if isinstance(res, int):
                 return cmd_exprs
             cmd_expr, idx = res

@@ -130,7 +130,6 @@ class CmdData(ty.NamedTuple):
     is_tty: bool
     stdin: str | None
     exec_fn: "ty.Callable[[ieng.Intrpr, str], int | ty.NoReturn]"
-    operation: str = ""
 
 
 class CmdSpec(ty.NamedTuple):
