@@ -6,7 +6,7 @@ import parser.internals as pint
 if ty.TYPE_CHECKING:
     import intrpr.internals as iint
 
-VER = "0.1"
+VER = "0.2"
 TAB_SZ = 2
 
 RUN_PTH = os.path.dirname(os.path.abspath(sys.argv[0]))

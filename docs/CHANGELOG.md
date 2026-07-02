@@ -2,6 +2,15 @@
 
 ## Latest commit
 
+release, docs: version 0.2, update README
+
+- `src/utils/consts.py`
+1. Updated version number
+- `docs/README.md`
+1. Updated README
+
+## Commit b1380a2d00e760283f17635fb8af62b2e85d5f7f
+
 feat: improved aliases
 
 - `src/intrpr/eng.py`, `src/parser/ast_nodes.py`, `src/parser/eng.py`
