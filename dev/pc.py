@@ -67,9 +67,9 @@ def parse_args() -> Cfg:
             run = True
         elif tok in ("-lto", "--enable-lto"):
             lto = True
-        elif tok in ("-ds", "--no-docstrings"):
+        elif tok in ("-ds", "--docstrings"):
             no_docstrs = False
-        elif tok in ("-pyi", "--keep-pyi-file"):
+        elif tok in ("-pyi", "--pyi-file"):
             rm_pyi = False
         elif tok in ("-rtd", "--remove-tmp-dir"):
             keep_tmp = False

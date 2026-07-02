@@ -507,11 +507,7 @@ class Intrpr:
         while total < len_data:
             total += os.write(fd, data[total :])
 
-    def cmd_resln(
-        self,
-        cmd_nm: str,
-        cmd_expr: past.CmdExpr
-    ) -> iint.CmdReslnRes | None | int:
+    def cmd_resln(self, cmd_nm: str) -> iint.CmdReslnRes | None | int:
         # DEBUG: Command resolution time start
         _t_cmd_resln = time.perf_counter_ns()
 
@@ -522,11 +518,9 @@ class Intrpr:
             self.cmd_reslvr,
             self.intrpr_vars
         )
-
         if cmd_nm == "snoo":
             snoo_obj = iint.Snoo()
             return iint.CmdReslnRes(snoo_obj.run, snoo_obj.CMD_SPEC, "built-in")
-
         if isinstance(get_cmd_res, int):
             # If command name is in alias list, then don't print an error
             # message because aliases are handled elsewhere
@@ -843,7 +837,7 @@ class Intrpr:
             cmd_nm = params[0].val
             params = params[1 :]
             aliases = self.intrpr_vars["ALIASES"]
-            cmd_resln_res = self.cmd_resln(cmd_nm, cmd_expr)
+            cmd_resln_res = self.cmd_resln(cmd_nm)
             if cmd_nm in aliases:
                 params_cp = list(params)
                 for i, param in enumerate(params_cp):

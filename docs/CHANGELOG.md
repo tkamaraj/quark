@@ -2,6 +2,16 @@
 
 ## Latest commit
 
+cleanup: removed unnecessary and irrelevant command modules
+
+- `src/intrpr/builtin_cmds/get.py`, `src/intrpr/builtin_cmds/set.py`
+1. Removed files (unnecessary because their functionality was taken over by
+command modules intrpr and env)
+- `dev/pc.py`
+1. Modified incorrect option
+
+## Commit a1a28397fc9620ea100c8fb1429804dbe434a4a2
+
 release, docs: version 0.2, update README
 
 - `src/utils/consts.py`
@@ -511,7 +521,7 @@ at the same time
 - `src/bin/ls.py`: Fixed the command not producing output following an error
 with a previous argument
 - `src/utils/err_codes.py`: Changed an error code's name
-- `src/utils/gen.py`: Removed unnecessarry function log_to_fl(...)
+- `src/utils/gen.py`: Removed unnecessary function log_to_fl(...)
 - `src/intrpr/cmd_reslvr.py`: Removed calls to src.utils.gen.log_to_fl(...)
 
 ## Commit c0f99742554f805b39ed7969a73d3576fc3835bd
