@@ -6,14 +6,6 @@ import typing as ty
 import utils.gen as ugen
 
 
-def set_log_lvl(lvl: int) -> None | ty.NoReturn:
-    if lvl not in LogLvls:
-        raise ValueError(f"Invalid log level: {lvl}")
-    global LOG_LVL
-    LOG_LVL = lvl
-    return None
-
-
 class LogLvls(enum.IntEnum):
     DEBUG = 1
     INFO = enum.auto()

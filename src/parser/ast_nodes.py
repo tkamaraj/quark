@@ -131,11 +131,15 @@ class CmdSeq:
     def __len__(self) -> int:
         return len(self.cmds)
 
-    def __getitem__(self, idx: int | slice) -> CmdExpr:
-        return self.cmds[idx]
+    def __getitem__(self, idx_or_sl: int | slice) -> CmdExpr | list[CmdExpr]:
+        return self.cmds[idx_or_sl]
 
-    def __setitem__(self, idx: int | slice, item: CmdExpr) -> None:
-        self.cmds[idx] = item
+    def __setitem__(
+        self,
+        idx_or_sl: int | slice,
+        item: CmdExpr | list[CmdExpr]
+    ) -> None:
+        self.cmds[idx_or_sl] = item
 
     def pop(self, idx: int = -1) -> CmdExpr:
         return self.cmds.pop(idx)

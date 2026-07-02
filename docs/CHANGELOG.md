@@ -2,6 +2,16 @@
 
 ## Latest commit
 
+fix: static analysis bugfixes (incomplete)
+- `src/intrpr/internals.py`
+- `src/logger/eng.py`
+- `src/main.py`
+- `src/parser/ast_nodes.py`
+- `src/utils/err_codes.py`
+- `src/utils/gen.py`
+
+## Commit 2b95d69e724dff69333f174d804b8018a7c38e5e
+
 feat: added support to find aliased commands in command module whr
 
 - `src/intrpr/builtin_cmds/whr.py`

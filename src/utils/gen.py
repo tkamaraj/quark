@@ -96,10 +96,6 @@ class EnvKeyTooLarge(Exception):
     pass
 
 
-class EnvKeyTooLarge(Exception):
-    pass
-
-
 class EnvKeyValLenOverflow(Exception):
     pass
 
@@ -190,7 +186,7 @@ def rjust(string: str, amt: int) -> str:
     return string.rjust(amt + len(string) - len(rm_ansi("", string)))
 
 
-def esc_chrs_all(s: str, extra: tuple[str] = ()) -> str:
+def esc_chrs_all(s: str, extra: tuple[str, ...] = ()) -> str:
     to_ret = []
     for ch in s:
         if ch in pint.REV_ESC_CHR_MAP:
@@ -435,6 +431,7 @@ def getch(timeout: float | None = None) -> str | None:
             return sys.stdin.read(1)
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    return None
 
 
 class InpHdlr:

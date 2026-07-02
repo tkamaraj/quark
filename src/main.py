@@ -151,7 +151,6 @@ def main() -> None:
     try:
         parsed_params = parse_argv(sys.argv[1 :])
         log_fd = open(uconst.LOG_FL, "a")
-        leng.set_log_lvl(parsed_params.log_lvl)
         lgrs = leng.LgrVessel(
             leng.Lgr("lgr_c", "C", parsed_params.log_lvl, sys.stderr),
             leng.Lgr("lgr_q", "Q", parsed_params.log_lvl, sys.stderr),

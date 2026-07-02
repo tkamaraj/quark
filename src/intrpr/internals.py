@@ -10,8 +10,8 @@ import traceback as tb
 import typing as ty
 import types
 if ty.TYPE_CHECKING:
-    import multiprocessing as mp
     import multiprocessing.shared_memory as mpshm
+    import multiprocessing.synchronize as mpsync
 
 import utils.err_codes as uerr
 import utils.gen as ugen
@@ -83,14 +83,17 @@ class Snoo:
 
 
 def catch_exceps_env_tbl(
-    f: ty.Callable[[ty.Any, ...], ty.Any]
-) -> ty.Callable[[ty.Any, ...], ty.Any] | ty.NoReturn:
+    f: ty.Callable[..., ty.Any]
+) -> ty.Callable[..., ty.Any] | ty.NoReturn:
     @functools.wraps(f)
     def fn(*args, **kwargs) -> ty.Any | ty.NoReturn:
         try:
             return f(*args, **kwargs)
         except st.error:
-            ugen.fatal_Q("Corrupted shared memory; cannot continue execution")
+            ugen.fatal_Q(
+                "Corrupted shared memory; cannot continue execution",
+                ret=uerr.ERR_CORRUPTED_ENV_TBL
+            )
     return fn
 
 
@@ -113,8 +116,8 @@ class EnvTbl:
     ||    value     || --> 8048B    |
     `++++++++++++++++'            --'
     """
-    shm: "mpshm.SharedMemory"
-    lock: "mp.Lock"
+    _shm: "mpshm.SharedMemory"
+    lock: "mpsync.RLock"
 
     def __post_init__(self) -> None:
         self.SHM_SZ = self.shm.size
@@ -175,6 +178,16 @@ class EnvTbl:
             data_dict[pair[0]] = pair[1]
         return str(data_dict)
 
+    @property
+    def shm(self) -> "mpshm.SharedMemory":
+        if self._shm is None:
+            raise RuntimeError("Operation of closed shared memory descriptor")
+        return self._shm
+
+    @shm.setter
+    def shm(self, val: ty.Any) -> None:
+        self._shm = val
+
     @catch_exceps_env_tbl
     def get_cnt(self) -> int | ty.NoReturn:
         return st.unpack(
@@ -207,8 +220,6 @@ class EnvTbl:
         return None
 
     def set(self, key: str, val: str) -> None | ty.NoReturn:
-        if self.shm.buf is None:
-            raise RuntimeError("Operation of closed shared memory descriptor")
         # Validate key and val are strings
         if not isinstance(key, str):
             raise ugen.InvVarNmErr(var_nm=key)
