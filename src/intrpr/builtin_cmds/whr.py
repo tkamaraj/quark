@@ -98,18 +98,23 @@ def run(data: ugen.CmdData) -> int:
             mod = data.cmd_reslvr.ld_mod(arg, data.ext_cached_cmds, (dir_pth,))
             if not is_valid_cmd_mod(mod):
                 continue
-
             dir_pth = pl.Path(dir_pth).expanduser().absolute()
             fl_pth = dir_pth / f"{arg}.py"
             op_arg_local_buf.append(Out(arg, str(fl_pth)))
-
             # If show all option is not given, break out after first hit
             if not show_all:
                 break
 
+        aliases = data.intrpr_vars["ALIASES"]
         if op_arg_local_buf:
             max_arg_len = max(max_arg_len, len(arg))
             op_buf.extend(op_arg_local_buf)
+        elif arg in aliases:
+            max_arg_len = max(max_arg_len, len(arg))
+            op_buf.append(
+                Out(arg,
+                    f"aliased to '{ugen.esc_chrs_all(aliases[arg])}'")
+            )
         else:
             op_buf.append(
                 Err(f"Cannot locate command: '{arg}'",

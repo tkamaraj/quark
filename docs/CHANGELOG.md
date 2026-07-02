@@ -2,6 +2,16 @@
 
 ## Latest commit
 
+feat: added support to find aliased commands in command module whr
+
+- `src/intrpr/builtin_cmds/whr.py`
+1. Added support for finding aliased commands
+- `src/intrpr/builtin_cmds/clear.py`
+1. Renamed to `clr.py` to be concise and consume lesser keystrokes (I know,
+it's stupid. But I don't give a fuck)
+
+## Commit 30608626046ebe9d525fb45d7cbf2e3e5c1f1fdf
+
 cleanup: removed unnecessary and irrelevant command modules
 
 - `src/intrpr/builtin_cmds/get.py`, `src/intrpr/builtin_cmds/set.py`

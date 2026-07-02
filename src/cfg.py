@@ -5,10 +5,10 @@ _ANSI_GREEN = "\x1b[32m"
 _ANSI_YELLOW = "\x1b[33m"
 _ANSI_BLUE = "\x1b[34m"
 
-# PTH = ("@bin",)
 ALIASES = {
     "dir": "ls",
     "copy": "cp",
     "wc": "cnt",
-    "cat": "prn"
+    "cat": "prn",
+    "clear": "clr",
 }
