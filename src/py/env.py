@@ -54,31 +54,35 @@ ERR_NO_SUCH_VAR = 1003
 ERR_VAR_EXISTS = 1004
 
 
+class Err(ty.NamedTuple):
+    msg: str
+
+
+class Out(ty.NamedTuple):
+    nm: str
+    val: str
+
+
 def run(data: ugen.CmdData) -> int:
     err_code = uerr.ERR_ALL_GOOD
     repr_val = False
+    op_buf = []
+    max_nm_len = 0
 
     if data.sub_cmd is None or data.sub_cmd == "list":
-        max_nm_len = (
-            len(max((nm for (nm, val) in data.env_vars), key=len))
-            if data.env_vars else 0
-        )
         for (nm, val) in data.env_vars:
-            ugen.write(
-                f"{nm:<{max_nm_len}} = {repr(val) if repr_val else val}\n"
-            )
+            op_buf.append(Out(nm, repr(val) if repr_val else val))
+            max_nm_len = max(max_nm_len, len(nm))
 
     elif data.sub_cmd == "get":
-        max_arg_len = len(max(data.args, key=len)) if data.args else 0
         for arg in data.args:
             if arg not in data.env_vars:
-                ugen.err(f"No such variable: '{arg}'", nm=data.cmd_nm)
                 err_code = err_code or uerr.ERR_ENV_UNK_VAR
+                op_buf.append(Err(f"No such variable: {arg}"))
                 continue
             val = data.env_vars[arg]
-            ugen.write(
-                f"{arg:<{max_arg_len}} = {repr(val) if repr_val else val}\n"
-            )
+            op_buf.append(Out(arg, repr(val) if repr_val else val))
+            max_nm_len = max(max_nm_len, len(arg))
 
     elif data.sub_cmd == "set":
         data.env_vars[data.args[0]] = data.args[1]
@@ -86,9 +90,20 @@ def run(data: ugen.CmdData) -> int:
     elif data.sub_cmd == "remove":
         for arg in data.args:
             if arg not in data.env_vars:
-                ugen.err(f"No such variable: '{arg}'", nm=data.cmd_nm)
                 err_code = err_code or uerr.ERR_ENV_UNK_VAR
+                op_buf.append(Err(f"No such variable: '{arg}'"))
                 continue
             data.intrpr_vars.rm(arg)
 
+    for item in op_buf:
+        if isinstance(item, Err):
+            ugen.err(item.msg, nm=data.cmd_nm)
+            continue
+        clred_nm = ugen.S.fmt(item.nm, data.is_tty, ugen.S.green_4)
+        ugen.write(
+            (ugen.ljust(clred_nm, max_nm_len) if data.is_tty else clred_nm)
+            + (" = " if data.is_tty else "=")
+            + item.val
+            + "\n"
+        )
     return err_code

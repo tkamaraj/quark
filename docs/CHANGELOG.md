@@ -2,6 +2,15 @@
 
 ## Latest commit
 
+feat: padding and colour support in command module env
+
+- `src/py/builtin_cmds/env.py`
+1. Added context-aware padding and colour support
+- `src/intrpr/builtin_cmds/hist.py`
+1. Fixed minor output bug
+
+## Commit 39627e17aa460585cf736c4359ff68ca7a6cb931
+
 misc: various miscellaneous changes
 
 ## Commit 68b4d6b98adb4831b5d626d02105515011ed39a0

@@ -91,3 +91,8 @@ exception ChildProcessError
     Raised when an operation on a child process failed
 """)
     return uerr.ERR_ALL_GOOD
+
+
+def run(data: ugen.CmdData) -> int:
+    ugen.write(data.stdin)
+    return uerr.ERR_ALL_GOOD

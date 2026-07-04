@@ -12,4 +12,4 @@ ALIASES = {
     "cat": "prn",
     "clear": "clr",
 }
-PROMPT = "!? > "
+# PROMPT = "!? > "

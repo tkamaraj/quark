@@ -8,7 +8,6 @@ def iota(set_val: int | None = None):
     return tmp
 
 
-ERR_UNK_ERR = iota(-1)
 ERR_ALL_GOOD = iota(0)
 ERR_FALSE = iota()
 # MAIN PROGRAM
@@ -17,8 +16,10 @@ ERR_MP_UNK_TOK = iota()
 ERR_MP_INV_VAL = iota()
 ERR_MP_BEAUTY_OVERLD = iota()
 
-ERR_UNK_FATAL = iota(10)
-ERR_BEAUTY_OVERLD = iota()
+ERR_UNK_ERR = iota(10)
+ERR_UNK_FATAL = iota()
+
+ERR_BEAUTY_OVERLD = iota(50)
 
 # PARSING ERRORS
 ERR_NO_CLOSING_QUOTE = iota(100)
@@ -57,6 +58,7 @@ ERR_UNEXPD_PARAM_STDERR_REDIRN = iota()
 ERR_EXPD_FLNM_STDOUT_REDIRN = iota()
 ERR_EXPD_PARAM_RT_OP = iota()
 ERR_TOO_MANY_OPEN_FLS = iota()
+ERR_NOT_IMPLMTD = iota()
 
 # ENVIRONMENT VARIABLE CODES
 ERR_ENV_VAR_INV_TYP = iota(300)
