@@ -32,6 +32,9 @@ HELP_TXT = f"""USAGE
 ARGUMENTS
   fl          Script to run
 OPTIONS
+  -l, --line-mode
+              Line mode to use for input
+              Valid: 'emacs', 'vi', 'raw'
   -t, --debug-time-unit unit
               Unit for debugging time output
               Valid: 'ns', 'us', 'ms', 's'
@@ -42,6 +45,7 @@ FLAGS
               Load all external commands on startup
   -h, --help  Display help text
   -i, --info  Show info messages
+  -l, 
   -pe, --preserve-ANSI-stderr
               Preserve ANSI codes in STDERR redirects
   -po, --preserve-ANSI-stdout
@@ -104,7 +108,7 @@ def parse_argv(passed_params: list[str]) -> MainProgParsed:
         elif param in ("-h", "--help"):
             ugen.write(HELP_TXT)
             sys.exit(uerr.ERR_ALL_GOOD)
-        elif param == "--line-mode":
+        elif param in ("-l", "--line-mode"):
             # No value for option
             if i == len_passed_params - 1:
                 ugen.err_Q("Expected value for '{param}'")

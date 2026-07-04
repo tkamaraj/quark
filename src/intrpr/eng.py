@@ -227,7 +227,6 @@ class Intrpr:
                 final_prompt += cwd_conden
                 skip += 1
                 continue
-
             # Condensed path with slashes at the end for all directories except
             # the root and user directory
             elif nxt_chr == "P":
@@ -241,37 +240,31 @@ class Intrpr:
                     final_prompt += "/"
                 skip += 1
                 continue
-
             # Expanded path
             elif nxt_chr == "e":
                 cwd = os.getcwd()
                 final_prompt += cwd
                 skip += 1
                 continue
-
             # Username
             elif nxt_chr == "u":
                 final_prompt += self.usernm
                 skip += 1
                 continue
-
             elif nxt_chr == "U":
                 final_prompt += self.uid
                 skip += 1
                 continue
-
             # Hostname
             elif nxt_chr == "h":
                 final_prompt += pf.node()
                 skip += 1
                 continue
-
             # Quark version
             elif nxt_chr == "v":
                 final_prompt += uconst.VER
                 skip += 1
                 continue
-
             # Elevation symbols (how else can I describe this?)
             elif nxt_chr == "$":
                 if self.is_usr_root:
@@ -280,18 +273,15 @@ class Intrpr:
                     final_prompt += "$"
                 skip += 1
                 continue
-
             elif nxt_chr == "?":
                 final_prompt += str(self.intrpr_vars["LAST_RET"])
                 skip += 1
                 continue
-
             # Literal '!'
             elif nxt_chr == "!":
                 final_prompt += "!"
                 skip += 1
                 continue
-
             else:
                 # Issue warning only once
                 if self._last_bad_prompt_obj != prompt_obj:
@@ -373,8 +363,9 @@ class Intrpr:
 
     def classi_params(
         self,
+        cmd_nm: str,
         params: "list[past.Param]",
-        cmd_spec: ugen.CmdSpec
+        cmd_spec: ugen.CmdSpec,
     ) -> tuple[
         str | None,
         tuple[str, ...],
@@ -403,13 +394,16 @@ class Intrpr:
                 # Then options
                 elif param_val in cmd_spec.opts:
                     if idx >= params_len - 1:
-                        ugen.err(f"Expected value for option '{param_val}'")
+                        ugen.err(
+                            f"Expected value for option '{param_val}'",
+                            nm=cmd_nm,
+                        )
                         return uerr.ERR_EXPD_VAL_OPT
                     opts[param_val] = params[idx + 1].val
                     skip += 1
                 # Invalid long-form option/flag
                 else:
-                    ugen.err(f"Invalid option/flag: '{param_val}'")
+                    ugen.err(f"Invalid option/flag: '{param_val}'", nm=cmd_nm)
                     return uerr.ERR_INV_OPTS_FLAGS
                 continue
 
@@ -423,21 +417,30 @@ class Intrpr:
                     flags.append(param_val)
                 elif param_val in cmd_spec.opts:
                     if idx >= params_len - 1:
-                        ugen.err(f"Expected value for option '{param_val}'")
+                        ugen.err(
+                            f"Expected value for option '{param_val}'",
+                            nm=cmd_nm
+                        )
                         return uerr.ERR_EXPD_VAL_OPT
                     opts[param_val] = params[idx + 1].val
                     skip += 1
                 else:
                     # Lone '-'
                     if not param_val[1 :]:
-                        ugen.err(f"Invalid option/flag: '{param_val}'")
+                        ugen.err(
+                            f"Invalid option/flag: '{param_val}'",
+                            nm=cmd_nm,
+                        )
                         return uerr.ERR_INV_OPTS_FLAGS
                     # Combined short flags
                     for i in param_val[1 :]:
                         if "-" + i in cmd_spec.flags:
                             flags.append("-" + i)
                             continue
-                        ugen.err(f"Invalid option/flag: '{param_val}'")
+                        ugen.err(
+                            f"Invalid option/flag: '{param_val}'",
+                            nm=cmd_nm,
+                        )
                         return uerr.ERR_INV_OPTS_FLAGS
                 continue
 
@@ -445,14 +448,16 @@ class Intrpr:
             arg_cnt += 1
             if arg_cnt > cmd_spec.max_args:
                 ugen.err(
-                    f"Unexpected arguments; expected at most {cmd_spec.max_args}, got {arg_cnt}"
+                    f"Unexpected arguments; expected at most {cmd_spec.max_args}, got {arg_cnt}",
+                    nm=cmd_nm,
                 )
                 return uerr.ERR_UNEXPD_ARGS
             args.append(param_val)
 
         if arg_cnt < cmd_spec.min_args:
             ugen.err(
-                f"Insufficient arguments; expected at least {cmd_spec.min_args}, got {arg_cnt}"
+                f"Insufficient arguments; expected at least {cmd_spec.min_args}, got {arg_cnt}",
+                nm=cmd_nm,
             )
             return uerr.ERR_INSUFF_ARGS
 
@@ -464,10 +469,10 @@ class Intrpr:
             # Subcommand is not present in the command spec
             if sub_cmd not in cmd_spec.sub_cmds:
                 if sub_cmd is None:
-                    ugen.err("Expected subcommand")
+                    ugen.err("Expected subcommand", nm=cmd_nm)
                     return uerr.ERR_EXPD_SUB_CMD
                 else:
-                    ugen.err(f"Invalid subcommand: '{sub_cmd}'")
+                    ugen.err(f"Invalid subcommand: '{sub_cmd}'", nm=cmd_nm)
                     return uerr.ERR_INV_SUB_CMD
             # Check if number of arguments supplied is correct for the
             # subcommand
@@ -475,16 +480,22 @@ class Intrpr:
             upper_lt = cmd_spec.sub_cmds[sub_cmd][1]
             if arg_cnt < lower_lt:
                 ugen.err(
-                    "Insufficient arguments"
-                    + (f" ({sub_cmd})" if sub_cmd is not None else "")
-                    + f"; expected at least {lower_lt}, got {arg_cnt}"
+                    (
+                        "Insufficient arguments"
+                        + (f" ({sub_cmd})" if sub_cmd is not None else "")
+                        + f"; expected at least {lower_lt}, got {arg_cnt}"
+                    ),
+                    nm=cmd_nm,
                 )
                 return uerr.ERR_INSUFF_ARGS
             elif arg_cnt > upper_lt:
                 ugen.err(
-                    "Unexpected arguments"
-                    + (f" ({sub_cmd})" if sub_cmd is not None else "")
-                    + f"; expected at most {upper_lt}, got {arg_cnt}"
+                    (
+                        "Unexpected arguments"
+                        + (f" ({sub_cmd})" if sub_cmd is not None else "")
+                        + f"; expected at most {upper_lt}, got {arg_cnt}"
+                    ),
+                    nm=cmd_nm,
                 )
                 return uerr.ERR_UNEXPD_ARGS
 
@@ -506,6 +517,18 @@ class Intrpr:
         total = 0
         while total < len_data:
             total += os.write(fd, data[total :])
+
+    def loop_set_lgr_streams(
+        self,
+        chk_if: io.TextIOBase,
+        set_to: io.TextIOBase
+    ) -> None:
+        for lgr in lg.Logger.manager.loggerDict.values():
+            if isinstance(lgr, lg.PlaceHolder):
+                continue
+            for hdlr in lgr.handlers:
+                if hdlr.stream is chk_if:
+                    hdlr.stream = set_to
 
     def cmd_resln(self, cmd_nm: str) -> iint.CmdReslnRes | None | int:
         # DEBUG: Command resolution time start
@@ -553,7 +576,9 @@ class Intrpr:
         data: ugen.CmdData,
         wout: int,
         werr: int,
-        wother: int
+        wother: int,
+        stdout_obj: io.TextIOBase,
+        stderr_obj: io.TextIOBase,
     ) -> ty.NoReturn:
         os.dup2(wout, 1)  # Redirect STDOUT to write end of pipe wout
         os.dup2(werr, 2)  # Redirect STDERR to write end of pipe werr
@@ -593,6 +618,8 @@ class Intrpr:
             os.write(wother, st.pack("!Q", len(pickled_excep)))
             self.write_to_fd(wother, pickled_excep)
         os.close(wother)
+        sys.stdout.flush()
+        sys.stderr.flush()
         os._exit(0)
 
     def rd_and_unpack(self, fd: int, fmt_str: str, expd_bytes: int) -> ty.Any:
@@ -673,7 +700,15 @@ class Intrpr:
             if pid == 0:
                 os.close(rout)
                 os.close(rother)
-                self.child_proc(cmd_fn, data, wout, werr, wother)
+                self.child_proc(
+                    cmd_fn,
+                    data,
+                    wout,
+                    werr,
+                    wother,
+                    stdout_obj,
+                    stderr_obj,
+                )
             # Some issue, can't fork
             elif pid < 0:
                 ugen.crit_Q(
@@ -768,7 +803,7 @@ class Intrpr:
         stderr_obj: io.TextIOBase
     ):
         # Classify parameters into arguments, options and flags
-        tmp = self.classi_params(params, cmd_spec)
+        tmp = self.classi_params(cmd_nm, params, cmd_spec)
         if isinstance(tmp, int):
             return iint.CmdCompdObj(tmp)
         sub_cmd, args, opts, flags = tmp
@@ -858,17 +893,19 @@ class Intrpr:
             is_pipe = isinstance(op, past.Pipe)
             is_redir_stdout = isinstance(op, past.RedirSTDOUT)
             is_redir_stderr = isinstance(op, past.RedirSTDERR)
-            stdout_obj = sys.stdout
-            stderr_obj = sys.stderr
+            old_stdout = stdout_obj = sys.stdout
+            old_stderr = stderr_obj = sys.stderr
 
+            # I don't know what the problem is, but I have to do those to make
+            # piping work for expressions involving built-in commands
             if is_pipe or is_redir_stdout or is_redir_stderr:
                 is_tty = False
-
             # Pipe
             if is_pipe:
                 buf_stdout = io.StringIO()
                 stdout_obj = buf_stdout
-
+                if cmd_src == "built-in":
+                    sys.stdout = buf_stdout
             # Redirect STDOUT
             elif is_redir_stdout:
                 # get_simp_cmd can be called without worry because the syntax
@@ -896,7 +933,8 @@ class Intrpr:
                     return uerr.ERR_OS_ERR
                 stdout_obj = stdout_fl
                 skip += 1
-
+                if cmd_src == "built-in":
+                    sys.stdout = stdout_fl
             # Redirect STDERR
             elif is_redir_stderr:
                 redir_flnm = cmd_expr.get_simp_cmd(i + 1).get_param(0)
@@ -917,14 +955,9 @@ class Intrpr:
                     )
                     return uerr.ERR_OS_ERR
                 stderr_obj = stderr_fl
-                self.loop_set_lgr_streams(sys.stderr, stderr_obj)
                 skip += 1
-
-            # I don't know what the problem is, but I have to do this to make
-            # piping work for expressions involving built-in commands
-            if is_pipe and cmd_src == "built-in":
-                old_stdout = sys.stdout
-                sys.stdout = buf_stdout
+                if cmd_src == "built-in":
+                    sys.stderr = stderr_fl
 
             try:
                 res = self.exec_cmd(
@@ -940,11 +973,12 @@ class Intrpr:
                 )
                 err_code = err_code or res.err_code
             finally:
-                # Undo changes made for piping involving built-in commands
-                if is_pipe and cmd_src == "built-in":
-                    sys.stdout = old_stdout
-                if is_redir_stderr:
-                    self.loop_set_lgr_streams(stderr_obj, sys.stderr)
+                # Undo changes made for built-in commands
+                if cmd_src == "built-in":
+                    if is_pipe or is_redir_stdout:
+                        sys.stdout = old_stdout
+                    elif is_redir_stderr:
+                        sys.stderr = old_stderr
 
             stdin = ""
             if is_pipe:
