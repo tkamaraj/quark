@@ -18,6 +18,8 @@
 size of io.StringIO buffers.
 - Improve aliases. Right now, it's very basic. You can alias only commands,
 not commands and options or arguments or flags.
+- Argument, option and flag classification: need to include entries in the
+command spec to define valid flags for individual subcommands.
 
 ### General utils and command API (src/utils/gen.py)
 

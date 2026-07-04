@@ -2,6 +2,12 @@
 
 ## Latest commit
 
+fix: behavioural changes in command module env
+- `src/py/env.py`
+1. Behavioural and output changes
+
+## Commit 0f470611351028a7484c6d7f9034b9fa07497447
+
 feat: padding and colour support in command module env
 
 - `src/py/builtin_cmds/env.py`

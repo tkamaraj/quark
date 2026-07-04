@@ -44,7 +44,7 @@ CMD_SPEC = ugen.CmdSpec(
         "remove": (1, float("inf"))
     },
     opts=(),
-    flags=("-r", "--repr")
+    flags=("-r", "--raw")
 )
 
 ERR_INV_VAL_FOR_TYP = 1000
@@ -65,13 +65,17 @@ class Out(ty.NamedTuple):
 
 def run(data: ugen.CmdData) -> int:
     err_code = uerr.ERR_ALL_GOOD
-    repr_val = False
+    raw_val = False
     op_buf = []
     max_nm_len = 0
 
+    for flag in data.flags:
+        if flag in ("-r", "--raw"):
+            raw_val = True
+
     if data.sub_cmd is None or data.sub_cmd == "list":
         for (nm, val) in data.env_vars:
-            op_buf.append(Out(nm, repr(val) if repr_val else val))
+            op_buf.append(Out(nm, val if raw_val else ugen.esc_chrs_all(val)))
             max_nm_len = max(max_nm_len, len(nm))
 
     elif data.sub_cmd == "get":
@@ -81,7 +85,7 @@ def run(data: ugen.CmdData) -> int:
                 op_buf.append(Err(f"No such variable: {arg}"))
                 continue
             val = data.env_vars[arg]
-            op_buf.append(Out(arg, repr(val) if repr_val else val))
+            op_buf.append(Out(arg, val if raw_val else ugen.esc_chrs_all(val)))
             max_nm_len = max(max_nm_len, len(arg))
 
     elif data.sub_cmd == "set":
@@ -103,7 +107,7 @@ def run(data: ugen.CmdData) -> int:
         ugen.write(
             (ugen.ljust(clred_nm, max_nm_len) if data.is_tty else clred_nm)
             + (" = " if data.is_tty else "=")
-            + item.val
+            + "'" + item.val + "'"
             + "\n"
         )
     return err_code
