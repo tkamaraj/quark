@@ -1,17 +1,16 @@
 #!/usr/bin/env -S python3 -BOO
-
 import os
 import signal as sig
 import sys
 import traceback as tb
 import typing as ty
 
-import intrpr.cfg_mgr as cmgr
-import intrpr.eng as ieng
-import utils.consts as uconst
-import utils.err_codes as uerr
-import utils.gen as ugen
-import logger.eng as leng
+from src.intrpr import cfg_mgr as cmgr
+from src.intrpr import eng as ieng
+from src.utils import consts as uconst
+from src.utils import err_codes as uerr
+from src.utils import gen as ugen
+from src.logger import eng as leng
 
 if not sys.argv:
     called_nm = "[main]"

@@ -2,9 +2,9 @@ import os
 import sys
 import typing as ty
 
-import parser.internals as pint
+from src.parser import internals as pint
 if ty.TYPE_CHECKING:
-    import intrpr.internals as iint
+    from src.intrpr import internals as iint
 
 VER = "0.2"
 TAB_SZ = 2

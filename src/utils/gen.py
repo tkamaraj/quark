@@ -8,13 +8,13 @@ import termios
 import tty
 import typing as ty
 
-import parser.internals as pint
-import utils.consts as uconst
-import logger.eng as leng
+from src.parser import internals as pint
+from src.utils import consts as uconst
+from src.logger import eng as leng
 if ty.TYPE_CHECKING:
-    import intrpr.cmd_reslvr as icrsr
-    import intrpr.eng as ieng
-    import intrpr.internals as iint
+    from src.intrpr import cmd_reslvr as icrsr
+    from src.intrpr import eng as ieng
+    from src.intrpr import internals as iint
 
 
 #########################

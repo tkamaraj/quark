@@ -6,3 +6,6 @@ authors = [
     { name = "Thiruvalluvan Kamaraj", email = "thiruisanidiot@gmail.com" }
 ]
 dependencies = []
+
+[tool.setuptools]
+packages = ["src"]

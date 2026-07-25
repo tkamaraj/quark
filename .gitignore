@@ -11,6 +11,10 @@ releases/
 tmp/
 venv/
 
+# Tests
+tests/lexer/*.txt
+tests/lexer/**/
+
 # Project source
 src/quark.log
 src/quark.txt

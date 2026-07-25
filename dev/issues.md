@@ -12,7 +12,7 @@ the return code should be src.utils.err_codes.ERR_RNTIME_ERR. But the child
 fails to send the error code through the pipe.
 - Redirects do not work (think it's because of changing the outputs to pipes
 to the parent process).
-- Make the interpreter execute aliased commands
+- [DONE] Make the interpreter execute aliased commands.
 
 ### Interpreter internals (src/intrpr/internals.py)
 

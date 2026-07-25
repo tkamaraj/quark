@@ -13,10 +13,10 @@ if ty.TYPE_CHECKING:
     import multiprocessing.shared_memory as mpshm
     import multiprocessing.synchronize as mpsync
 
-import utils.err_codes as uerr
-import utils.gen as ugen
+from src.utils import err_codes as uerr
+from src.utils import gen as ugen
 if ty.TYPE_CHECKING:
-    import intrpr.cmd_reslvr as icrsr
+    from src.intrpr import cmd_reslvr as icrsr
 
 
 # To not lose the traceback string (note that I said string) during the

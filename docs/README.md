@@ -11,11 +11,12 @@ See [`dev/issues.md`](../dev/issues.md) for bugs and issues in the project.
 
 ## About
 
-Quark is a command-line interpreter ("shell") that focuses on 
+Quark is a command-line interpreter ("shell") that focuses on simplicity and
+lightweightness. Holy larp.
 
 ## Highlights
 
-- Written from scratch depending only on the standard library
+- Written from scratch depending only on the standard library to run
 - Custom lexer and parser
 
 ## Features
@@ -42,6 +43,7 @@ git clone https://gitea.com/tkamaraj/quark.git
 cd ./quark/
 python3 -m venv ./venv/
 source ./venv/bin/activate
+python3 -m pip install -e ./
 python3 -BOO ./src/main.py
 ```
 

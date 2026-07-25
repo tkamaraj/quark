@@ -19,17 +19,17 @@ import time
 import traceback as tb
 import typing as ty
 
-import intrpr.cfg_mgr as cmgr
-import intrpr.cmd_reslvr as icrsr
-import intrpr.internals as iint
-import parser.eng as peng
-import parser.ast_nodes as past
-import utils.gen as ugen
-import utils.consts as uconst
-import utils.debug as udeb
-import utils.err_codes as uerr
+from src.intrpr import cfg_mgr as cmgr
+from src.intrpr import cmd_reslvr as icrsr
+from src.intrpr import internals as iint
+from src.parser import eng as peng
+from src.parser import ast_nodes as past
+from src.utils import gen as ugen
+from src.utils import consts as uconst
+from src.utils import debug as udeb
+from src.utils import err_codes as uerr
 if ty.TYPE_CHECKING:
-    import parser.internals as pint
+    from src.parser import internals as pint
 
 TH_TokGrp = tuple[list[str], "pint.SpChr"]
 TH_CmdFn = ty.Callable[[ugen.CmdData], int]
@@ -45,7 +45,6 @@ def fmt_t_ns(time_expo: int, ns: int) -> str:
         unit = "ns"
     elif time_expo == 9:
         unit = "s"
-
     return str(round(ns / 10 ** time_expo, 3)) + unit
 
 
@@ -64,6 +63,8 @@ class Intrpr:
         # Interpreter initialisation time start
         _t_intrpr_init = time.perf_counter_ns()
 
+        ugen.warn_Q("Exercise caution when running untrusted commands")
+
         self.GET_CMD_ERR_MSG_MAP = {
             uerr.ERR_BAD_CMD: "Bad command",
             uerr.ERR_INV_CMD: "Invalid command file",
@@ -78,9 +79,6 @@ class Intrpr:
             uerr.ERR_CMD_SYN_ERR: "Syntax error",
             uerr.ERR_CANT_LD_CMD_MOD: "Load failed"
         }
-
-        ugen.warn_Q("Exercise caution when running untrusted commands")
-
         self.usr_dir = os.path.expanduser("~")
         self.uid = str(os.getuid())
         self.usernm = pwd.getpwuid(int(self.uid)).pw_name
@@ -773,14 +771,14 @@ class Intrpr:
             try:
                 cmd_ret = self.rn_cmd_fn(cmd_fn, data)
             except RecursionError:
-                err_code = uerr.ERR_RECUR_ERR
+                cmd_ret = uerr.ERR_RECUR_ERR
                 ugen.crit_Q(
                     f"Recursion depth exceeded; command '{data.cmd_nm}'",
                     exc_txt=(f"Recursion depth exceeded; command '{data.cmd_nm}'\n"
                              f"{tb.format_exc()}")
                 )
             except Exception as e:
-                err_code = uerr.ERR_CMD_RNTIME_ERR
+                cmd_ret = uerr.ERR_CMD_RNTIME_ERR
                 ugen.crit_Q(
                     f"Uncaught exception in built-in command '{data.cmd_nm}': {e.__class__.__name__}",
                     exc_txt=(f"Uncaught exception in built-in command '{data.cmd_nm}'\n"

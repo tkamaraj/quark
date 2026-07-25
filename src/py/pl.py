@@ -2,8 +2,8 @@ import re
 import subprocess as sp
 import typing as ty
 
-import utils.err_codes as uerr
-import utils.gen as ugen
+from src.utils import err_codes as uerr
+from src.utils import gen as ugen
 
 CMD_NM = __name__.split(".")[-1]
 

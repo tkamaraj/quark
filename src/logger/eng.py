@@ -3,7 +3,7 @@ import enum
 import os
 import typing as ty
 
-import utils.gen as ugen
+from src.utils import gen as ugen
 
 
 class LogLvls(enum.IntEnum):

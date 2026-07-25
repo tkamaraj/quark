@@ -9,9 +9,9 @@ import stat
 import sys
 import typing as ty
 
-import utils.consts as uconst
-import utils.err_codes as uerr
-import utils.gen as ugen
+from src.utils import consts as uconst
+from src.utils import err_codes as uerr
+from src.utils import gen as ugen
 
 CMD_NM = __name__.split(".")[-1]
 

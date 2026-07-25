@@ -1,7 +1,7 @@
-import parser.ast_nodes as past
-import parser.internals as pint
-import utils.err_codes as uerr
-import utils.gen as ugen
+from src.parser import ast_nodes as past
+from src.parser import internals as pint
+from src.utils import err_codes as uerr
+from src.utils import gen as ugen
 
 
 class Parser:

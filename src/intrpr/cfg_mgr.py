@@ -1,10 +1,10 @@
 import runpy as rp
 import typing as ty
 
-import utils.consts as uconst
-import utils.gen as ugen
+from src.utils import consts as uconst
+from src.utils import gen as ugen
 if ty.TYPE_CHECKING:
-    import intrpr.internals as iint
+    from src.intrpr import internals as iint
 
 
 class Cfg(ty.NamedTuple):
