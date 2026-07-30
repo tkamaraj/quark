@@ -95,4 +95,6 @@ exception ChildProcessError
 
 def run(data: ugen.CmdData) -> int:
     ugen.write(data.stdin)
+    data.env_vars["sneha"] = "hello"
+    data.intrpr_vars["thiru"] = "world"
     return uerr.ERR_ALL_GOOD

@@ -24,7 +24,7 @@ CMD_SPEC = ugen.CmdSpec(
     min_args=0,
     max_args=1,
     opts=(),
-    flags=("-T",)
+    flags=("-T", "--no-exit-text")
 )
 
 

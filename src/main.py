@@ -26,32 +26,33 @@ VALID_OPTS = {}
 VALID_FLAGS = {}
 
 # TODO: Update the help string
-HELP_TXT = f"""USAGE
-  {called_nm} [flag ...] [opt] [fl]
-ARGUMENTS
-  fl          Script to run
-OPTIONS
-  -l, --line-mode
-              Line mode to use for input
-              Valid: 'emacs', 'vi', 'raw'
-  -t, --debug-time-unit unit
-              Unit for debugging time output
-              Valid: 'ns', 'us', 'ms', 's'
-FLAGS
-  -d, --debug
-              Show debug messages
-  -e, --load-external
-              Load all external commands on startup
-  -h, --help  Display help text
-  -i, --info  Show info messages
-  -l, 
-  -pe, --preserve-ANSI-stderr
-              Preserve ANSI codes in STDERR redirects
-  -po, --preserve-ANSI-stdout
-              Preserve ANSI codes in STDOUT redirects
-  -W, --no-warnings
-              Suppress warnings
-""".expandtabs(2)
+HELP_TXT = (
+    "USAGE"
+    f"\t{called_nm} [flag ...] [opt] [fl]",
+    "ARGUMENTS",
+    "\tfl          Script to run",
+    "OPTIONS",
+    "\t-l, --line-mode",
+    "\t            Line mode to use for input",
+    "\t            Valid: 'emacs', 'vi', 'raw'",
+    "\t-t, --debug-time-unit unit",
+    "\t            Unit for debugging time output",
+    "\t            Valid: 'ns', 'us', 'ms', 's'",
+    "FLAGS",
+    "\t-d, --debug",
+    "\t            Show debug messages",
+    "\t-e, --load-external",
+    "\t            Load all external commands on startup",
+    "\t-h, --help  Display help text",
+    "\t-i, --info  Show info messages",
+    "\t-l, ",
+    "\t-pe, --preserve-ANSI-stderr",
+    "\t            Preserve ANSI codes in STDERR redirects",
+    "\t-po, --preserve-ANSI-stdout",
+    "\t            Preserve ANSI codes in STDOUT redirects",
+    "\t-W, --no-warnings",
+    "\t            Suppress warnings",
+)
 
 
 class MainProgParsed(ty.NamedTuple):
@@ -105,7 +106,7 @@ def parse_argv(passed_params: list[str]) -> MainProgParsed:
             if log_lvl <= leng.LogLvls.WARN:
                 log_lvl = leng.LogLvls.ERR
         elif param in ("-h", "--help"):
-            ugen.write(HELP_TXT)
+            ugen.write("\n".join(HELP_TXT).expandtabs(2))
             sys.exit(uerr.ERR_ALL_GOOD)
         elif param in ("-l", "--line-mode"):
             # No value for option

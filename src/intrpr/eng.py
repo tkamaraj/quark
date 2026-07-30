@@ -446,7 +446,7 @@ class Intrpr:
             arg_cnt += 1
             if arg_cnt > cmd_spec.max_args:
                 ugen.err(
-                    f"Unexpected arguments; expected at most {cmd_spec.max_args}, got {arg_cnt}",
+                    f"Argument overflow; {arg_cnt} not in [{cmd_spec.min_args}, {cmd_spec.max_args}]",
                     nm=cmd_nm,
                 )
                 return uerr.ERR_UNEXPD_ARGS
@@ -454,7 +454,7 @@ class Intrpr:
 
         if arg_cnt < cmd_spec.min_args:
             ugen.err(
-                f"Insufficient arguments; expected at least {cmd_spec.min_args}, got {arg_cnt}",
+                f"Argument underflow; {arg_cnt} not in [{cmd_spec.min_args}, {cmd_spec.max_args}]",
                 nm=cmd_nm,
             )
             return uerr.ERR_INSUFF_ARGS
@@ -479,9 +479,9 @@ class Intrpr:
             if arg_cnt < lower_lt:
                 ugen.err(
                     (
-                        "Insufficient arguments"
+                        "Argument underflow"
                         + (f" ({sub_cmd})" if sub_cmd is not None else "")
-                        + f"; expected at least {lower_lt}, got {arg_cnt}"
+                        + f"; {arg_cnt} not in [{lower_lt}, {upper_lt}]"
                     ),
                     nm=cmd_nm,
                 )
@@ -491,7 +491,7 @@ class Intrpr:
                     (
                         "Unexpected arguments"
                         + (f" ({sub_cmd})" if sub_cmd is not None else "")
-                        + f"; expected at most {upper_lt}, got {arg_cnt}"
+                        + f"; {arg_cnt} not in [{lower_lt}, {upper_lt}]"
                     ),
                     nm=cmd_nm,
                 )
