@@ -226,6 +226,11 @@ class EnvTbl:
         if not isinstance(val, str):
             raise ugen.InvVarValErr(var_nm=key, var_val=val)
 
+        if (
+            key.lower().strip("_abcdefghijklmnopqrstuvwxyz0123456789")
+            or key.startswith("0123456789")
+        ):
+            raise ugen.InvVarNmErr(var_nm=key)
         # Validate data received (key and value)
         encoded_key = key.encode()
         encoded_val = val.encode()
