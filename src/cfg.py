@@ -6,10 +6,8 @@ _ANSI_YELLOW = "\x1b[33m"
 _ANSI_BLUE = "\x1b[34m"
 
 ALIASES = {
-    "dir": "ls",
-    "copy": "cp",
+    "dir": "ls -l",
     "wc": "cnt",
     "cat": "prn",
     "clear": "clr",
 }
-# PROMPT = "!? > "

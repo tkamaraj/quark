@@ -10,21 +10,17 @@ command to a built-in command does not work.
 I have no idea what is happening. But design, as of the commit on 25-05-2026,
 the return code should be src.utils.err_codes.ERR_RNTIME_ERR. But the child
 fails to send the error code through the pipe.
-- Redirects do not work (think it's because of changing the outputs to pipes
-to the parent process).
-- [DONE] Make the interpreter execute aliased commands.
+- Error redirects do not work (think it's due to the fact that reporting for
+some errors takes place before the redirect stream is set).
+- Piping and redirection do not work with aliases.
+- Extremely weird error: Do for the first time `ls -l ~/Downloads/;`, and the
+error code returned will be 0. Do `ls -l ~/Downloads/; a`, then the error code
+will be 200. Removing the unknown command (`a`) will still leave the error code
+at 200. `ls -l ~/Downloads/;` after this still leaves the error code at 200.
 
 ### Interpreter internals (src/intrpr/internals.py)
 
-- [DONE] Try this:
-```quark
-env set hello world
-env get hello
-env set foo bar
-env get foo
-env get hello
-env
-```
+- Environment variable table allows any fucking identifier?!?
 
 ## Utilities
 
@@ -48,3 +44,7 @@ to reach the parent process from the child process through the pipe.
 - The length of all the entries are calculated even when not using all the
 entries, like when supplying arguments to filter processes. Modify the module
 so that entries that are included the output only get their lengths calculated.
+
+### Count command (src/py/cnt.py)
+
+- Do not apply formatting when not TTY by default; provide an option

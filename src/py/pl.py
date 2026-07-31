@@ -1,5 +1,5 @@
+import os
 import re
-import subprocess as sp
 import typing as ty
 
 from src.utils import err_codes as uerr
@@ -28,105 +28,123 @@ HELP = ugen.HelpObj(
 CMD_SPEC = ugen.CmdSpec(
     min_args=0,
     max_args=float("inf"),
-    opts=(),
-    flags=(
-        "-l", "--long",
-        "-x", "--exact",
-        "-e", "--escape"
-    )
+    opts=("-f", "--fields"),
+    flags=()
 )
 
-ERR_CANT_GET_PROC_LIST = 1000
 
-T = ty.TypeVar("T")
-tuple4 = tuple[T, T, T, T]
-tuple7 = tuple[T, T, T, T, T, T, T]
+class ProcEntry(ty.NamedTuple):
+    pid: str    # PID is a str to eliminate unnecessary conversions
+    nm: str
+    full: str
+
+
+def rd_fl(fl_pth: str, binary: bool = False) -> bytes:
+    try:
+        with open(fl_pth, "rb" if binary else "r") as f:
+            return f.read()
+    except PermissionError:
+        return uerr.ERR_PERM_DENIED
+    except FileNotFoundError:
+        return uerr.ERR_FL_404
+    except IsADirectoryError:
+        return uerr.ERR_IS_A_DIR
+    except OSError:
+        return uerr.ERR_OS_ERR
 
 
 def run(data: ugen.CmdData) -> int:
     err_code = uerr.ERR_ALL_GOOD
     long = False
-    esc_patt = False
-    exact_match = False
+    fields = ["pid", "name"]
+    wrt_headers = True
+    valid_fields = ["pid", "full", "ppid", "name", "threads", "starttime", "full"]
+
+    for opt, val in data.opts.items():
+        if opt in ("-f", "--fields"):
+            comma_split = val.split(",")
+            if inv := [i for i in comma_split if i not in valid_fields]:
+                ugen.err(
+                    f"Invalid value(s) for fields: "
+                    + ", ".join(("'" + ugen.esc_chrs_all(i) + "'") for i in inv)
+                )
+                return uerr.ERR_INV_VAL_OPT
+            fields = [*comma_split]
 
     for flag in data.flags:
-        if flag in ("-l", "--long"):
-            long = True
-        elif flag in ("-e", "--escape"):
-            esc_patt = True
-        elif flag in ("-x", "--exact"):
-            exact_match = True
+        if flag in ("-H", "--no-headers"):
+            wrt_headers = False
 
-    if long:
-        ps_fmt_str = "uid,pid,ppid,psr,stime,time,cmd"
-    else:
-        ps_fmt_str = "pid,stime,time,comm"
+    proc_arr = []
+    max_pid_len = 0
+    max_ppid_len = 0
+    max_num_threads_len = 0
+    max_starttime_len = 0
+    max_nm_len = 0
+    max_full_len = 0
 
-    num_cols = ps_fmt_str.count(",")
+    for i in os.scandir("/proc"):
+        if not i.name.isnumeric():
+            continue
 
-    rn_cmd = ["ps", "-eo", ps_fmt_str, "--no-headers"]
-    compd_proc = sp.run(rn_cmd, capture_output=True, text=True)
-    if compd_proc.returncode != 0:
-        ugen.err("Could not get process list", nm=data.cmd_nm)
-        return ERR_CANT_GET_PROC_LIST
-    stdout = compd_proc.stdout.splitlines()
+        pid = i.name
+        prn_fields = dict.fromkeys(fields)
+        prn_fields["pid"] = i.name
+        prn_fields["full"] = "?"
+        prn_fields["name"] = "?"
+        prn_fields["ppid"] = "?"
+        prn_fields["starttime"] = "?"
+        prn_fields["full"] = "???"
+        if "pid" in fields:
+            max_pid_len = max(len(pid), max_pid_len)
 
-    proc_list = []
-    len_arr = []
-
-    for ln in stdout:
-        # https://docs.python.org/3.14/library/stdtypes.html#str.split
-        # "If sep is not specified or is None, a different splitting algorithm
-        # is applied: runs of consecutive whitespace are regarded as a single
-        # separator, [...]"
-        out = ln.split(None, maxsplit=num_cols)
-        proc_list.append(tuple(out))
-        len_arr.append(tuple(map(len, out)))
-
-    if not data.args:
-        # Determine the length of the longest element in each column.
-        # Iterate over the lengths array, which is a list of tuples of containing
-        # column length for each process
-        max_len_arr = [0] * num_cols
-        for j in range(num_cols):
-            max_len_arr[j] = max(row[j] for row in len_arr)
-        op_buf = proc_list
-
-    else:
-        matches = []
-        seen = set()
-        for arg in data.args:
-            patt = arg if not esc_patt else re.escape(arg)
-            # Var item is the whole row, i.e. the full process entry
-            for i, item in enumerate(proc_list):
-                if item in seen:
-                    continue
-                if not exact_match and re.match(patt, item[-1]) is None:
-                    continue
-                if exact_match and arg != item[-1]:
-                    continue
-                matches.append((i, item))
-                seen.add(item)
-
-        op_buf = [entry for _, entry in matches]
-        # Populate max_len_arr with values
-        max_len_arr = [0] * num_cols
-        for j in range(num_cols):
-            # max(...) raises ValueError if iterable is empty
-            if not matches:
-                break
-            max_len_arr[j] = max(len_arr[idx][j] for idx, _ in matches)
-
-    for proc_entry in op_buf:
-        to_write = "  ".join(
-            [
-                (item.ljust(max_len_arr[j]) if j < num_cols - 1 else item)
-                for j, item in enumerate(proc_entry)
-            ]
-        )
-        if len(to_write) > data.term_sz.columns:
-            ugen.write(to_write[: data.term_sz.columns - 1] + ">\n")
+        cmdline = rd_fl(os.path.join(i.path, "cmdline"), binary=True)
+        if isinstance(cmdline, int):
+            ugen.warn(f"Cannot obtain full command line: {pid}")
         else:
-            ugen.write(to_write + "\n")
+            prn_fields["full"] = cmdline.replace(b"\x00", b" ").decode()
+
+        stat = rd_fl(os.path.join(i.path, "stat"))
+        if isinstance(stat, int):
+            ugen.warn(f"Cannot obtain process status: {pid}")
+        else:
+            stat = re.search(r"(.+)\s+\((.+)\)\s+(.+)", stat)
+            stat_rt_part = stat.group(3).split()
+            if "name" in fields:
+                nm = stat.group(2)
+                prn_fields["name"] = nm
+                max_nm_len = max(len(nm), max_nm_len)
+            if "ppid" in fields:
+                ppid = stat_rt_part[1]
+                prn_fields["ppid"] = ppid
+                max_ppid_len = max(len(ppid), max_ppid_len)
+            if "threads" in fields:
+                num_threads = stat_rt_part[17]
+                prn_fields["threads"] = num_threads
+                max_num_threads_len = max(len(num_threads), max_num_threads_len)
+            if "starttime" in fields:
+                starttime = stat_rt_part[19]
+                prn_fields["starttime"] = starttime
+                max_starttime_len = max(len(starttime), max_starttime_len)
+
+        proc_arr.append(prn_fields)
+
+    if wrt_headers and proc_arr:
+        # TODO: Add headers
+        # ugen.write(f"{"PID":>{max_pid_len}} {"NAME":<{max_nm_len}}\n")
+        pass
+
+    # TODO: Space before first column needs to be removed when PID column is
+    # TODO: NOT the first column
+    for proc in proc_arr:
+        ugen.write(
+            (ugen.ljust(proc["pid"], max_pid_len) if "pid" in fields else "")
+            + ((" " + ugen.ljust(proc["name"], max_nm_len)) if "name" in fields else "")
+            + ((" " + ugen.ljust(proc["ppid"], max_ppid_len)) if "ppid" in fields else "")
+            + ((" " + ugen.ljust(proc["threads"], max_num_threads_len)) if "threads" in fields else "")
+            + ((" " + ugen.ljust(proc["starttime"], max_starttime_len)) if "starttime" in fields else "")
+            + ((" " + ugen.ljust(proc["full"], max_full_len)) if "full" in fields else "")
+            + "\n"
+        )
 
     return err_code
