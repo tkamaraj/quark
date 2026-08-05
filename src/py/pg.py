@@ -21,7 +21,7 @@ HELP = ugen.HelpObj(
 
 CMD_SPEC = ugen.CmdSpec(
     min_args=0,
-    max_args=0,
+    max_args=float("inf"),
     opts=(),
     flags=()
 )
@@ -35,13 +35,13 @@ ERR_MSG_MAP = {
 }
 
 
-def pg(txt: str, src: str | None, term_sz: os.terminal_size) -> None:
+def pg(txt: str, src: str | None, term_sz: os.terminal_size, is_tty: bool) -> None:
     # str.splitlines was not intentionally used: it doesn't count newline at
     # end of string
     txt_split = txt.split("\n")
     # TODO: Make filename line sticky, meaning make it remain on screen even
     # after scrolling, you dirty-minded dog
-    txt_split.insert(0, "- / STDIN" if src is None else src)
+    txt_split.insert(0, ugen.S.fmt(("- / STDIN" if src is None else src), is_tty, ugen.S.green_4))
     txt_split_fit = []
     for i in txt_split:
         # That 1 added is for if line (i) is empty. If could also be done like
@@ -100,5 +100,5 @@ def run(data: ugen.CmdData) -> int:
             continue
         txts[arg] = ret
     for src, txt in txts.items():
-        pg(txt, src, data.term_sz)
+        pg(txt, src, data.term_sz, data.is_tty)
     return err_code

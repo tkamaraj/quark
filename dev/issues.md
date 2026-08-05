@@ -18,10 +18,6 @@ error code returned will be 0. Do `ls -l ~/Downloads/; a`, then the error code
 will be 200. Removing the unknown command (`a`) will still leave the error code
 at 200. `ls -l ~/Downloads/;` after this still leaves the error code at 200.
 
-### Interpreter internals (src/intrpr/internals.py)
-
-- Environment variable table allows any fucking identifier?!?
-
 ## Utilities
 
 ## Command modules
@@ -39,11 +35,12 @@ Won't happen every time, but often, because it seems to be a race between the
 output text and the debug messages. I suspect it's due to the output being slow
 to reach the parent process from the child process through the pipe.
 
-### Process list command (src/bin/pl.py)
+### Process list command (src/bin/pl_old.py)
 
-- The length of all the entries are calculated even when not using all the
-entries, like when supplying arguments to filter processes. Modify the module
-so that entries that are included the output only get their lengths calculated.
+- [IRRELEVANT, NEW MODULE VERSION AVAILABLE] The length of all the entries are
+calculated even when not using all the entries, like when supplying arguments
+to filter processes. Modify the module so that entries that are included the
+output only get their lengths calculated.
 
 ### Count command (src/py/cnt.py)
 

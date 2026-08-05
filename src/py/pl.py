@@ -7,6 +7,7 @@ from src.utils import gen as ugen
 
 CMD_NM = __name__.split(".")[-1]
 
+# TODO: Don't forget to update the help string
 HELP = ugen.HelpObj(
     usage=f"{CMD_NM} [flag ...] [proc ...]",
     summary="Get a list of running processes",
@@ -25,6 +26,7 @@ HELP = ugen.HelpObj(
     )
 )
 
+# TODO: Don't forget to update the spec
 CMD_SPEC = ugen.CmdSpec(
     min_args=0,
     max_args=float("inf"),
