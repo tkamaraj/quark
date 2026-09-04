@@ -22,7 +22,8 @@ HELP = ugen.HelpObj(
         ("-b, --bytes", "Count bytes (only files)"),
         ("-c, --chars", "Count characters"),
         ("-w, --words", "Count words"),
-        ("-l, --lines", "Count lines")
+        ("-l, --lines", "Count lines"),
+        ("-t, --colour-no-tty", "Colour output even if not outputting to a TTY"),
     )
 )
 
@@ -36,14 +37,21 @@ CMD_SPEC = ugen.CmdSpec(
         "-b", "--bytes",
         "-c", "--chars",
         "-w", "--words",
-        "-l", "--lines"
+        "-l", "--lines",
+        "-t", "--colour-no-tty",
     )
 )
 
 
 class Out:
-    def __init__(self, fl_nm: str, fl_sz: str, fl_chrs: int, fl_words: int,
-                 fl_lns: int) -> None:
+    def __init__(
+        self,
+        fl_nm: str,
+        fl_sz: str,
+        fl_chrs: str,
+        fl_words: str,
+        fl_lns: str,
+    ) -> None:
         self.fl_nm = fl_nm
         self.fl_sz = fl_sz
         self.fl_chrs = fl_chrs
@@ -86,7 +94,7 @@ def get_txt_obj_cnt(
     words_sepd_by_ws: bool,
     incl_nls_in_chrs: bool,
     alpha_patt: re.Pattern
-) -> tuple[int, int, int]:
+) -> tuple[str, str, str]:
     # Lines
     lns = txt.count("\n")
     # Words
@@ -99,6 +107,7 @@ def get_txt_obj_cnt(
         chrs = len(txt)
     else:
         chrs = len(txt.replace("\n", ""))
+    # IMPORTANT: they're a tuple of str, not int!
     return (str(lns), str(words), str(chrs))
 
 
@@ -110,6 +119,7 @@ def run(data: ugen.CmdData) -> int:
     show_chrs = False
     show_words = False
     show_lns = False
+    clr_no_tty = False
     alpha_patt = re.compile(r"[A-Za-z0-9]+")
     op_buf = []
     max_arg_len = 0
@@ -120,23 +130,25 @@ def run(data: ugen.CmdData) -> int:
 
     for flag in data.flags:
         # Do not include newline characters in character count
-        if flag == "-N":
+        if flag in ("-N", "--no-include-newlines"):
             incl_nls_in_chrs = False
         # Include punctuation in word boundaries
-        elif flag == "-p":
+        elif flag in ("-p", "--include-punctuation"):
             words_sepd_by_ws = False
         # Filtering option: bytes
-        elif flag == "-b":
+        elif flag in ("-b", "--bytes"):
             show_bytes = True
         # Filtering option: characters
-        elif flag == "-c":
+        elif flag in ("-c", "--chars"):
             show_chrs = True
         # Filtering option: words
-        elif flag == "-w":
+        elif flag in ("-w", "--words"):
             show_words = True
         # Filtering option: lines
-        elif flag == "-l":
+        elif flag in ("-l", "--lines"):
             show_lns = True
+        elif flag in ("-t", "--colour-no-tty"):
+            clr_no_tty = True
 
     if not data.args and not data.stdin:
         ugen.err("Expected arguments or STDIN", nm=data.cmd_nm)
@@ -155,7 +167,7 @@ def run(data: ugen.CmdData) -> int:
             data.stdin,
             words_sepd_by_ws,
             incl_nls_in_chrs,
-            alpha_patt
+            alpha_patt,
         )
 
         # len("-") is 1
@@ -178,7 +190,7 @@ def run(data: ugen.CmdData) -> int:
             fl_cntnt,
             words_sepd_by_ws,
             incl_nls_in_chrs,
-            alpha_patt
+            alpha_patt,
         )
 
         max_arg_len = max(max_arg_len, len(arg))
@@ -203,7 +215,7 @@ def run(data: ugen.CmdData) -> int:
         fl_lns_fmted = ugen.ljust(i.fl_lns, max_fl_lns_len)
         ugen.write(
             ugen.ljust(
-                ugen.S.fmt(i.fl_nm, data.is_tty, ugen.S.green_4) + ":",
+                ugen.S.fmt(i.fl_nm, data.is_tty or clr_no_tty, ugen.S.green_4) + ":",
                 max_arg_len
             )
             + ((f" b:" + fl_sz_fmted) if show_bytes else "")

@@ -37,6 +37,7 @@ TH_GetCmdRes = tuple[TH_CmdFn, ugen.CmdSpec]
 
 
 def fmt_t_ns(time_expo: int, ns: int) -> str:
+    unit = "?"
     if time_expo == 6:
         unit = "ms"
     elif time_expo == 3:
@@ -45,7 +46,7 @@ def fmt_t_ns(time_expo: int, ns: int) -> str:
         unit = "ns"
     elif time_expo == 9:
         unit = "s"
-    return str(round(ns / 10 ** time_expo, 3)) + unit
+    return str(round(ns / 10 ** time_expo, 3))
 
 
 class Intrpr:
@@ -499,7 +500,7 @@ class Intrpr:
 
         return (sub_cmd, tuple(args), opts, tuple(flags))
 
-    def rd_from_fd(self, fd: io.IOBase, n: int) -> bytes:
+    def rd_from_fd(self, fd: int, n: int) -> bytes:
         chunks = []
         total = 0
         while total < n:
@@ -522,6 +523,7 @@ class Intrpr:
         set_to: io.TextIOBase
     ) -> None:
         for lgr in lg.Logger.manager.loggerDict.values():
+            lgr: lg.Logger
             if isinstance(lgr, lg.PlaceHolder):
                 continue
             for hdlr in lgr.handlers:

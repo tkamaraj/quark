@@ -1,0 +1,4 @@
+force = true
+quiet = true
+file = "~/projs/quark/src/main.py"
+data-directory = "~/projs/quark/src/py/"

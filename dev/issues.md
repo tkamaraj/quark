@@ -22,26 +22,31 @@ at 200. `ls -l ~/Downloads/;` after this still leaves the error code at 200.
 
 ## Command modules
 
-### Help command (src/intrpr/builtin_cmds/help.py)
+### src/intrpr/builtin_cmds/intrpr.py
+
+- subcommand `remove` isn't working...
+
+### src/intrpr/builtin_cmds/help.py
 
 - Difference in padding for different commands. Don't know why.
 
-### Run in forked process command (src/bin/rf.py)
+### src/bin/rf.py
 
-- [IRRELEVANT (STDERR is sent through pipe to parent now)] Debug statements
-get mixed up in the output while executing the commands in the file. For
-example, try running a file with the text "help\n" inside it as `rf ./scr.qrk`.
-Won't happen every time, but often, because it seems to be a race between the
-output text and the debug messages. I suspect it's due to the output being slow
-to reach the parent process from the child process through the pipe.
+- [IRRELEVANT (STDERR is sent through pipe to parent now), and haven't seen
+this issue since] Debug statements get mixed up in the output while executing
+the commands in the file. For example, try running a file with the text
+"help\n" inside it as `rf ./scr.qrk`. Won't happen every time, but often,
+because it seems to be a race between the output text and the debug messages. I
+suspect it's due to the output being slow to reach the parent process from the
+child process through the pipe.
 
-### Process list command (src/bin/pl_old.py)
+### src/bin/pl_old.py
 
 - [IRRELEVANT, NEW MODULE VERSION AVAILABLE] The length of all the entries are
 calculated even when not using all the entries, like when supplying arguments
 to filter processes. Modify the module so that entries that are included the
 output only get their lengths calculated.
 
-### Count command (src/py/cnt.py)
+### src/py/cnt.py
 
-- Do not apply formatting when not TTY by default; provide an option
+- Do not apply formatting when not TTY by default; provide an option.

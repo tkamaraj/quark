@@ -34,10 +34,6 @@ available space. Like, after calculating the number of columns, re-adjust the
 column lengths after individual column lengths are found. Or something of that
 sort.
 
-### intrpr (src/intrpr/builtin_cmds/intrpr.py)
-
-- [DONE] Add colour for TTY output.
-
 ### pl (src/py/pl.py)
 
 - Add process filtering (after rewrite).

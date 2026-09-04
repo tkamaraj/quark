@@ -29,6 +29,8 @@ ERR_FROM_CMD = 1000
 
 
 def run(data: ugen.CmdData) -> int:
+    err_code = uerr.ERR_ALL_GOOD
+
     for arg in data.args:
         try:
             with open(arg) as f:
@@ -49,13 +51,8 @@ def run(data: ugen.CmdData) -> int:
             ugen.err(f"OS error; {e.strerror}", nm=data.cmd_nm)
             return uerr.ERR_OS_ERR
 
-    err = uerr.ERR_ALL_GOOD
-    for ln in fl_cntnt.splitlines():
-        tmp = data.exec_fn(ln)
-        err = err or tmp
+        for ln in fl_cntnt.splitlines():
+            tmp_code = data.exec_fn(ln)
+            err_code = err_code or tmp_code
 
-    err_code = uerr.ERR_ALL_GOOD
-    if err:
-        err_code = ERR_FROM_CMD
-    data.env_vars.set("_RN_CMD_RET_", err)
     return err_code
