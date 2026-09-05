@@ -350,17 +350,16 @@ class IntrprTbl:
     def __getitem__(self, key: str) -> ty.Any | ty.NoReturn:
         if key not in self.intrpr_tbl:
             raise ugen.UnkVarErr(var_nm=key)
-        return self.intrpr_tbl[key]
+        return self.get(key)
 
-    def __setitem__(self, key: str, val: ty.Any) -> None:
+    def __setitem__(self, key: str, val: ty.Any) -> None | ty.NoReturn:
         if key not in self.intrpr_tbl:
             if (
                 key.lower().strip("_abcdefghijklmnopqrstuvwxyz0123456789")
                 or key.startswith("0123456789")
             ):
                 raise ugen.InvVarNmErr(var_nm=key)
-        self.intrpr_tbl[key] = val
-        return None
+        self.set(key, val)
 
     def __repr__(self) -> str:
         return str(self.intrpr_tbl)
@@ -371,19 +370,18 @@ class IntrprTbl:
         val: ty.Any,
         protected: bool = False
     ) -> None | ty.NoReturn:
-        tmp = self.__setitem__(nm, val)
         self.protection_status[nm] = protected
-        return tmp
+        self.intrpr_tbl[nm] = val
 
     def get(self, nm: str) -> ty.Any | ty.NoReturn:
-        return self.__getitem__(nm)
+        return self.intrpr_tbl[nm]
 
-    def pop(self, nm: str) -> None:
+    def pop(self, nm: str) -> ty.Any | ty.NoReturn:
         try:
             # If protected, raise InvAccess
             if self.protection_status[nm]:
                 raise ugen.InvAccess(f"Pop of protected variable: {nm}")
-            self.intrpr_tbl.pop(nm)
+            return self.intrpr_tbl.pop(nm)
         except KeyError:
             pass
 

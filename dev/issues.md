@@ -22,10 +22,6 @@ at 200. `ls -l ~/Downloads/;` after this still leaves the error code at 200.
 
 ## Command modules
 
-### src/intrpr/builtin_cmds/intrpr.py
-
-- subcommand `remove` isn't working...
-
 ### src/intrpr/builtin_cmds/help.py
 
 - Difference in padding for different commands. Don't know why.
@@ -46,7 +42,3 @@ child process through the pipe.
 calculated even when not using all the entries, like when supplying arguments
 to filter processes. Modify the module so that entries that are included the
 output only get their lengths calculated.
-
-### src/py/cnt.py
-
-- Do not apply formatting when not TTY by default; provide an option.
