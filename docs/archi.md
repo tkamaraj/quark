@@ -21,29 +21,45 @@ Main program
 ```
 ./src/
 |-- cfg.py
-|-- main.py
-|-- bin
-|   `-- ...
 |-- intrpr
+|   |-- builtin_cmds
+|   |   |-- alias.py
+|   |   |-- cd.py
+|   |   |-- clr.py
+|   |   |-- cmd.py
+|   |   |-- echo.py
+|   |   |-- evl.py
+|   |   |-- exit.py
+|   |   |-- help.py
+|   |   |-- hist.py
+|   |   |-- intrpr.py
+|   |   |-- pwd.py
+|   |   |-- rd.py
+|   |   |-- rs.py
+|   |   |-- time.py
+|   |   `-- whr.py
 |   |-- cfg_mgr.py
 |   |-- cmd_reslvr.py
 |   |-- eng.py
 |   |-- __init__.py
-|   |-- internals.py
-|   `-- builtin_cmds/
-|       `-- ...
+|   `-- internals.py
+|-- logger
+|   |-- eng.py
+|   `-- __init__.py
+|-- main.py
 |-- parser
+|   |-- ast_nodes.py
 |   |-- eng.py
 |   |-- __init__.py
 |   `-- internals.py
+|-- py
+|   `-- ...
 `-- utils
     |-- consts.py
     |-- debug.py
-    |-- engine_utils.py
     |-- err_codes.py
     |-- gen.py
-    |-- __init__.py
-    `-- loggers.py
+    `-- __init__.py
 ```
 
 The interpreter has three major parts:

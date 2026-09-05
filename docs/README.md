@@ -1,6 +1,6 @@
 # QUARK
 
-An extensible pure Python shell.
+A pure-Python, extensible command-line shell with its own parser, execution engine, pipeline system and scripting environment. Quark focuses on simplicity and lightweightness. Holy larp.
 
 See [`CHANGELOG.md`](./CHANGELOG.md) for a history of changes.  
 See [`docs/`](../docs/) for detailed documentation on modules and internals.  
@@ -9,15 +9,18 @@ See [`dev/planned.md`](../dev/planned.md) for future development plans and
 ideas.  
 See [`dev/issues.md`](../dev/issues.md) for bugs and issues in the project.
 
-## About
+## Why Quark?
 
-Quark is a command-line interpreter ("shell") that focuses on simplicity and
-lightweightness. Holy larp.
+Quark started off as a project for myself to learn how shells work. That is why instead of wrapping an existing shell, everything is implemented from scratch. You name it: parser, command execution model, pipelines, environment handling.
+
+You know, the goal is not to replace Bash or Zsh or other mature shells. Rather, this is merely an experiment in language and shell design and architecture, and interpreters.
 
 ## Highlights
 
 - Written from scratch depending only on the standard library to run
 - Custom lexer and parser
+- Custom pipelines
+- Small and fast
 
 ## Features
 
@@ -59,7 +62,7 @@ echo -s , hello world
 
 ## Building from source
 
-Python 3.13 and Nuitka 4.0.8 are required for building the project.  
+Python 3.13.15 and Nuitka 4.0.8 are required for building the project.  
 See the full list of dependencies in `build_reqmts.txt`.
 
 Go to the project root, and build the project with the build script `dev/pc.py`
@@ -77,7 +80,7 @@ available.
 ## Pre-built binaries
 
 For pre-built binaries, check out the
-[Releases](https://gitea.com/tkamaraj/quark/releases/) page.
+[Releases](https://gitea.com/vallu/quark/releases/) page.
 
 ## Configuration
 
@@ -94,6 +97,15 @@ PTH: tuple[str, ...] = (USR_PY_PTH, *SYS_PY_PTHS, PY_PTH)
 PROMPT: str | typing.Callable[[intrpr.internals.IntrprTbl], str] = utils.consts.Defaults.PROMPT
 LN_MODE: str = "emacs"
 ```
+
+## Architecture
+
+The project is divided into several major components:
+
+- **Parser**: tokenises the raw input.
+- **Engine** (yes, silly name, I know): evaluates and executes commands.
+- **Logger**: the custom logging facility for this project.
+- **Utilities**: parts of the project that various other parts use.
 
 ## Project status
 
