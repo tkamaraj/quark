@@ -42,3 +42,7 @@ child process through the pipe.
 calculated even when not using all the entries, like when supplying arguments
 to filter processes. Modify the module so that entries that are included the
 output only get their lengths calculated.
+
+### src/py/pl.py
+
+- Finish the incomplete rewrite.

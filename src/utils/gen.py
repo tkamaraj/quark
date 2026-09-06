@@ -134,7 +134,7 @@ class CmdSpec(ty.NamedTuple):
     opts: tuple[str, ...]
     flags: tuple[str, ...]
     parse_sub_cmds: bool = False
-    sub_cmds: tuple[str, ...] = ()
+    sub_cmds: dict[str | None, tuple[int, int | float]] = {}
 
 
 class HelpObj(ty.NamedTuple):
