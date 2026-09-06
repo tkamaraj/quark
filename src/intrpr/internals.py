@@ -330,7 +330,10 @@ class EnvTbl:
         raise ugen.UnkVarErr(var_nm=key)
 
     def rm(self, nm: str) -> None:
-        raise NotImplementedError("Implement rm")
+        raise NotImplementedError("not implementing removing elements yet...")
+        for key, val in self.__iter__():
+            if key == nm:
+                pass
 
 
 @dcs.dataclass

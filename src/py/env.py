@@ -14,16 +14,17 @@ HELP = ugen.HelpObj(
         f"{CMD_NM} list\n"
         f"{CMD_NM} get name [...]\n"
         f"{CMD_NM} set name value\n"
-        f"{CMD_NM} remove name [...]\n"
+        f"{CMD_NM} rm name [...]\n"
     ),
     summary="Manage environment variables",
     details=(
         "SUBCOMMANDS",
         ("-", "List all variables"),
+        ("clr", "Clear all variables"),
         ("list", "List all variables"),
         ("get", "Get variables by name"),
         ("set", "Set variables"),
-        ("remove", "Remove variables"),
+        ("rm", "Remove variables"),
         "ARGUMENTS",
         ("name", "Variable name"),
         ("value", "Variable value"),
@@ -38,10 +39,11 @@ CMD_SPEC = ugen.CmdSpec(
     parse_sub_cmds=True,
     sub_cmds={
         None    : (0, 0),
+        "clr"   : (0, 0),
         "set"   : (2, 2),
         "get"   : (1, float("inf")),
         "list"  : (0, 0),
-        "remove": (1, float("inf"))
+        "rm": (1, float("inf"))
     },
     opts=(),
     flags=("-r", "--raw")
@@ -78,6 +80,10 @@ def run(data: ugen.CmdData) -> int:
             op_buf.append(Out(nm, val if raw_val else ugen.esc_chrs_all(val)))
             max_nm_len = max(max_nm_len, len(nm))
 
+    elif data.sub_cmd == "clr":
+        for (key, val) in data.env_vars:
+            data.env_vars.rm(key)
+
     elif data.sub_cmd == "get":
         for arg in data.args:
             if arg not in data.env_vars:
@@ -91,7 +97,7 @@ def run(data: ugen.CmdData) -> int:
     elif data.sub_cmd == "set":
         data.env_vars[data.args[0]] = data.args[1]
 
-    elif data.sub_cmd == "remove":
+    elif data.sub_cmd == "rm":
         for arg in data.args:
             if arg not in data.env_vars:
                 err_code = err_code or uerr.ERR_ENV_UNK_VAR
