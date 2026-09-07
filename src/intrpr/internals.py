@@ -207,11 +207,8 @@ class EnvTbl:
         return self.shm.buf
 
     def _chk_key_occupancy(self, idx: int) -> bool:
-        arr_key_len_entry_idx = self.ARR_KEY_LEN_START + self.KEY_LEN_SZ * idx
-        key_len = self._rd_u64(arr_key_len_entry_idx, arr_key_len_entry_idx + self.KEY_LEN_SZ)
-        if key_len == 0:
-            return False
-        return True
+        start = self.ARR_KEY_LEN_START + self.KEY_LEN_SZ * idx
+        return self._rd_u64(start, start + self.KEY_LEN_SZ) != 0
 
     @catch_exceps_env_tbl
     def _rd_u64(self, start: int, end: int) -> int:
@@ -257,37 +254,38 @@ class EnvTbl:
         if len_encoded_val > self.VAL_ENTRY_SZ:
             raise ugen.EnvValTooLarge("", offending_val=val)
 
-        # If key already exists, just update it
-        for i in range(self.MAX_ITEMS):
-            # Skip if empty cell
-            if not self._chk_key_occupancy(i):
-                continue
+        with self.lock:
+            # If key already exists, just update it
+            for i in range(self.MAX_ITEMS):
+                # Skip if empty cell
+                if not self._chk_key_occupancy(i):
+                    continue
 
-            cur_key, cur_val = self.get_by_idx(i)
-            if cur_key != key:
-                continue
-            arr_val_len_entry_idx = self.ARR_VAL_LEN_START + self.VAL_LEN_SZ * i
-            arr_val_entry_idx = self.ARR_VALS_START + self.VAL_ENTRY_SZ * i
-            self._wrt_u64(len_encoded_val, arr_val_len_entry_idx, arr_val_len_entry_idx + self.VAL_LEN_SZ)
-            self._wrt_str(val, arr_val_entry_idx, arr_val_entry_idx + len_encoded_val)
-            return
+                cur_key, cur_val = self.get_by_idx(i)
+                if cur_key != key:
+                    continue
+                arr_val_len_entry_idx = self.ARR_VAL_LEN_START + self.VAL_LEN_SZ * i
+                arr_val_entry_idx = self.ARR_VALS_START + self.VAL_ENTRY_SZ * i
+                self._wrt_u64(len_encoded_val, arr_val_len_entry_idx, arr_val_len_entry_idx + self.VAL_LEN_SZ)
+                self._wrt_str(val, arr_val_entry_idx, arr_val_entry_idx + len_encoded_val)
+                return
 
-        # If the key doesn't already exist, then create a new one
-        for i in range(self.MAX_ITEMS):
-            # If key already exists, skip
-            if self._chk_key_occupancy(i):
-                continue
+            # If the key doesn't already exist, then create a new one
+            for i in range(self.MAX_ITEMS):
+                # If key already exists, skip
+                if self._chk_key_occupancy(i):
+                    continue
 
-            arr_key_len_entry_idx = self.ARR_KEY_LEN_START + self.KEY_LEN_SZ * i
-            arr_val_len_entry_idx = self.ARR_VAL_LEN_START + self.VAL_LEN_SZ * i
-            arr_key_entry_idx = self.ARR_KEYS_START + self.KEY_ENTRY_SZ * i
-            arr_val_entry_idx = self.ARR_VALS_START + self.VAL_ENTRY_SZ * i
-            self._wrt_u64(len_encoded_key, arr_key_len_entry_idx, arr_key_len_entry_idx + self.KEY_LEN_SZ)
-            self._wrt_u64(len_encoded_val, arr_val_len_entry_idx, arr_val_len_entry_idx + self.VAL_LEN_SZ)
-            self._wrt_str(key, arr_key_entry_idx, arr_key_entry_idx + len_encoded_key)
-            self._wrt_str(val, arr_val_entry_idx, arr_val_entry_idx + len_encoded_val)
-            self._wrt_u64(len(self) + 1, self.CNT_START, self.CNT_START + self.CNT_SZ)
-            return
+                arr_key_len_entry_idx = self.ARR_KEY_LEN_START + self.KEY_LEN_SZ * i
+                arr_val_len_entry_idx = self.ARR_VAL_LEN_START + self.VAL_LEN_SZ * i
+                arr_key_entry_idx = self.ARR_KEYS_START + self.KEY_ENTRY_SZ * i
+                arr_val_entry_idx = self.ARR_VALS_START + self.VAL_ENTRY_SZ * i
+                self._wrt_u64(len_encoded_key, arr_key_len_entry_idx, arr_key_len_entry_idx + self.KEY_LEN_SZ)
+                self._wrt_u64(len_encoded_val, arr_val_len_entry_idx, arr_val_len_entry_idx + self.VAL_LEN_SZ)
+                self._wrt_str(key, arr_key_entry_idx, arr_key_entry_idx + len_encoded_key)
+                self._wrt_str(val, arr_val_entry_idx, arr_val_entry_idx + len_encoded_val)
+                self._wrt_u64(len(self) + 1, self.CNT_START, self.CNT_START + self.CNT_SZ)
+                return
 
         raise ugen.HowDidWeGetHere()
 
@@ -319,19 +317,20 @@ class EnvTbl:
         return (cur_key, cur_val)
 
     def rm(self, nm: str) -> None:
-        for i in range(self.MAX_ITEMS):
-            if not self._chk_key_occupancy(i):
-                continue
-            key_len_start = self.ARR_KEY_LEN_START + i * self.KEY_LEN_SZ
-            key_start = self.ARR_KEYS_START + i * self.KEY_ENTRY_SZ
-            key_len = self._rd_u64(key_len_start, key_len_start + self.KEY_LEN_SZ)
-            cur_key = self._rd_str(key_start, key_start + key_len)
-            if cur_key != nm:
-                continue
-            self._wrt_u64(0, key_len_start, key_len_start + self.KEY_LEN_SZ)
-            self._wrt_u64(len(self) - 1, self.CNT_START, self.CNT_START + self.CNT_SZ)
-            # TODO: erase key, value and value length if needed
-            return
+        with self.lock:
+            for i in range(self.MAX_ITEMS):
+                if not self._chk_key_occupancy(i):
+                    continue
+                key_len_start = self.ARR_KEY_LEN_START + i * self.KEY_LEN_SZ
+                key_start = self.ARR_KEYS_START + i * self.KEY_ENTRY_SZ
+                key_len = self._rd_u64(key_len_start, key_len_start + self.KEY_LEN_SZ)
+                cur_key = self._rd_str(key_start, key_start + key_len)
+                if cur_key != nm:
+                    continue
+                self._wrt_u64(0, key_len_start, key_len_start + self.KEY_LEN_SZ)
+                self._wrt_u64(len(self) - 1, self.CNT_START, self.CNT_START + self.CNT_SZ)
+                # TODO: erase key, value and value length if needed
+                return
 
         raise ugen.InvVarNmErr(var_nm=nm)
 
