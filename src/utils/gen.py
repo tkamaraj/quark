@@ -92,16 +92,32 @@ class UnkVarErr(Exception):
         return f"Unknown variable: {self.var_nm}"
 
 
+class HowDidWeGetHere(Exception):
+    pass
+
+
+class EnvTblShmBufNone(Exception):
+    pass
+
+
+class EnvTblShmNone(Exception):
+    pass
+
+
+class EnvTblEmpty(Exception):
+    pass
+
+
 class EnvKeyTooLarge(Exception):
-    pass
+    def __init__(self, msg: str, offending_key: str) -> None:
+        super().__init__(msg)
+        self.offending_key = offending_key
 
 
-class EnvKeyValLenOverflow(Exception):
-    pass
-
-
-class EnvWrtIdxOutOfRng(Exception):
-    pass
+class EnvValTooLarge(Exception):
+    def __init__(self, msg: str, offending_val: str) -> None:
+        super().__init__(msg)
+        self.offending_val = offending_val
 
 
 class EnvCntOutOfRng(Exception):

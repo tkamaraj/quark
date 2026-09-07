@@ -103,7 +103,7 @@ def run(data: ugen.CmdData) -> int:
                 err_code = err_code or uerr.ERR_ENV_UNK_VAR
                 op_buf.append(Err(f"No such variable: '{arg}'"))
                 continue
-            data.intrpr_vars.rm(arg)
+            data.env_vars.rm(arg)
 
     for item in op_buf:
         if isinstance(item, Err):

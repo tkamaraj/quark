@@ -1,3 +1,6 @@
+# TODO: tmp; remove
+import pdb
+
 import collections.abc as cabc
 import copy
 import ctypes as ct
@@ -19,9 +22,9 @@ if ty.TYPE_CHECKING:
     from src.intrpr import cmd_reslvr as icrsr
 
 
-# To not lose the traceback string (note that I said string) during the
-# pickling process; stores the traceback as a string in an attribute, as the
-# __traceback__ attribute of the exceptions gets dropped during pickling
+# To not lose the traceback string (yes, string) during the pickling process;
+# stores the traceback as a string in an attribute, as the __traceback__
+# attribute of the exceptions gets dropped during pickling
 class ExcepWNoLoss:
     def __init__(self, e: Exception) -> None:
         self.e = e
@@ -83,8 +86,8 @@ class Snoo:
 
 
 def catch_exceps_env_tbl(
-    f: ty.Callable[..., ty.Any]
-) -> ty.Callable[..., ty.Any] | ty.NoReturn:
+        f: ty.Callable[..., ty.Any]
+        ) -> ty.Callable[..., ty.Any] | ty.NoReturn:
     @functools.wraps(f)
     def fn(*args, **kwargs) -> ty.Any | ty.NoReturn:
         try:
@@ -94,6 +97,14 @@ def catch_exceps_env_tbl(
                 "Corrupted shared memory; cannot continue execution",
                 ret=uerr.ERR_CORRUPTED_ENV_TBL
             )
+        except ugen.EnvKeyTooLarge as e:
+            key = e.offending_key
+            key = (key[: 10] + "...") if len(key) > 10 else key
+            ugen.err_Q(f"Env var key too large: {key}")
+        except ugen.EnvValTooLarge as e:
+            val = e.offending_val
+            val = (val[: 10] + "...") if len(val) > 10 else val
+            ugen.err_Q(f"Env var value too large: {val}")
     return fn
 
 
@@ -101,62 +112,64 @@ def catch_exceps_env_tbl(
 class EnvTbl:
     """
     Structure in memory:
-     .++++++++++++++,
-     |    count     |  --> 8B
-     |--------------|
-     | write index  |  --> 8B
-     `--------------'
-    .++++++++++++++++,            --,
-    ||  key length  || --> 8B       |
-    ||--------------||              |
-    || value length || --> 8B       |
-    ||--------------||              | ---> 8192B (8KiB) per entry
-    ||     key      || --> 128B     |
-    ||--------------||              |
-    ||    value     || --> 8048B    |
-    `++++++++++++++++'            --'
+    .+++++++++++++++,
+    |     count     |  --> 8B
+    `---------------'
+    .+++++++++++++++,
+    |  key lengths  |  --> 8B * number of entires
+    |      ...      |
+    `---------------'
+    .+++++++++++++++,
+    | value lengths |  --> 8B * number of entries
+    |      ...      |
+    `---------------'
+    .+++++++++++++++,
+    |     keys      |  --> 128B * number of entries
+    |      ...      |
+    `---------------'
+    .+++++++++++++++,
+    |     values    |  --> 8048B * number of entries
+    |      ...      |
+    `---------------'
+    Idea is that there shall be 8192B per entry.
     """
     _shm: "mpshm.SharedMemory"
     lock: "mpsync.RLock"
 
     def __post_init__(self) -> None:
         self.SHM_SZ = self.shm.size
-        self.CNT_SZ = 8                                                         # Size to store number of items
-        self.WRT_IDX_SZ = 64                                                    # Size to store write index
-        self.KEY_LEN_SZ = 8                                                     # Size to store key length
-        self.VAL_LEN_SZ = 8                                                     # Size to store value length
-        self.KEY_MAX_SZ = 128                                                   # Maximum allowed size of key
-        self.VAL_MAX_SZ = 8048                                                  # Maximum allowed size of value
-        self.ENTRY_BYTES_REQD = (                                               # Size required for each entry
+        self.CNT_SZ = 8                 # Size to store number of items
+        self.KEY_LEN_SZ = 8             # Size to store key length
+        self.VAL_LEN_SZ = 8             # Size to store value length
+        self.KEY_ENTRY_SZ = 128         # Entry size of key
+        self.VAL_ENTRY_SZ = 8048        # Entry size of value
+        self.ENTRY_BYTES_REQD = (       # Memory required for each entry
             self.KEY_LEN_SZ
             + self.VAL_LEN_SZ
-            + self.KEY_MAX_SZ
-            + self.VAL_MAX_SZ
+            + self.KEY_ENTRY_SZ
+            + self.VAL_ENTRY_SZ
         )
-        self.LEN_DATA_SZ = self.KEY_LEN_SZ + self.VAL_LEN_SZ                    # Size of key and value length combined
-        self.CNT_START = 0                                                      # Start offset of number of items
-        self.WRT_IDX_START = self.CNT_SZ                                        # Start offset of write index
-        self.ENTRY_START = self.CNT_SZ + self.WRT_IDX_START                     # Start offset of entries
-        self.wrt_cnt(0)                                                         # Set count, i.e. number of items to 0
-        self.wrt_wrt_idx(self.ENTRY_START)                                      # Set write index to start of entries
+        self.MAX_ITEMS = (self.SHM_SZ - 8) // self.ENTRY_BYTES_REQD
+        self.CNT_START = 0                                                                  # Start offset of number of items
+        self.ARR_KEY_LEN_START = self.CNT_START + self.CNT_SZ                               # Start offset of array of key lengths
+        self.ARR_VAL_LEN_START = self.ARR_KEY_LEN_START + self.MAX_ITEMS * self.KEY_LEN_SZ  # Start offset of array of value lengths
+        self.ARR_KEYS_START = self.ARR_VAL_LEN_START + self.MAX_ITEMS * self.VAL_LEN_SZ     # Start offset of array of keys
+        self.ARR_VALS_START = self.ARR_KEYS_START + self.MAX_ITEMS * self.KEY_ENTRY_SZ      # Start offset of array of values
+        self._wrt_u64(0, self.CNT_START, self.CNT_START + self.CNT_SZ)
+
+        self.occupied = [False for _ in range(self.MAX_ITEMS)]
 
     def __bool__(self) -> bool:
-        return bool(self.get_cnt())
+        return bool(len(self))
 
     def __len__(self) -> int:
-        return self.get_cnt()
+        return self._rd_u64(self.CNT_START, self.CNT_START + self.CNT_SZ)
 
     def __iter__(self) -> ty.Iterable[tuple[str, str]]:
-        cnt = self.get_cnt()
-        off = self.ENTRY_START
-        for _ in range(cnt):
-            len_key, len_val = st.unpack("!QQ", self.shm.buf[off : off + 16])
-            off += 16
-            cur_key = self.shm.buf[off : off + len_key].tobytes().decode()
-            off += self.KEY_MAX_SZ
-            cur_val = self.shm.buf[off : off + len_val].tobytes().decode()
-            off += self.VAL_MAX_SZ
-            yield (cur_key, cur_val)
+        for i in range(self.MAX_ITEMS):
+            if not self._chk_key_occupancy(i):
+                continue
+            yield self.get_by_idx(i)
 
     def __contains__(self, key: ty.Any) -> bool:
         try:
@@ -171,7 +184,6 @@ class EnvTbl:
     def __setitem__(self, key: str, val: str) -> None | ty.NoReturn:
         return self.set(key, val)
 
-    @catch_exceps_env_tbl
     def __repr__(self) -> str:
         data_dict = {}
         for pair in self:
@@ -181,159 +193,147 @@ class EnvTbl:
     @property
     def shm(self) -> "mpshm.SharedMemory":
         if self._shm is None:
-            raise RuntimeError("Operation of closed shared memory descriptor")
+            raise ugen.EnvTblShmNone("Operation on closed shared memory descriptor")
         return self._shm
 
     @shm.setter
     def shm(self, val: ty.Any) -> None:
         self._shm = val
 
+    @property
+    def buf(self) -> memoryview:
+        if self.shm.buf is None:
+            raise ugen.EnvTblShmBufNone()
+        return self.shm.buf
+
+    def _chk_key_occupancy(self, idx: int) -> bool:
+        arr_key_len_entry_idx = self.ARR_KEY_LEN_START + self.KEY_LEN_SZ * idx
+        key_len = self._rd_u64(arr_key_len_entry_idx, arr_key_len_entry_idx + self.KEY_LEN_SZ)
+        if key_len == 0:
+            return False
+        return True
+
     @catch_exceps_env_tbl
-    def get_cnt(self) -> int | ty.NoReturn:
-        return st.unpack(
-            "!Q",
-            self.shm.buf[self.CNT_START : self.WRT_IDX_START]
-        )[0]
-
-    def wrt_cnt(self, cnt: int) -> None | ty.NoReturn:
-        if not (0 <= cnt <= 2 ** self.CNT_SZ - 1):
-            raise ugen.EnvCntOutOfRng()
-        with self.lock:
-            self.shm.buf[: self.WRT_IDX_START] = st.pack("!Q", cnt)
-        return None
+    def _rd_u64(self, start: int, end: int) -> int:
+        return st.unpack("!Q", self.buf[start : end])[0]
 
     @catch_exceps_env_tbl
-    def get_wrt_idx(self) -> int | ty.NoReturn:
-        return st.unpack(
-            "!Q",
-            self.shm.buf[self.WRT_IDX_START : self.ENTRY_START]
-        )[0]
+    def _rd_str(self, start: int, end: int) -> str:
+        return self.buf[start : end].tobytes().decode()
 
-    def wrt_wrt_idx(self, wrt_idx: int) -> None | ty.NoReturn:
-        if not (0 <= wrt_idx < 2 ** self.WRT_IDX_SZ):
-            raise ugen.EnvWrtIdxOutOfRng()
+    @catch_exceps_env_tbl
+    def _wrt_u64(self, data: int, start: int, end: int) -> None:
+        # TODO: Add checks for size (u64 is 8 bytes, etc.)
         with self.lock:
-            self.shm.buf[self.WRT_IDX_START : self.ENTRY_START] = st.pack(
-                "!Q",
-                wrt_idx
-            )
-        return None
+            self.buf[start : end] = st.pack("!Q", data)
 
+    @catch_exceps_env_tbl
+    def _wrt_str(self, data: str, start: int, end: int) -> None:
+        with self.lock:
+            self.buf[start : end] = data.encode()
+
+    @catch_exceps_env_tbl
     def set(self, key: str, val: str) -> None | ty.NoReturn:
         # Validate key and val are strings
         if not isinstance(key, str):
             raise ugen.InvVarNmErr(var_nm=key)
         if not isinstance(val, str):
             raise ugen.InvVarValErr(var_nm=key, var_val=val)
-
+        # Validate identifier name
         if (
             key.lower().strip("_abcdefghijklmnopqrstuvwxyz0123456789")
             or key.startswith("0123456789")
         ):
             raise ugen.InvVarNmErr(var_nm=key)
+
         # Validate data received (key and value)
         encoded_key = key.encode()
         encoded_val = val.encode()
-        len_key = len(encoded_key)
-        len_val = len(encoded_val)
-        # Check if length of key and value is more than allowed
-        if len_key > self.KEY_MAX_SZ:
-            raise ugen.EnvKeyTooLarge(f"Key too large: '{key}' ({len_key})")
-        if len_val > self.VAL_MAX_SZ:
-            prn_val = val[: 10] + "..." if len(val) > 10 else val
-            raise ugen.EnvValTooLarge(f"Value length too large: '{prn_val}' ({len_val})")
-        # Check bounds for key and value lengths (stored as 8-byte ints)
-        # Not needed, but let it be there, just in case
-        if not ((0 <= len_key < 2 ** 64) and (0 <= len_val < 2 ** 64)):
-            raise ugen.EnvKeyValLenOverflow("Item(s) too large")
+        len_encoded_key = len(key.encode())
+        len_encoded_val = len(val.encode())
+        # Check if length of key and value are more than allowed
+        if len_encoded_key > self.KEY_ENTRY_SZ:
+            raise ugen.EnvKeyTooLarge("", offending_key=key)
+        if len_encoded_val > self.VAL_ENTRY_SZ:
+            raise ugen.EnvValTooLarge("", offending_val=val)
 
-        # See if key already exists, in which case it needs to be just updated
-        cnt = len(self)
-        wrt_idx = self.get_wrt_idx()
-        end_wrt_idx = wrt_idx
-        prev_entry_present = False
-        for (nm, val) in self:
-            if key == nm:
-                # 128 subtracted for the key's assigned memory
-                # 16 (8 + 8) subtracted for the key and value's lengths' assigned memory
-                # Because we need the start of the entry, which is at the start of the key length's memory
-                wrt_idx = self.get(key, ret_off=True) - 128 - 16
-                prev_entry_present = True
-        if wrt_idx >= self.SHM_SZ - self.ENTRY_BYTES_REQD:
-            raise MemoryError(
-                f"Shared memory exhausted; need {self.ENTRY_BYTES_REQD}B, available {self.SHM_SZ - self.ENTRY_BYTES_REQD}B"
-            )
-
-        ugen.debug_Q(
-            ugen.fmt_d_stmt(
-                "env",
-                f"write index for current entry (thread {th.current_thread().name})",
-                str(wrt_idx),
-                lhs_rhs_sep=": "
-            )
-        )
-        ugen.debug_Q(
-            ugen.fmt_d_stmt(
-                "env",
-                f"previous entry present",
-                str(prev_entry_present),
-                lhs_rhs_sep=": "
-            )
-        )
-        # Acquire lock and write to shared memory
-        with self.lock:
-            len_data = st.pack("!QQ", len_key, len_val)
-            self.shm.buf[wrt_idx : wrt_idx + self.LEN_DATA_SZ] = len_data       # Length of key and value
-            wrt_idx += self.LEN_DATA_SZ
-            self.shm.buf[wrt_idx : wrt_idx + len_key] = encoded_key             # Key itself
-            wrt_idx += self.KEY_MAX_SZ
-            self.shm.buf[wrt_idx : wrt_idx + len_val] = encoded_val             # Value itself
-            wrt_idx += self.VAL_MAX_SZ
-            self.wrt_cnt(cnt + 1) if not prev_entry_present else None
-            self.wrt_wrt_idx(end_wrt_idx + self.ENTRY_BYTES_REQD) if not prev_entry_present else None
-        ugen.debug_Q(
-             ugen.fmt_d_stmt(
-                 "env",
-                 "after env table write",
-                 f"count = {self.get_cnt()}, write index = {self.get_wrt_idx()}",
-                 lhs_rhs_sep=": "
-             )
-        )
-        ugen.debug_Q("[env] after write: ")
-
-        return None
-
-    @catch_exceps_env_tbl
-    def get(self, key: str, ret_off: bool = False) -> str | ty.NoReturn:
-        if self.shm.buf is None:
-            raise RuntimeError("Operation of closed shared memory descriptor")
-
-        cnt = len(self)
-        for off in range(self.ENTRY_START, self.SHM_SZ, 8192):
-            len_key, len_val = st.unpack(
-                "!QQ",
-                self.shm.buf[off : off + self.LEN_DATA_SZ]
-            )
-            off += self.LEN_DATA_SZ
-            cur_key = self.shm.buf[off : off + len_key].tobytes().decode()
-            off += self.KEY_MAX_SZ
-            # Not the key we're looking for...
-            if cur_key != key:
-                off += self.VAL_MAX_SZ
+        # If key already exists, just update it
+        for i in range(self.MAX_ITEMS):
+            # Skip if empty cell
+            if not self._chk_key_occupancy(i):
                 continue
-            # Found the motherfucker!
-            return (
-                off
-                if ret_off else
-                self.shm.buf[off : off + len_val].tobytes().decode()
-            )
+
+            cur_key, cur_val = self.get_by_idx(i)
+            if cur_key != key:
+                continue
+            arr_val_len_entry_idx = self.ARR_VAL_LEN_START + self.VAL_LEN_SZ * i
+            arr_val_entry_idx = self.ARR_VALS_START + self.VAL_ENTRY_SZ * i
+            self._wrt_u64(len_encoded_val, arr_val_len_entry_idx, arr_val_len_entry_idx + self.VAL_LEN_SZ)
+            self._wrt_str(val, arr_val_entry_idx, arr_val_entry_idx + len_encoded_val)
+            return
+
+        # If the key doesn't already exist, then create a new one
+        for i in range(self.MAX_ITEMS):
+            # If key already exists, skip
+            if self._chk_key_occupancy(i):
+                continue
+
+            arr_key_len_entry_idx = self.ARR_KEY_LEN_START + self.KEY_LEN_SZ * i
+            arr_val_len_entry_idx = self.ARR_VAL_LEN_START + self.VAL_LEN_SZ * i
+            arr_key_entry_idx = self.ARR_KEYS_START + self.KEY_ENTRY_SZ * i
+            arr_val_entry_idx = self.ARR_VALS_START + self.VAL_ENTRY_SZ * i
+            self._wrt_u64(len_encoded_key, arr_key_len_entry_idx, arr_key_len_entry_idx + self.KEY_LEN_SZ)
+            self._wrt_u64(len_encoded_val, arr_val_len_entry_idx, arr_val_len_entry_idx + self.VAL_LEN_SZ)
+            self._wrt_str(key, arr_key_entry_idx, arr_key_entry_idx + len_encoded_key)
+            self._wrt_str(val, arr_val_entry_idx, arr_val_entry_idx + len_encoded_val)
+            self._wrt_u64(len(self) + 1, self.CNT_START, self.CNT_START + self.CNT_SZ)
+            return
+
+        raise ugen.HowDidWeGetHere()
+
+    def get(self, key: str) -> str | ty.NoReturn:
+        cur_val = None
+        for i in range(self.MAX_ITEMS):
+            arr_key_len_entry_idx = self.ARR_KEY_LEN_START + self.KEY_LEN_SZ * i
+            key_len = self._rd_u64(arr_key_len_entry_idx, arr_key_len_entry_idx + self.KEY_LEN_SZ)
+            if key_len == 0:
+                continue
+            cur_key, cur_val = self.get_by_idx(i)
+            if key == cur_key:
+                return cur_val
         raise ugen.UnkVarErr(var_nm=key)
 
+    def get_by_idx(self, idx: int) -> tuple[str, str] | ty.NoReturn:
+        if idx > self.MAX_ITEMS - 1:
+            raise IndexError()
+
+        key_len_start = self.ARR_KEY_LEN_START + idx * self.KEY_LEN_SZ
+        key_start = self.ARR_KEYS_START + idx * self.KEY_ENTRY_SZ
+        key_len = self._rd_u64(key_len_start, key_len_start + self.KEY_LEN_SZ)
+        cur_key = self._rd_str(key_start, key_start + key_len)
+
+        val_len_start = self.ARR_VAL_LEN_START + idx * self.VAL_LEN_SZ
+        val_start = self.ARR_VALS_START + idx * self.VAL_ENTRY_SZ
+        val_len = self._rd_u64(val_len_start, val_len_start + self.VAL_LEN_SZ)
+        cur_val = self._rd_str(val_start, val_start + val_len)
+        return (cur_key, cur_val)
+
     def rm(self, nm: str) -> None:
-        raise NotImplementedError("not implementing removing elements yet...")
-        for key, val in self.__iter__():
-            if key == nm:
-                pass
+        for i in range(self.MAX_ITEMS):
+            if not self._chk_key_occupancy(i):
+                continue
+            key_len_start = self.ARR_KEY_LEN_START + i * self.KEY_LEN_SZ
+            key_start = self.ARR_KEYS_START + i * self.KEY_ENTRY_SZ
+            key_len = self._rd_u64(key_len_start, key_len_start + self.KEY_LEN_SZ)
+            cur_key = self._rd_str(key_start, key_start + key_len)
+            if cur_key != nm:
+                continue
+            self._wrt_u64(0, key_len_start, key_len_start + self.KEY_LEN_SZ)
+            self._wrt_u64(len(self) - 1, self.CNT_START, self.CNT_START + self.CNT_SZ)
+            # TODO: erase key, value and value length if needed
+            return
+
+        raise ugen.InvVarNmErr(var_nm=nm)
 
 
 @dcs.dataclass

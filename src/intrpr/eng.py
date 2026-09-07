@@ -51,14 +51,14 @@ def fmt_t_ns(time_expo: int, ns: int) -> str:
 
 class Intrpr:
     def __init__(
-        self,
-        cfg: cmgr.Cfg,
-        pre_ld_ext_cmds: bool,
-        stdout_ansi: bool,
-        stderr_ansi: bool,
-        debug_time_expo: int,
-        log_lvl: int
-    ) -> None:
+            self,
+            cfg: cmgr.Cfg,
+            pre_ld_ext_cmds: bool,
+            stdout_ansi: bool,
+            stderr_ansi: bool,
+            debug_time_expo: int,
+            log_lvl: int
+            ) -> None:
         self.ext_cached_cmds: dict[str, iint.CmdCacheEntry]
 
         # Interpreter initialisation time start
