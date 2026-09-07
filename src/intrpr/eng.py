@@ -36,19 +36,6 @@ TH_CmdFn = ty.Callable[[ugen.CmdData], int]
 TH_GetCmdRes = tuple[TH_CmdFn, ugen.CmdSpec]
 
 
-def fmt_t_ns(time_expo: int, ns: int) -> str:
-    unit = "?"
-    if time_expo == 6:
-        unit = "ms"
-    elif time_expo == 3:
-        unit = "us"
-    elif time_expo == 0:
-        unit = "ns"
-    elif time_expo == 9:
-        unit = "s"
-    return str(round(ns / 10 ** time_expo, 3))
-
-
 class Intrpr:
     def __init__(
             self,
@@ -143,7 +130,7 @@ class Intrpr:
                 ugen.fmt_d_stmt(
                     "time",
                     "tot_pre_ld_ext",
-                    fmt_t_ns(self.debug_time_expo, _t_pre_ld)
+                    self.fmt_t_ns(_t_pre_ld)
                 )
             )
 
@@ -154,9 +141,12 @@ class Intrpr:
             ugen.fmt_d_stmt(
                 "time",
                 "tot_init_intrpr",
-                fmt_t_ns(self.debug_time_expo, _t_intrpr_init)
+                self.fmt_t_ns(_t_intrpr_init)
             )
         )
+
+    def fmt_t_ns(self, ns: int) -> str:
+        return ugen.fmt_t_ns(self.debug_time_expo, ns)
 
     def reslv_prompt_var(
         self,
@@ -564,7 +554,7 @@ class Intrpr:
             ugen.fmt_d_stmt(
                 "time",
                 "cmd_reslv",
-                fmt_t_ns(self.debug_time_expo, _t_cmd_resln)
+                self.fmt_t_ns(_t_cmd_resln)
             )
         )
 
@@ -996,10 +986,7 @@ class Intrpr:
             ugen.fmt_d_stmt(
                 "time",
                 "expr_exec",
-                fmt_t_ns(
-                    self.debug_time_expo,
-                    time.perf_counter_ns() - _t_exec_expr
-                )
+                self.fmt_t_ns(time.perf_counter_ns() - _t_exec_expr)
             )
         )
         return err_code
@@ -1031,10 +1018,7 @@ class Intrpr:
             ugen.fmt_d_stmt(
                 "time",
                 "full_seq_exec",
-                fmt_t_ns(
-                    self.debug_time_expo,
-                    time.perf_counter_ns() - _t_full_seq
-                )
+                self.fmt_t_ns(time.perf_counter_ns() - _t_full_seq)
             )
         )
         return err_code
@@ -1116,10 +1100,7 @@ class Intrpr:
             ugen.fmt_d_stmt(
                 "time",
                 "rn_cmd_fn",
-                fmt_t_ns(
-                    self.debug_time_expo,
-                    time.perf_counter_ns() - _t_rn_cmd_fn
-                )
+                self.fmt_t_ns(time.perf_counter_ns() - _t_rn_cmd_fn)
             )
         )
         return cmd_ret

@@ -36,18 +36,7 @@ class CmdReslvr:
         self.gather_builtin_cmds()
 
     def fmt_t_ns(self, ns: int) -> str:
-        if self.debug_time_expo == 3:
-            char = "u"
-        elif self.debug_time_expo == 6:
-            char = "m"
-        elif self.debug_time_expo == 0:
-            char = "n"
-        elif self.debug_time_expo == 9:
-            char = ""
-        else:
-            raise NotImplementedError("FOOL!")
-
-        return str(round(ns / 10 ** self.debug_time_expo, 3)) + char + "s"
+        return ugen.fmt_t_ns(self.debug_time_expo, ns)
 
     def _compu_fl_hash(
         self,
@@ -193,7 +182,7 @@ class CmdReslvr:
 
         return uerr.ERR_BAD_CMD
 
-    def validate_cmd_mod(self, cmd_mod: types.ModuleType) -> bool:
+    def validate_cmd_mod(self, cmd_mod: types.ModuleType) -> int:
         has_cmd_fn = hasattr(cmd_mod, "run")
         has_cmd_spec = hasattr(cmd_mod, "CMD_SPEC")
         has_help_obj = hasattr(cmd_mod, "HELP")
@@ -250,8 +239,7 @@ class CmdReslvr:
 
         ugen.debug_Q(ugen.fmt_d_stmt("ld_bltns", ", ".join(builtins_lded)))
         ugen.debug_Q(
-            ugen.fmt_d_stmt("time", "tot_ld_bltns",
-                            self.fmt_t_ns(_t_ld_bcmds))
+            ugen.fmt_d_stmt("time", "tot_ld_bltns", self.fmt_t_ns(_t_ld_bcmds))
         )
         ugen.info_Q(f"built-ins loaded: {num_lded_builtin}")
 

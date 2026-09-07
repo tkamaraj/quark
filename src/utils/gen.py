@@ -91,38 +91,30 @@ class UnkVarErr(Exception):
             return f"{msg} (with var {self.var_nm})"
         return f"Unknown variable: {self.var_nm}"
 
-
 class HowDidWeGetHere(Exception):
     pass
-
 
 class EnvTblShmBufNone(Exception):
     pass
 
-
 class EnvTblShmNone(Exception):
     pass
 
-
 class EnvTblEmpty(Exception):
     pass
-
 
 class EnvKeyTooLarge(Exception):
     def __init__(self, msg: str, offending_key: str) -> None:
         super().__init__(msg)
         self.offending_key = offending_key
 
-
 class EnvValTooLarge(Exception):
     def __init__(self, msg: str, offending_val: str) -> None:
         super().__init__(msg)
         self.offending_val = offending_val
 
-
 class EnvCntOutOfRng(Exception):
     pass
-
 
 class InvAccess(Exception):
     pass
@@ -143,7 +135,6 @@ class CmdData(ty.NamedTuple):
     stdin: str | None
     exec_fn: "ty.Callable[[ieng.Intrpr, str], int | ty.NoReturn]"
 
-
 class CmdSpec(ty.NamedTuple):
     min_args: int
     max_args: int | float
@@ -151,7 +142,6 @@ class CmdSpec(ty.NamedTuple):
     flags: tuple[str, ...]
     parse_sub_cmds: bool = False
     sub_cmds: dict[str | None, tuple[int, int | float]] = {}
-
 
 class HelpObj(ty.NamedTuple):
     usage: str
@@ -223,6 +213,10 @@ def esc_chrs(s: str, to_esc: tuple[str]) -> str:
             continue
         to_ret.append(ch)
     return "".join(to_ret)
+
+
+def condense_pth(pth: str) -> str:
+    return re.sub(usr_dir_regex, "~", pth)
 
 
 def set_lgrs(lgrs) -> None:
@@ -391,6 +385,19 @@ def fmt_d_stmt(
     if rhs:
         full_str += f"{lhs_rhs_sep}{rhs}"
     return full_str
+
+
+def fmt_t_ns(time_expo: int, ns: int) -> str:
+    unit = "?"
+    if time_expo == 6:
+        unit = "ms"
+    elif time_expo == 3:
+        unit = "us"
+    elif time_expo == 0:
+        unit = "ns"
+    elif time_expo == 9:
+        unit = "s"
+    return str(round(ns / 10 ** time_expo, 3)) + unit
 
 
 # Source - https://stackoverflow.com/a/46675451
@@ -682,6 +689,7 @@ _lgrs = None
 S = StyleObj()
 # For inp()
 get_pos_regex = re.compile(r"^\x1b\[(\d*);(\d*)R")
+usr_dir_regex = re.compile(rf"^{os.path.expanduser("~")}")
 str_join = "".join
 mv_cur = lambda ln, col: f"\x1b[{ln};{col}H"
 mv_cur_col = lambda col: f"\x1b[{col}G"

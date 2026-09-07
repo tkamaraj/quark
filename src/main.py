@@ -1,4 +1,5 @@
 #!/usr/bin/env -S python3 -BOO
+import dataclasses as dcs
 import os
 import signal as sig
 import sys
@@ -22,8 +23,19 @@ else:
 
 MIN_ARGS = 0
 MAX_ARGS = 1
-VALID_OPTS = {}
-VALID_FLAGS = {}
+OPTS = {
+    "-l", "--line-mode",
+    "-t", "--debug-time-unit",
+}
+FLAGS = {
+    "-d", "--debug",
+    "-e", "--preserve-stderr-ANSI",
+    "-h", "--help",
+    "-i", "--info",
+    "-o", "--preserve-stdout-ANSI",
+    "-p", "--preload-external",
+    "-W", "--no-warnings",
+}
 
 # TODO: Update the help string
 HELP_TXT = (
@@ -55,109 +67,104 @@ HELP_TXT = (
 )
 
 
-class MainProgParsed(ty.NamedTuple):
-    ln_mode: str
-    pre_ld_ext_cmds: bool
-    stdout_ansi: bool
-    stderr_ansi: bool
-    log_lvl: int
-    debug_time_expo: int
+@dcs.dataclass
+class MainProgParsed:
+    ln_mode: str = "default"
+    pre_ld_ext_cmds: bool = False
+    stdout_ansi: bool = False
+    stderr_ansi: bool = False
+    log_lvl: int = leng.LogLvls.WARN
+    debug_time_expo: int = 6
+    fl: str | None = None
 
 
-def parse_argv(passed_params: list[str]) -> MainProgParsed:
-    len_passed_params = len(passed_params)
-    skip = 0
-
-    ln_mode = "default"
-    pre_ld_ext_cmds = False
-    stdout_ansi = False
-    stderr_ansi = False
-    log_lvl = leng.LogLvls.WARN
-    debug_time_expo = 6
+def parse_argv(cfg: MainProgParsed, passed_params: list[str]) -> MainProgParsed:
+    params = passed_params.copy()
+    parse_opts_flags = True
     args = []
+    idx = 0
 
-    for i, param in enumerate(passed_params):
-        if skip:
-            skip -= 1
-            continue
-
-        # Argument; has either an escaped hyphen at the front, or does not
-        # start with an hyphen
-        if param.startswith("\\-") or not param.startswith("-"):
+    while idx < len(params):
+        param = params[idx]
+        if not (param.startswith("-") and parse_opts_flags):
             args.append(param)
             continue
+        if param == "--":
+            parse_opts_flags = False
+            continue
+        if param not in (*FLAGS, *OPTS):
+            if [i for i in param[1 :] if f"-{i}" not in FLAGS]:
+                ugen.err_Q(f"Unknown parameter: '{param}'")
+                sys.exit(uerr.ERR_MP_UNK_TOK)
+            params[idx : idx + 1] = list(param[1 :])
+            continue
 
-        # Flag: preload external commands
-        if param in ("-e", "--load-external"):
-            pre_ld_ext_cmds = True
-        # Flag: Show debug
-        elif param in ("-d", "--debug"):
-            log_lvl = leng.LogLvls.DEBUG
-        elif param in ("-po", "--preserve-ANSI-stdout"):
-            stdout_ansi = True
-        # Flag: Preserve ANSI colour codes in STDERR redirects
-        elif param in ("-pe", "--preserve-ANSI-stderr"):
-            stderr_ansi = True
-        # Flag: Show info
+        # Flags
+        if param in ("-d", "--debug"):
+            cfg.log_lvl = leng.LogLvls.DEBUG
+        elif param in ("-e", "--load-external"):
+            cfg.pre_ld_ext_cmds = True
+        elif param in ("-o", "--preserve-ANSI-stdout"):
+            cfg.stdout_ansi = True
+        elif param in ("-e", "--preserve-ANSI-stderr"):
+            cfg.stderr_ansi = True
         elif param in ("-i", "--info"):
-            log_lvl = leng.LogLvls.INFO
-        # Flag: No warnings
+            cfg.log_lvl = leng.LogLvls.INFO
         elif param in ("-W", "--no-warnings"):
-            if log_lvl <= leng.LogLvls.WARN:
-                log_lvl = leng.LogLvls.ERR
+            if cfg.log_lvl <= leng.LogLvls.WARN:
+                cfg.log_lvl = leng.LogLvls.ERR
         elif param in ("-h", "--help"):
             ugen.write("\n".join(HELP_TXT).expandtabs(2))
             sys.exit(uerr.ERR_ALL_GOOD)
+        # Options after this, hence check if value is present
+        elif idx >= len(params) - 1:
+            ugen.err_Q(f"Expected value for '{param}'")
+            sys.exit(uerr.ERR_MP_EXPD_VAL_OPT)
+        # Options
         elif param in ("-l", "--line-mode"):
-            # No value for option
-            if i == len_passed_params - 1:
-                ugen.err_Q("Expected value for '{param}'")
-                sys.exit(uerr.ERR_MP_EXPD_VAL_OPT)
-            val = passed_params[i + 1]
+            val = passed_params[idx + 1]
             if val not in ("emacs", "vi", "raw"):
                 ugen.err_Q(f"Invalid value for '{param}': '{val}'")
                 sys.exit(uerr.ERR_MP_INV_VAL)
-            ln_mode = val
-        # Option: Debug time unit conversion exponent
+            cfg.ln_mode = val
+            idx += 1
         elif param in ("-t", "--debug-time-unit"):
-            # No value for the option found...
-            if i == len_passed_params - 1:
-                ugen.err_Q(f"Expected value for '{param}'")
-                sys.exit(uerr.ERR_MP_EXPD_VAL_OPT)
-            val = passed_params[i + 1]
+            val = passed_params[idx + 1]
             if val == "ms":
-                debug_time_expo = 6
+                cfg.debug_time_expo = 6
             elif val == "us":
-                debug_time_expo = 3
+                cfg.debug_time_expo = 3
             elif val == "ns":
-                debug_time_expo = 0
+                cfg.debug_time_expo = 0
             elif val == "s":
-                debug_time_expo = 9
+                cfg.debug_time_expo = 9
             else:
                 ugen.err_Q(f"Invalid value for '{param}': '{val}'")
                 sys.exit(uerr.ERR_MP_INV_VAL)
-            skip += 1
+            idx += 1
+        # Not needed, but let it be there
         else:
             ugen.err_Q(f"Unknown parameter: '{param}'")
             sys.exit(uerr.ERR_MP_UNK_TOK)
 
-    return MainProgParsed(
-        ln_mode=ln_mode,
-        pre_ld_ext_cmds=pre_ld_ext_cmds,
-        stdout_ansi=stdout_ansi,
-        stderr_ansi=stderr_ansi,
-        log_lvl=log_lvl,
-        debug_time_expo=debug_time_expo
-    )
+        idx += 1
 
+    args_len = len(args)
+    if not (MIN_ARGS <= args_len <= MAX_ARGS):
+        ugen.fatal_Q(
+            f"Argument {"underflow" if MIN_ARGS < args_len else "overflow"}: {args_len} not in [{MIN_ARGS}, {MAX_ARGS}]",
+            ret=uerr.ERR_INSUFF_ARGS if MIN_ARGS < args_len else uerr.ERR_UNEXPD_ARGS,
+        )
+
+    return cfg
 
 def main() -> None:
     try:
-        parsed_params = parse_argv(sys.argv[1 :])
+        parsed = parse_argv(MainProgParsed(), sys.argv[1 :])
         log_fd = open(uconst.LOG_FL, "a")
         lgrs = leng.LgrVessel(
-            leng.Lgr("lgr_c", "C", parsed_params.log_lvl, sys.stderr),
-            leng.Lgr("lgr_q", "Q", parsed_params.log_lvl, sys.stderr),
+            leng.Lgr("lgr_c", "C", parsed.log_lvl, sys.stderr),
+            leng.Lgr("lgr_q", "Q", parsed.log_lvl, sys.stderr),
             leng.Lgr("fl_lgr", "F", leng.LogLvls.CRIT, log_fd)
         )
         # Recommended not to put any debug, info or warning statements above
@@ -165,28 +172,32 @@ def main() -> None:
         # being initialised, they do not obey the log levels, because log
         # levels aren't available before the following line
         ugen.set_lgrs(lgrs)
+        ugen.debug(ugen.fmt_d_stmt(
+            src="log",
+            lhs=f"opened log file {ugen.condense_pth(uconst.LOG_FL)}",
+        ))
         cfg = cmgr.get_cfg()
         intrpr = ieng.Intrpr(
             cfg=cfg,
-            pre_ld_ext_cmds=parsed_params.pre_ld_ext_cmds,
-            stdout_ansi=parsed_params.stdout_ansi,
-            stderr_ansi=parsed_params.stderr_ansi,
-            debug_time_expo=parsed_params.debug_time_expo,
-            log_lvl=parsed_params.log_lvl
+            pre_ld_ext_cmds=parsed.pre_ld_ext_cmds,
+            stdout_ansi=parsed.stdout_ansi,
+            stderr_ansi=parsed.stderr_ansi,
+            debug_time_expo=parsed.debug_time_expo,
+            log_lvl=parsed.log_lvl
         )
         ugen.info_Q(f"running from \"{uconst.RUN_PTH}\"")
         # No line mode option passed from command line
-        if parsed_params.ln_mode == "default":
+        if parsed.ln_mode == "default":
             if cfg.ln_mode != "raw":
                 import readline as rl
                 rl.parse_and_bind("tab: complete")
                 if cfg.ln_mode == "vi":
                     rl.parse_and_bind("set editing-mode vi")
         # Line mode option passed from command line
-        elif parsed_params.ln_mode != "raw":
+        elif parsed.ln_mode != "raw":
             import readline as rl
             rl.parse_and_bind("tab: complete")
-            if parsed_params.ln_mode == "vi":
+            if parsed.ln_mode == "vi":
                 rl.parse_and_bind("set editing-mode vi")
 
     except Exception as e:
