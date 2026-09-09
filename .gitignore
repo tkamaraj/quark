@@ -10,7 +10,7 @@ misc/
 old_vers/
 releases/
 tmp/
-venv/
+.venv/
 
 # Tests
 tests/lexer/*.txt

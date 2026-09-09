@@ -42,10 +42,10 @@ Python 3.13 or later is required for running the program from source.
 To run the shell from source:
 
 ```shell
-git clone https://gitea.com/tkamaraj/quark.git
+git clone https://gitea.com/vallu/quark.git
 cd ./quark/
-python3 -m venv ./venv/
-source ./venv/bin/activate
+python3 -m venv ./.venv/
+source ./.venv/bin/activate
 python3 -m pip install -e ./
 python3 -BOO ./src/main.py
 ```
@@ -70,7 +70,7 @@ Go to the project root, and build the project with the build script `dev/pc.py`
 
 ```shell
 python3 -m pip install -r ./build_reqmts.txt
-python3 -BOO ./dev/pc.py ./src/main.py
+python3 -BOO ./dev/pc.py
 ```
 
 The help text is not available for the build script as of now, so please go
