@@ -5,11 +5,19 @@ import typing as ty
 from src.utils import err_codes as uerr
 from src.utils import gen as ugen
 
+VALID_FIELDS = {
+    "pid": "Process PID",
+    "ppid": "Parent PID",
+    "name": "Process name",
+    "threads": "Threads used by process",
+    "starttime": "Start time of process",
+    "full": "Full invokation",
+}
 CMD_NM = __name__.split(".")[-1]
 
 # TODO: Don't forget to update the help string
 HELP = ugen.HelpObj(
-    usage=f"{CMD_NM} [flag ...] [proc ...]",
+    usage=f"{CMD_NM} [flag ...] [opt val ...] [proc ...]",
     summary="Get a list of running processes",
     details=(
         "ARGUMENTS",
@@ -18,33 +26,35 @@ HELP = ugen.HelpObj(
             "Regex to match with process names, unless -e/--exact is given"
         ),
         "OPTIONS",
-        ("none", ""),
+        (
+            "-f, --fields FIELD[,FIELD...]",
+            f"Fields to display\nValid values: {", ".join(VALID_FIELDS)}",
+        ),
         "FLAGS",
-        ("-l, --long", "Process long listing"),
+        ("-l, --long", "Alias for `--fields pid,full`"),
         ("-e, --escape", "Escape regex strings"),
         ("-x, --exact", "Exactly match arguments")
     )
 )
 
-# TODO: Don't forget to update the spec
 CMD_SPEC = ugen.CmdSpec(
     min_args=0,
     max_args=float("inf"),
     opts=("-f", "--fields"),
     flags=(
+        "-e", "--escape",
         "-H", "--no-headers",
         "-l", "--long",
+        "-x", "--exact",
     )
 )
 
 
-def rd_fl(fl_pth: str, binary: bool = False) -> str | int:
+def rd_fl_as_bin(fl_pth: str) -> str | int:
     try:
-        with open(fl_pth, "rb" if binary else "r") as f:
+        with open(fl_pth, "rb") as f:
             cntnt = f.read()
-            if isinstance(cntnt, bytes):
-                return cntnt.decode()
-            return cntnt
+            return cntnt.decode()
     except PermissionError:
         return uerr.ERR_PERM_DENIED
     except FileNotFoundError:
@@ -60,23 +70,22 @@ def run(data: ugen.CmdData) -> int:
     long = False
     fields = ["pid", "name"]
     wrt_headers = True
-    valid_fields = ["pid", "ppid", "name", "threads", "starttime", "full"]
-
-    for opt, val in data.opts.items():
-        if opt in ("-f", "--fields"):
-            fields = val.split(",")
-            if inv := [i for i in fields if i not in valid_fields]:
-                ugen.err(
-                    f"Invalid value(s) for fields: "
-                    + ", ".join(("'" + ugen.esc_chrs_all(i) + "'") for i in inv)
-                )
-                return uerr.ERR_INV_VAL_OPT
 
     for flag in data.flags:
         if flag in ("-H", "--no-headers"):
             wrt_headers = False
         if flag in ("-l", "--long"):
             fields = ["pid", "full"]
+
+    for opt, val in data.opts.items():
+        if opt in ("-f", "--fields"):
+            fields = list(dict.fromkeys(val.split(",")))
+            if inv := [i for i in fields if i not in VALID_FIELDS]:
+                ugen.err(
+                    f"Invalid value(s) for fields: "
+                    + ", ".join(("'" + ugen.esc_chrs_all(i) + "'") for i in inv)
+                )
+                return uerr.ERR_INV_VAL_OPT
 
     proc_arr = {k: [] for k in fields}
     max_lens = {k: 0 for k in fields}
@@ -99,13 +108,13 @@ def run(data: ugen.CmdData) -> int:
         starttime = "?"
         full = "???"
 
-        cmdline = rd_fl(os.path.join(i.path, "cmdline"), binary=True)
+        cmdline = rd_fl_as_bin(os.path.join(i.path, "cmdline"))
         if isinstance(cmdline, int):
             ugen.warn(f"Cannot obtain full command line: {pid}")
         else:
             full = cmdline.replace("\x00", " ")
 
-        stat = rd_fl(os.path.join(i.path, "stat"))
+        stat = rd_fl_as_bin(os.path.join(i.path, "stat"))
         if isinstance(stat, int):
             ugen.warn(f"Cannot obtain process status: {pid}")
         else:
@@ -124,12 +133,30 @@ def run(data: ugen.CmdData) -> int:
 
     # TODO: add right alignment for specific fields, like PID, PPID, etc.
 
+    fields_len = len(fields)
+
     if wrt_headers and cnt > 0:
-        headers = [ugen.ljust(field.upper(), amt=max_lens[field]) for field in fields]
-        ugen.write("  ".join(headers) + "\n")
+        tmp = []
+        for i, field in enumerate(fields):
+            pad_amt = max_lens[field]
+            tmp.append(
+                ugen.ljust(field.upper(), amt=pad_amt)
+                if i < fields_len - 1 else field.upper()
+            )
+        tmp_joined = "  ".join(tmp) + "\n"
+        # If no terminal size is available or output is not to TTY or length of
+        # whole line is less than total available columns, use whole line as it is
+        if (
+            data.term_sz is None
+            or not data.is_tty
+            or len(tmp_joined) <= data.term_sz.columns
+        ):
+            ugen.write(tmp_joined)
+        # Otherwise chop off
+        else:
+            ugen.write(tmp_joined[: data.term_sz.columns - 1] + ">")
 
     final = []
-    fields_len = len(fields)
     for i in range(cnt):
         cur = []
         for j, field in enumerate(fields):
@@ -139,14 +166,17 @@ def run(data: ugen.CmdData) -> int:
                 ugen.ljust(field_i, amt=pad_amt) if j < fields_len - 1 else field_i
             )
         cur_joined = "  ".join(cur)
+        # If no terminal size is available or output is not to TTY or length of
+        # whole line is less than total available columns, use whole line as it is
         if (
             data.term_sz is None
             or not data.is_tty
             or len(cur_joined) <= data.term_sz.columns
         ):
-            final.append("  ".join(cur))
+            final.append(cur_joined)
+        # Otherwise, chop off
         else:
-            final.append("  ".join(cur)[: data.term_sz.columns - 1] + ">")
+            final.append(cur_joined[: data.term_sz.columns - 1] + ">")
 
     ugen.write("\n".join(final) + "\n")
     return err_code
