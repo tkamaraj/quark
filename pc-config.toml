@@ -1,4 +1,5 @@
 force = true
-quiet = true
+quiet = false
 file = "~/projs/quark/src/main.py"
-data-directory = "~/projs/quark/src/py/"
+full-directories = ["~/projs/quark/src/py/"]
+packages = ["src.intrpr.builtin_cmds"]

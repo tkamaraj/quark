@@ -31,20 +31,20 @@ CMD_SPEC = ugen.CmdSpec(
     min_args=0,
     max_args=float("inf"),
     opts=("-f", "--fields"),
-    flags=()
+    flags=(
+        "-H", "--no-headers",
+        "-l", "--long",
+    )
 )
 
 
-class ProcEntry(ty.NamedTuple):
-    pid: str    # PID is a str to eliminate unnecessary conversions
-    nm: str
-    full: str
-
-
-def rd_fl(fl_pth: str, binary: bool = False) -> bytes:
+def rd_fl(fl_pth: str, binary: bool = False) -> str | int:
     try:
         with open(fl_pth, "rb" if binary else "r") as f:
-            return f.read()
+            cntnt = f.read()
+            if isinstance(cntnt, bytes):
+                return cntnt.decode()
+            return cntnt
     except PermissionError:
         return uerr.ERR_PERM_DENIED
     except FileNotFoundError:
@@ -60,51 +60,50 @@ def run(data: ugen.CmdData) -> int:
     long = False
     fields = ["pid", "name"]
     wrt_headers = True
-    valid_fields = ["pid", "full", "ppid", "name", "threads", "starttime", "full"]
+    valid_fields = ["pid", "ppid", "name", "threads", "starttime", "full"]
 
     for opt, val in data.opts.items():
         if opt in ("-f", "--fields"):
-            comma_split = val.split(",")
-            if inv := [i for i in comma_split if i not in valid_fields]:
+            fields = val.split(",")
+            if inv := [i for i in fields if i not in valid_fields]:
                 ugen.err(
                     f"Invalid value(s) for fields: "
                     + ", ".join(("'" + ugen.esc_chrs_all(i) + "'") for i in inv)
                 )
                 return uerr.ERR_INV_VAL_OPT
-            fields = [*comma_split]
 
     for flag in data.flags:
         if flag in ("-H", "--no-headers"):
             wrt_headers = False
+        if flag in ("-l", "--long"):
+            fields = ["pid", "full"]
 
-    proc_arr = []
+    proc_arr = {k: [] for k in fields}
+    max_lens = {k: 0 for k in fields}
     max_pid_len = 0
     max_ppid_len = 0
     max_num_threads_len = 0
     max_starttime_len = 0
     max_nm_len = 0
     max_full_len = 0
+    cnt = 0
 
     for i in os.scandir("/proc"):
         if not i.name.isnumeric():
             continue
 
         pid = i.name
-        prn_fields = dict.fromkeys(fields)
-        prn_fields["pid"] = i.name
-        prn_fields["full"] = "?"
-        prn_fields["name"] = "?"
-        prn_fields["ppid"] = "?"
-        prn_fields["starttime"] = "?"
-        prn_fields["full"] = "???"
-        if "pid" in fields:
-            max_pid_len = max(len(pid), max_pid_len)
+        ppid = "?"
+        name = "?"
+        threads = "?"
+        starttime = "?"
+        full = "???"
 
         cmdline = rd_fl(os.path.join(i.path, "cmdline"), binary=True)
         if isinstance(cmdline, int):
             ugen.warn(f"Cannot obtain full command line: {pid}")
         else:
-            prn_fields["full"] = cmdline.replace(b"\x00", b" ").decode()
+            full = cmdline.replace("\x00", " ")
 
         stat = rd_fl(os.path.join(i.path, "stat"))
         if isinstance(stat, int):
@@ -112,41 +111,42 @@ def run(data: ugen.CmdData) -> int:
         else:
             stat = re.search(r"(.+)\s+\((.+)\)\s+(.+)", stat)
             stat_rt_part = stat.group(3).split()
-            if "name" in fields:
-                nm = stat.group(2)
-                prn_fields["name"] = nm
-                max_nm_len = max(len(nm), max_nm_len)
-            if "ppid" in fields:
-                ppid = stat_rt_part[1]
-                prn_fields["ppid"] = ppid
-                max_ppid_len = max(len(ppid), max_ppid_len)
-            if "threads" in fields:
-                num_threads = stat_rt_part[17]
-                prn_fields["threads"] = num_threads
-                max_num_threads_len = max(len(num_threads), max_num_threads_len)
-            if "starttime" in fields:
-                starttime = stat_rt_part[19]
-                prn_fields["starttime"] = starttime
-                max_starttime_len = max(len(starttime), max_starttime_len)
+            name = stat.group(2)
+            ppid = stat_rt_part[1]
+            threads = stat_rt_part[17]
+            starttime = stat_rt_part[19]
 
-        proc_arr.append(prn_fields)
+        for field in fields:
+            # Feel like this is going to bite me in the ass someday...
+            proc_arr[field].append(locals()[field])
+            max_lens[field] = max(max_lens[field], len(locals()[field]))
+        cnt += 1
 
-    if wrt_headers and proc_arr:
-        # TODO: Add headers
-        # ugen.write(f"{"PID":>{max_pid_len}} {"NAME":<{max_nm_len}}\n")
-        pass
+    # TODO: add right alignment for specific fields, like PID, PPID, etc.
 
-    # TODO: Space before first column needs to be removed when PID column is
-    # TODO: NOT the first column
-    for proc in proc_arr:
-        ugen.write(
-            (ugen.ljust(proc["pid"], max_pid_len) if "pid" in fields else "")
-            + ((" " + ugen.ljust(proc["name"], max_nm_len)) if "name" in fields else "")
-            + ((" " + ugen.ljust(proc["ppid"], max_ppid_len)) if "ppid" in fields else "")
-            + ((" " + ugen.ljust(proc["threads"], max_num_threads_len)) if "threads" in fields else "")
-            + ((" " + ugen.ljust(proc["starttime"], max_starttime_len)) if "starttime" in fields else "")
-            + ((" " + ugen.ljust(proc["full"], max_full_len)) if "full" in fields else "")
-            + "\n"
-        )
+    if wrt_headers and cnt > 0:
+        headers = [ugen.ljust(field.upper(), amt=max_lens[field]) for field in fields]
+        ugen.write("  ".join(headers) + "\n")
 
+    final = []
+    fields_len = len(fields)
+    for i in range(cnt):
+        cur = []
+        for j, field in enumerate(fields):
+            field_i = proc_arr[field][i]
+            pad_amt = max_lens[field]
+            cur.append(
+                ugen.ljust(field_i, amt=pad_amt) if j < fields_len - 1 else field_i
+            )
+        cur_joined = "  ".join(cur)
+        if (
+            data.term_sz is None
+            or not data.is_tty
+            or len(cur_joined) <= data.term_sz.columns
+        ):
+            final.append("  ".join(cur))
+        else:
+            final.append("  ".join(cur)[: data.term_sz.columns - 1] + ">")
+
+    ugen.write("\n".join(final) + "\n")
     return err_code
