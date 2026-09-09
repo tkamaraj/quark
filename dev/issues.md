@@ -35,14 +35,3 @@ the commands in the file. For example, try running a file with the text
 because it seems to be a race between the output text and the debug messages. I
 suspect it's due to the output being slow to reach the parent process from the
 child process through the pipe.
-
-### src/bin/pl_old.py
-
-- [IRRELEVANT, NEW MODULE VERSION AVAILABLE] The length of all the entries are
-calculated even when not using all the entries, like when supplying arguments
-to filter processes. Modify the module so that entries that are included the
-output only get their lengths calculated.
-
-### src/py/pl.py
-
-- Finish the incomplete rewrite.
