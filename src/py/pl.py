@@ -7,6 +7,8 @@ from src.utils import gen as ugen
 
 OPTS = {
     "FIELDS": ("-f", "--fields"),
+    "REPEAT_CHRS": ("-r", "--repeat-chars"),
+    "SEP_CHRS": ("-s", "--chars"),
 }
 FLAGS = {
     "EXACT"        : ("-e", "--exact"),
@@ -37,14 +39,26 @@ HELP = ugen.HelpObj(
         ),
         "OPTIONS",
         (
-            "-f, --fields FIELD[,FIELD...]",
-            f"Fields to display\nValid values: {", ".join(VALID_FIELDS)}",
+            "-f, --fields FIELD[,FIELD ...]",
+            ("Fields to display\n"
+             f"Valid values: {", ".join(VALID_FIELDS)}"),
+        ),
+        (
+            "-r, --repeat-sep-chars NUM",
+            ("Number of times to repeat separation characters\n"
+             "(int) NUM >= 0\n"
+             "DEFAULT = 2"),
+        ),
+        (
+            "-s, --sep-chars CHR[CHR ...]",
+            ("Separation characters between field columns\n"
+             "DEFAULT = \" \""),
         ),
         "FLAGS",
+        ("-e, --exact", "Exactly match arguments"),
         ("-l, --long", "Alias for `--fields pid,full`"),
         ("-H, --no-headers", "Print no header information"),
         ("-p, --by-pid", "Match by PID"),
-        ("-e, --exact", "Exactly match arguments"),
     )
 )
 
@@ -78,7 +92,9 @@ def run(data: ugen.CmdData) -> int:
     escape = False
     wrt_headers = True
     filter_by_pid = False
-    filter_regexes = []
+    regexes = []
+    sep_chrs = " "
+    repeat_num = 2
 
     for flag in data.flags:
         if flag in FLAGS["NO_HEADERS"]:
@@ -99,21 +115,25 @@ def run(data: ugen.CmdData) -> int:
                     + ", ".join(("'" + ugen.esc_chrs_all(i) + "'") for i in inv)
                 )
                 return uerr.ERR_INV_VAL_OPT
+        elif opt in OPTS["SEP_CHRS"]:
+            sep_chrs = val
+        elif opt in OPTS["REPEAT_CHRS"]:
+            try:
+                repeat_num = int(val)
+            except ValueError:
+                ugen.err(f"Cannot cast to int: '{repr(val)}'")
+                return uerr.ERR_CANT_CAST_VAL
+
+    field_sepr = sep_chrs * repeat_num
 
     # Compile all args into patterns
     for arg in data.args:
-        filter_regexes.append(
+        regexes.append(
             re.compile(f"^{re.escape(arg)}$" if exact else arg)
         )
 
     proc_arr = {k: [] for k in fields}
     max_lens = {k: 0 for k in fields}
-    max_pid_len = 0
-    max_ppid_len = 0
-    max_num_threads_len = 0
-    max_starttime_len = 0
-    max_nm_len = 0
-    max_full_len = 0
     cnt = 0
 
     for i in os.scandir("/proc"):
@@ -121,9 +141,13 @@ def run(data: ugen.CmdData) -> int:
             continue
 
         pid = i.name
-        # If args is not empty, and filter by name is not turned on, hence
-        # match PID with each of the arg regexes and see if any matches
-        if data.args and filter_by_pid and not any(patt.search(pid) is not None for patt in filter_regexes):
+        # If args is not empty, and filter by PID is true, hence match PID with
+        # each of the arg regexes and see if any matches
+        if (
+            data.args
+            and filter_by_pid
+            and not any(patt.search(pid) is not None for patt in regexes)
+        ):
             continue
         ppid = "?"
         name = "?"
@@ -149,9 +173,13 @@ def run(data: ugen.CmdData) -> int:
             else:
                 stat_rt_part = stat.group(3).split()
                 name = stat.group(2)
-                # If args is not empty, and filter by name is turned on, hence
-                # match name with each of the arg regexes and see if any hatches
-                if data.args and not filter_by_pid and not [i for i in filter_regexes if i.search(name) != None]:
+                # If args is not empty, and filter by PID is false, hence match
+                # name with each of the arg regexes and see if any hatches
+                if (
+                    data.args
+                    and not filter_by_pid
+                    and not any(patt.search(name) for patt in regexes)
+                ):
                     continue
                 ppid = stat_rt_part[1]
                 threads = stat_rt_part[17]
@@ -175,7 +203,7 @@ def run(data: ugen.CmdData) -> int:
                 ugen.ljust(field.upper(), amt=pad_amt)
                 if i < fields_len - 1 else field.upper()
             )
-        tmp_joined = "  ".join(tmp) + "\n"
+        tmp_joined = field_sepr.join(tmp) + "\n"
         # If no terminal size is available or output is not to TTY or length of
         # whole line is less than total available columns, use whole line as it is
         if (
@@ -195,9 +223,10 @@ def run(data: ugen.CmdData) -> int:
             field_i = proc_arr[field][i]
             pad_amt = max_lens[field]
             cur.append(
-                ugen.ljust(field_i, amt=pad_amt) if j < fields_len - 1 else field_i
+                ugen.ljust(field_i, amt=pad_amt)
+                if j < fields_len - 1 else field_i
             )
-        cur_joined = "  ".join(cur)
+        cur_joined = field_sepr.join(cur)
         # If no terminal size is available or output is not to TTY or length of
         # whole line is less than total available columns, use whole line as it is
         if (
