@@ -9,11 +9,10 @@ OPTS = {
     "FIELDS": ("-f", "--fields"),
 }
 FLAGS = {
-    "ESC"           : ("-e", "--escape"),
-    "EXACT"         : ("-x", "--exact"),
-    "LONG"          : ("-l", "--long"),
-    "NO_HEADERS"    : ("-H", "--no-headers"),
-    "FILTER_BY_NAME": ("-n", "--by-name"),
+    "EXACT"        : ("-e", "--exact"),
+    "LONG"         : ("-l", "--long"),
+    "NO_HEADERS"   : ("-H", "--no-headers"),
+    "FILTER_BY_PID": ("-p", "--by-pid"),
 }
 
 VALID_FIELDS = {
@@ -43,8 +42,9 @@ HELP = ugen.HelpObj(
         ),
         "FLAGS",
         ("-l, --long", "Alias for `--fields pid,full`"),
-        ("-e, --escape", "Escape regex strings"),
-        ("-x, --exact", "Exactly match arguments")
+        ("-H, --no-headers", "Print no header information"),
+        ("-p, --by-pid", "Match by PID"),
+        ("-e, --exact", "Exactly match arguments"),
     )
 )
 
@@ -74,10 +74,10 @@ def rd_fl_as_bin(fl_pth: str) -> str | int:
 def run(data: ugen.CmdData) -> int:
     err_code = uerr.ERR_ALL_GOOD
     fields = ["pid", "name"]
-    exact_match = False
+    exact = False
+    escape = False
     wrt_headers = True
-    match_exact = False
-    filter_by_nm = False
+    filter_by_pid = False
     filter_regexes = []
 
     for flag in data.flags:
@@ -85,10 +85,10 @@ def run(data: ugen.CmdData) -> int:
             wrt_headers = False
         elif flag in FLAGS["LONG"]:
             fields = ["pid", "full"]
-        elif flag in FLAGS["FILTER_BY_NAME"]:
-            filter_by_nm = True
+        elif flag in FLAGS["FILTER_BY_PID"]:
+            filter_by_pid = True
         elif flag in FLAGS["EXACT"]:
-            exact_match = True
+            exact = True
 
     for opt, val in data.opts.items():
         if opt in OPTS["FIELDS"]:
@@ -102,9 +102,9 @@ def run(data: ugen.CmdData) -> int:
 
     # Compile all args into patterns
     for arg in data.args:
-        filter_regexes.append(re.compile(
-            f"^{re.escape(arg)}$" if exact_match else re.escape(arg)
-        ))
+        filter_regexes.append(
+            re.compile(f"^{re.escape(arg)}$" if exact else arg)
+        )
 
     proc_arr = {k: [] for k in fields}
     max_lens = {k: 0 for k in fields}
@@ -123,7 +123,7 @@ def run(data: ugen.CmdData) -> int:
         pid = i.name
         # If args is not empty, and filter by name is not turned on, hence
         # match PID with each of the arg regexes and see if any matches
-        if data.args and not filter_by_nm and not [i for i in filter_regexes if i.search(pid) != None]:
+        if data.args and filter_by_pid and not any(patt.search(pid) is not None for patt in filter_regexes):
             continue
         ppid = "?"
         name = "?"
@@ -151,7 +151,7 @@ def run(data: ugen.CmdData) -> int:
                 name = stat.group(2)
                 # If args is not empty, and filter by name is turned on, hence
                 # match name with each of the arg regexes and see if any hatches
-                if data.args and filter_by_nm and not [i for i in filter_regexes if i.search(name) != None]:
+                if data.args and not filter_by_pid and not [i for i in filter_regexes if i.search(name) != None]:
                     continue
                 ppid = stat_rt_part[1]
                 threads = stat_rt_part[17]
