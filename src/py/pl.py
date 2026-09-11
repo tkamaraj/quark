@@ -85,6 +85,40 @@ def rd_fl_as_bin(fl_pth: str) -> str | int:
         return uerr.ERR_OS_ERR
 
 
+def cons_final_out_str(
+    proc_arr: dict[str, list[str]],
+    max_lens: dict[str, int],
+    fields: list[str],
+    field_sepr: str,
+    cnt: int,
+    term_sz: os.terminal_size | None,
+    is_tty: bool,
+) -> str:
+    fields_len = len(fields)
+    final = []
+
+    for i in range(cnt):
+        cur = []
+        for j, field in enumerate(fields):
+            field_i = proc_arr[field][i]
+            pad_amt = max_lens[field]
+            cur.append(
+                ugen.ljust(field_i, amt=pad_amt)
+                if j < fields_len - 1 else field_i
+            )
+
+        cur_joined = field_sepr.join(cur)
+        # If no terminal size is available or output is not to TTY or length of
+        # whole line is less than total available columns, use whole line as it is
+        if term_sz is None or not is_tty or len(cur_joined) <= term_sz.columns:
+            final.append(cur_joined)
+        # Otherwise, chop off
+        else:
+            final.append(cur_joined[: term_sz.columns - 1] + ">")
+
+    return "\n".join(final) + ("\n" if final else "")
+
+
 def run(data: ugen.CmdData) -> int:
     err_code = uerr.ERR_ALL_GOOD
     fields = ["pid", "name"]
@@ -216,28 +250,13 @@ def run(data: ugen.CmdData) -> int:
         else:
             ugen.write(tmp_joined[: data.term_sz.columns - 1] + ">")
 
-    final = []
-    for i in range(cnt):
-        cur = []
-        for j, field in enumerate(fields):
-            field_i = proc_arr[field][i]
-            pad_amt = max_lens[field]
-            cur.append(
-                ugen.ljust(field_i, amt=pad_amt)
-                if j < fields_len - 1 else field_i
-            )
-        cur_joined = field_sepr.join(cur)
-        # If no terminal size is available or output is not to TTY or length of
-        # whole line is less than total available columns, use whole line as it is
-        if (
-            data.term_sz is None
-            or not data.is_tty
-            or len(cur_joined) <= data.term_sz.columns
-        ):
-            final.append(cur_joined)
-        # Otherwise, chop off
-        else:
-            final.append(cur_joined[: data.term_sz.columns - 1] + ">")
-
-    ugen.write("\n".join(final) + ("\n" if final else ""))
+    ugen.write(cons_final_out_str(
+        proc_arr,
+        max_lens,
+        fields,
+        field_sepr,
+        cnt,
+        data.term_sz,
+        data.is_tty
+    ))
     return err_code

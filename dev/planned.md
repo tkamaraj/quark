@@ -14,16 +14,17 @@
 
 ### Interpreter engine (src/intrpr/eng.py)
 
-- [IRRELEVANT] [DROPPED] Use temporary files to overcome the restriction in
-size of io.StringIO buffers.
-- [DONE] Improve aliases. Right now, it's very basic. You can alias only
-commands, not commands and options or arguments or flags.
+- Test piping, because it uses StringIO. Test if StringIO fails on large data
+volumes. If yes, use temporary files to overcome the restriction in size of
+io.StringIO buffers.
 - Argument, option and flag classification: need to include entries in the
 command spec to define valid flags for individual subcommands.
 
 ### General utils and command API (src/utils/gen.py)
 
 - [DONE, NEEDS IMPROVEMENT] Implement tab completion.
+- Implement a way to identify the origin of the log message (the function in
+immediately before on stack, or the filename the log message originates from).
 
 ## Command modules
 
@@ -33,7 +34,3 @@ command spec to define valid flags for individual subcommands.
 available space. Like, after calculating the number of columns, re-adjust the
 column lengths after individual column lengths are found. Or something of that
 sort.
-
-### pl (src/py/pl.py)
-
-- Add process filtering (after rewrite).
