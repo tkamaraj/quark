@@ -1,11 +1,13 @@
 [project]
 name = "quark"
-description = "The Quark source tree package (idk what else to call it)"
 version = "0.1"
+description = "The Quark source tree package (idk what else to call it)"
+requires-python = ">= 3.13"
 authors = [
-    { name = "Thiruvalluvan Kamaraj", email = "thiruisanidiot@gmail.com" }
+    { name = "Thiruvalluvan Kamaraj", email = "thiruisanidiot@gmail.com" },
 ]
-dependencies = []
+readme = "docs/README.md"
+licence = "Apache-2.0"
 
 [tool.setuptools]
 packages = ["src"]

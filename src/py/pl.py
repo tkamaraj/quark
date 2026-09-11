@@ -5,13 +5,23 @@ import typing as ty
 from src.utils import err_codes as uerr
 from src.utils import gen as ugen
 
+OPTS = {
+    "FIELDS": ("-f", "--fields"),
+}
+FLAGS = {
+    "ESC"       : ("-e", "--escape"),
+    "EXACT"     : ("-x", "--exact"),
+    "LONG"      : ("-l", "--long"),
+    "NO_HEADERS": ("-H", "--no-headers"),
+}
+
 VALID_FIELDS = {
-    "pid": "Process PID",
-    "ppid": "Parent PID",
-    "name": "Process name",
-    "threads": "Threads used by process",
+    "pid"      : "Process PID",
+    "ppid"     : "Parent PID",
+    "name"     : "Process name",
+    "threads"  : "Threads used by process",
     "starttime": "Start time of process",
-    "full": "Full invokation",
+    "full"     : "Full invokation",
 }
 CMD_NM = __name__.split(".")[-1]
 
@@ -40,13 +50,8 @@ HELP = ugen.HelpObj(
 CMD_SPEC = ugen.CmdSpec(
     min_args=0,
     max_args=float("inf"),
-    opts=("-f", "--fields"),
-    flags=(
-        "-e", "--escape",
-        "-H", "--no-headers",
-        "-l", "--long",
-        "-x", "--exact",
-    )
+    opts=tuple(opt for opts in OPTS.values() for opt in opts),
+    flags=tuple(flag for flags in FLAGS.values() for flag in flags)
 )
 
 
@@ -67,18 +72,18 @@ def rd_fl_as_bin(fl_pth: str) -> str | int:
 
 def run(data: ugen.CmdData) -> int:
     err_code = uerr.ERR_ALL_GOOD
-    long = False
     fields = ["pid", "name"]
     wrt_headers = True
+    match_exact = False
 
     for flag in data.flags:
-        if flag in ("-H", "--no-headers"):
+        if flag in FLAGS["NO_HEADERS"]:
             wrt_headers = False
-        if flag in ("-l", "--long"):
+        elif flag in FLAGS["LONG"]:
             fields = ["pid", "full"]
 
     for opt, val in data.opts.items():
-        if opt in ("-f", "--fields"):
+        if opt in OPTS["FIELDS"]:
             fields = list(dict.fromkeys(val.split(",")))
             if inv := [i for i in fields if i not in VALID_FIELDS]:
                 ugen.err(
