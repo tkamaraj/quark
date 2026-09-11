@@ -9,10 +9,11 @@ OPTS = {
     "FIELDS": ("-f", "--fields"),
 }
 FLAGS = {
-    "ESC"       : ("-e", "--escape"),
-    "EXACT"     : ("-x", "--exact"),
-    "LONG"      : ("-l", "--long"),
-    "NO_HEADERS": ("-H", "--no-headers"),
+    "ESC"           : ("-e", "--escape"),
+    "EXACT"         : ("-x", "--exact"),
+    "LONG"          : ("-l", "--long"),
+    "NO_HEADERS"    : ("-H", "--no-headers"),
+    "FILTER_BY_NAME": ("-n", "--by-name"),
 }
 
 VALID_FIELDS = {
@@ -73,14 +74,21 @@ def rd_fl_as_bin(fl_pth: str) -> str | int:
 def run(data: ugen.CmdData) -> int:
     err_code = uerr.ERR_ALL_GOOD
     fields = ["pid", "name"]
+    exact_match = False
     wrt_headers = True
     match_exact = False
+    filter_by_nm = False
+    filter_regexes = []
 
     for flag in data.flags:
         if flag in FLAGS["NO_HEADERS"]:
             wrt_headers = False
         elif flag in FLAGS["LONG"]:
             fields = ["pid", "full"]
+        elif flag in FLAGS["FILTER_BY_NAME"]:
+            filter_by_nm = True
+        elif flag in FLAGS["EXACT"]:
+            exact_match = True
 
     for opt, val in data.opts.items():
         if opt in OPTS["FIELDS"]:
@@ -91,6 +99,12 @@ def run(data: ugen.CmdData) -> int:
                     + ", ".join(("'" + ugen.esc_chrs_all(i) + "'") for i in inv)
                 )
                 return uerr.ERR_INV_VAL_OPT
+
+    # Compile all args into patterns
+    for arg in data.args:
+        filter_regexes.append(re.compile(
+            f"^{re.escape(arg)}$" if exact_match else re.escape(arg)
+        ))
 
     proc_arr = {k: [] for k in fields}
     max_lens = {k: 0 for k in fields}
@@ -107,6 +121,10 @@ def run(data: ugen.CmdData) -> int:
             continue
 
         pid = i.name
+        # If args is not empty, and filter by name is not turned on, hence
+        # match PID with each of the arg regexes and see if any matches
+        if data.args and not filter_by_nm and not [i for i in filter_regexes if i.search(pid) != None]:
+            continue
         ppid = "?"
         name = "?"
         threads = "?"
@@ -115,7 +133,7 @@ def run(data: ugen.CmdData) -> int:
 
         cmdline = rd_fl_as_bin(os.path.join(i.path, "cmdline"))
         if isinstance(cmdline, int):
-            ugen.warn(f"Cannot obtain full command line: {pid}")
+            ugen.warn(f"Cannot obtain full command line: PID {pid}")
         else:
             full = cmdline.replace("\x00", " ")
 
@@ -123,12 +141,21 @@ def run(data: ugen.CmdData) -> int:
         if isinstance(stat, int):
             ugen.warn(f"Cannot obtain process status: {pid}")
         else:
+            # + is greedy, hence will consume till the last available `)` in
+            # the name part, hence `)` in names shouldn't be a problem
             stat = re.search(r"(.+)\s+\((.+)\)\s+(.+)", stat)
-            stat_rt_part = stat.group(3).split()
-            name = stat.group(2)
-            ppid = stat_rt_part[1]
-            threads = stat_rt_part[17]
-            starttime = stat_rt_part[19]
+            if stat is None:
+                ugen.warn(f"Invalid cmdline: PID {pid}")
+            else:
+                stat_rt_part = stat.group(3).split()
+                name = stat.group(2)
+                # If args is not empty, and filter by name is turned on, hence
+                # match name with each of the arg regexes and see if any hatches
+                if data.args and filter_by_nm and not [i for i in filter_regexes if i.search(name) != None]:
+                    continue
+                ppid = stat_rt_part[1]
+                threads = stat_rt_part[17]
+                starttime = stat_rt_part[19]
 
         for field in fields:
             # Feel like this is going to bite me in the ass someday...
@@ -183,5 +210,5 @@ def run(data: ugen.CmdData) -> int:
         else:
             final.append(cur_joined[: data.term_sz.columns - 1] + ">")
 
-    ugen.write("\n".join(final) + "\n")
+    ugen.write("\n".join(final) + ("\n" if final else ""))
     return err_code
